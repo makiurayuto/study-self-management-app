@@ -32,7 +32,7 @@ export default function Home() {
 
   const [logs, setLogs] = useState<any[]>([]);
 
-  // 🔥 週管理（追加）
+  //  週管理（追加）
   const [weekOffset, setWeekOffset] = useState(0);
 
   // ログイン
@@ -136,6 +136,7 @@ export default function Home() {
   };
 
   const weekDates = getWeekDates(weekOffset);
+  const weekMonth = `${new Date(weekDates[0].date).getMonth() + 1}月`;
 
   return (
     <div
@@ -199,7 +200,7 @@ export default function Home() {
             style={inputStyle}
           />
 
-          {/* 満足度 */}
+          {/* 満足度*/}
           <div>
             <p>満足度</p>
 
@@ -269,7 +270,7 @@ export default function Home() {
             >
               <thead>
                 <tr>
-                  <th style={thStyle}>日付</th>
+                  <th style={thStyle}>{weekMonth}</th>
                   <th style={thStyle}>曜日</th>
                   <th style={thStyle}>勉強</th>
                   <th style={thStyle}>スマホ</th>
