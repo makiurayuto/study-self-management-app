@@ -105,7 +105,7 @@ export default function Home() {
     if (user) fetchLogs(user.uid);
   }, [user]);
 
-  // 🔥 今週生成（過去週対応）
+  //  今週生成（過去週対応）
   const getWeekDates = (offset = 0) => {
     const today = new Date();
 
@@ -136,7 +136,23 @@ export default function Home() {
   };
 
   const weekDates = getWeekDates(weekOffset);
-  const weekMonth = `${new Date(weekDates[0].date).getMonth() + 1}月`;
+  const weekMonth = (() => {
+    const months = weekDates.map(
+      (d) => new Date(d.date).getMonth() + 1
+    );
+
+    const freq: Record<number, number> = {};
+
+    for (const m of months) {
+      freq[m] = (freq[m] || 0) + 1;
+    }
+
+    const sorted = Object.entries(freq).sort(
+      (a, b) => Number(b[1]) - Number(a[1])
+    );
+
+    return `${sorted[0][0]}月`;
+  })();
 
   return (
     <div
@@ -147,7 +163,7 @@ export default function Home() {
         fontFamily: "sans-serif",
       }}
     >
-      <h1>1週間生活管理表</h1>
+      <h1>勉強時間自己管理表</h1>
 
       {/* ログイン */}
       {user ? (
