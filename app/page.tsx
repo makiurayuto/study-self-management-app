@@ -32,6 +32,9 @@ export default function Home() {
 
   const [logs, setLogs] = useState<any[]>([]);
 
+  // 🔥 週管理（追加）
+  const [weekOffset, setWeekOffset] = useState(0);
+
   // ログイン
   const login = async () => {
     const provider = new GoogleAuthProvider();
@@ -102,15 +105,19 @@ export default function Home() {
     if (user) fetchLogs(user.uid);
   }, [user]);
 
-  // 今週生成
-  const getWeekDates = () => {
+  // 🔥 今週生成（過去週対応）
+  const getWeekDates = (offset = 0) => {
     const today = new Date();
+
     const day = today.getDay();
 
     const monday = new Date(today);
     monday.setDate(
       today.getDate() - (day === 0 ? 6 : day - 1)
     );
+
+    // 週移動
+    monday.setDate(monday.getDate() + offset * 7);
 
     const week = [];
 
@@ -120,9 +127,7 @@ export default function Home() {
 
       week.push({
         date: d.toISOString().split("T")[0],
-        dayName: ["日", "月", "火", "水", "木", "金", "土"][
-          d.getDay()
-        ],
+        dayName: ["日", "月", "火", "水", "木", "金", "土"][d.getDay()],
         displayDate: d.getDate() + "日",
       });
     }
@@ -130,10 +135,17 @@ export default function Home() {
     return week;
   };
 
-  const weekDates = getWeekDates();
+  const weekDates = getWeekDates(weekOffset);
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 16 }}>
+    <div
+      style={{
+        maxWidth: 900,
+        margin: "0 auto",
+        padding: 16,
+        fontFamily: "sans-serif",
+      }}
+    >
       <h1>1週間生活管理表</h1>
 
       {/* ログイン */}
@@ -187,7 +199,7 @@ export default function Home() {
             style={inputStyle}
           />
 
-          {/* 満足度 ○△× */}
+          {/* 満足度 */}
           <div>
             <p>満足度</p>
 
@@ -204,6 +216,8 @@ export default function Home() {
                       satisfaction === s
                         ? "2px solid black"
                         : "1px solid #ccc",
+                    background:
+                      satisfaction === s ? "#f0f0f0" : "white",
                   }}
                 >
                   {s}
@@ -222,40 +236,68 @@ export default function Home() {
 
       <hr style={{ margin: 24 }} />
 
+      {/* 週切り替え */}
+      {user && (
+        <div style={{ marginBottom: 10 }}>
+          <button onClick={() => setWeekOffset(weekOffset - 1)}>
+            ← 前の週
+          </button>
+
+          <button onClick={() => setWeekOffset(0)} style={{ margin: "0 10px" }}>
+            今週
+          </button>
+
+          <button onClick={() => setWeekOffset(weekOffset + 1)}>
+            次の週 →
+          </button>
+        </div>
+      )}
+
       {/* 表 */}
       {user && (
         <div>
           <h2>1週間記録</h2>
 
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>日付</th>
-                <th style={thStyle}>曜日</th>
-                <th style={thStyle}>勉強</th>
-                <th style={thStyle}>スマホ</th>
-                <th style={thStyle}>就寝</th>
-                <th style={thStyle}>満足度</th>
-              </tr>
-            </thead>
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: 500,
+                fontSize: 12,
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={thStyle}>日付</th>
+                  <th style={thStyle}>曜日</th>
+                  <th style={thStyle}>勉強</th>
+                  <th style={thStyle}>スマホ</th>
+                  <th style={thStyle}>就寝</th>
+                  <th style={thStyle}>満足度</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {weekDates.map((day) => {
-                const log = logs.find((l) => l.date === day.date);
+              <tbody>
+                {weekDates.map((day) => {
+                  const log = logs.find(
+                    (l) => l.date === day.date
+                  );
 
-                return (
-                  <tr key={day.date}>
-                    <td style={tdStyle}>{day.displayDate}</td>
-                    <td style={tdStyle}>{day.dayName}</td>
-                    <td style={tdStyle}>{log?.studyTime || ""}</td>
-                    <td style={tdStyle}>{log?.phoneTime || ""}</td>
-                    <td style={tdStyle}>{log?.sleepTime || ""}</td>
-                    <td style={tdStyle}>{log?.satisfaction || ""}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr key={day.date}>
+                      <td style={tdStyle}>{day.displayDate}</td>
+                      <td style={tdStyle}>{day.dayName}</td>
+                      <td style={tdStyle}>{log?.studyTime || ""}</td>
+                      <td style={tdStyle}>{log?.phoneTime || ""}</td>
+                      <td style={tdStyle}>{log?.sleepTime || ""}</td>
+                      <td style={tdStyle}>{log?.satisfaction || ""}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
@@ -266,12 +308,14 @@ const inputStyle = {
   padding: 12,
   border: "1px solid #ccc",
   borderRadius: 8,
+  width: "100%",
 };
 
 const buttonStyle = {
   padding: "12px 16px",
   borderRadius: 8,
   border: "none",
+  cursor: "pointer",
 };
 
 const thStyle = {
