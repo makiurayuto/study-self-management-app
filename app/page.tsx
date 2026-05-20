@@ -3,16 +3,13 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-
 import {
   collection,
-  addDoc,
   query,
   where,
   getDocs,
@@ -21,7 +18,6 @@ import {
 export default function Home() {
   const [user, setUser] = useState<any>(null);
 
-  // 入力
   const [date, setDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -32,42 +28,45 @@ export default function Home() {
   const [satisfaction, setSatisfaction] = useState("");
 
   const [logs, setLogs] = useState<any[]>([]);
-
-  // 週管理（追加）
   const [weekOffset, setWeekOffset] = useState(0);
 
-  // ログイン
+  // =====================
+  // login
+  // =====================
   const login = async () => {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
 
-    const user = result.user;
-    setUser(user);
+    const u = result.user;
+    setUser(u);
 
-    const ref = doc(db, "users", user.uid);
+    const ref = doc(db, "users", u.uid);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
+      const customName = prompt("表示名を入力してください");
+
       await setDoc(ref, {
-        name: user.displayName,
+        name: customName || "名無し",
         role: "student",
       });
     }
   };
 
-  // ログアウト
+  // =====================
+  // logout
+  // =====================
   const logout = async () => {
     await signOut(auth);
     setUser(null);
     setLogs([]);
   };
 
-  // 保存
+  // =====================
+  // 保存（修正済み）
+  // =====================
   const saveData = async () => {
-    if (!user) {
-      alert("ログインしてください");
-      return;
-    }
+    if (!user) return alert("ログインしてください");
 
     try {
       await setDoc(
@@ -82,8 +81,6 @@ export default function Home() {
         }
       );
 
-await fetchLogs(user.uid);
-
       alert("保存しました！");
 
       setStudyTime("");
@@ -91,42 +88,40 @@ await fetchLogs(user.uid);
       setSleepTime("");
       setSatisfaction("");
 
-      fetchLogs(user.uid);
-    } catch (error) {
-      console.error(error);
-      alert("保存に失敗しました");
+      await fetchLogs(user.uid); // ←1回だけ更新
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  // Firestore取得（修正版：重複削除＋整理）
+  // =====================
+  // logs取得
+  // =====================
   const fetchLogs = async (uid: string) => {
-    try {
-      const q = query(
-        collection(db, "weeklyLogs"),
-        where("uid", "==", uid)
-      );
+    const q = query(
+      collection(db, "weeklyLogs"),
+      where("uid", "==", uid)
+    );
 
-      const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
 
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const data = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
 
-      setLogs(data);
-    } catch (error) {
-      console.error(error);
-    }
+    setLogs(data);
   };
 
-
-  const loadData = async (uid: string, date: string) => {
-    const ref = doc(db, "weeklyLogs", `${uid}_${date}`);
+  // =====================
+  // 1日読み込み（そのまま維持）
+  // =====================
+  const loadData = async (uid: string, d: string) => {
+    const ref = doc(db, "weeklyLogs", `${uid}_${d}`);
     const snap = await getDoc(ref);
 
     if (snap.exists()) {
       const data = snap.data();
-
       setStudyTime(data.studyTime?.toString() ?? "");
       setPhoneTime(data.phoneTime?.toString() ?? "");
       setSleepTime(data.sleepTime ?? "");
@@ -143,23 +138,19 @@ await fetchLogs(user.uid);
     if (user) fetchLogs(user.uid);
   }, [user]);
 
-
   useEffect(() => {
-    if (user && date) {
-      loadData(user.uid, date);
-    }
+    if (user && date) loadData(user.uid, date);
   }, [user, date]);
 
-  // 今週生成（過去週対応）
+  // =====================
+  // 週生成（そのまま）
+  // =====================
   const getWeekDates = (offset = 0) => {
     const today = new Date();
-
     const day = today.getDay();
 
     const monday = new Date(today);
-    monday.setDate(
-      today.getDate() - (day === 0 ? 6 : day - 1)
-    );
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
 
     monday.setDate(monday.getDate() + offset * 7);
 
@@ -199,6 +190,9 @@ await fetchLogs(user.uid);
     return `${sorted[0][0]}月`;
   })();
 
+  // =====================
+  // UI（ここはほぼそのまま）
+  // =====================
   return (
     <div
       style={{
@@ -210,7 +204,6 @@ await fetchLogs(user.uid);
     >
       <h1>勉強時間自己管理表</h1>
 
-      {/* ログイン */}
       {user ? (
         <div>
           <p>ログイン中：{user.displayName}</p>
@@ -255,18 +248,16 @@ await fetchLogs(user.uid);
           />
 
           <input
-            placeholder="就寝時間"
+            type="time"
             value={sleepTime}
             onChange={(e) => setSleepTime(e.target.value)}
             style={inputStyle}
           />
 
-          {/* 満足度 */}
           <div>
             <p>満足度</p>
-
             <div style={{ display: "flex", gap: 10 }}>
-              {["○", "△", "×"].map((s) => (
+              {["◎", "○", "△", "×"].map((s) => (
                 <button
                   key={s}
                   onClick={() => setSatisfaction(s)}
@@ -298,7 +289,7 @@ await fetchLogs(user.uid);
 
       <hr style={{ margin: 24 }} />
 
-      {/* 週切り替え */}
+      {/* 週切替 */}
       {user && (
         <div style={{ marginBottom: 10 }}>
           <button onClick={() => setWeekOffset(weekOffset - 1)}>
@@ -342,9 +333,7 @@ await fetchLogs(user.uid);
 
               <tbody>
                 {weekDates.map((day) => {
-                  const log = logs.find(
-                    (l) => l.date === day.date
-                  );
+                  const log = logs.find((l) => l.date === day.date);
 
                   return (
                     <tr key={day.date}>
@@ -366,7 +355,7 @@ await fetchLogs(user.uid);
   );
 }
 
-// styles
+// styles（そのまま）
 const inputStyle = {
   padding: 12,
   border: "1px solid #ccc",
@@ -390,4 +379,4 @@ const thStyle = {
 const tdStyle = {
   border: "1px solid #ccc",
   padding: 12,
-};
+}
