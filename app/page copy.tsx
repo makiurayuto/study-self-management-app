@@ -33,7 +33,7 @@ export default function Home() {
 
   const [logs, setLogs] = useState<any[]>([]);
 
-  // 週管理（追加）
+  //  週管理（追加）
   const [weekOffset, setWeekOffset] = useState(0);
 
   // ログイン
@@ -44,6 +44,7 @@ export default function Home() {
     const user = result.user;
     setUser(user);
 
+    // 🔥 usersに存在しない場合は作る
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
 
@@ -70,19 +71,14 @@ export default function Home() {
     }
 
     try {
-      await setDoc(
-        doc(db, "weeklyLogs", `${user.uid}_${date}`),
-        {
-          uid: user.uid,
-          date,
-          studyTime: studyTime === "" ? null : Number(studyTime),
-          phoneTime: phoneTime === "" ? null : Number(phoneTime),
-          sleepTime,
-          satisfaction,
-        }
-      );
-
-await fetchLogs(user.uid);
+      await addDoc(collection(db, "weeklyLogs"), {
+        uid: user.uid,
+        date,
+        studyTime: Number(studyTime),
+        phoneTime: Number(phoneTime),
+        sleepTime,
+        satisfaction,
+      });
 
       alert("保存しました！");
 
@@ -98,7 +94,7 @@ await fetchLogs(user.uid);
     }
   };
 
-  // Firestore取得（修正版：重複削除＋整理）
+  // Firestore取得
   const fetchLogs = async (uid: string) => {
     try {
       const q = query(
@@ -119,38 +115,11 @@ await fetchLogs(user.uid);
     }
   };
 
-
-  const loadData = async (uid: string, date: string) => {
-    const ref = doc(db, "weeklyLogs", `${uid}_${date}`);
-    const snap = await getDoc(ref);
-
-    if (snap.exists()) {
-      const data = snap.data();
-
-      setStudyTime(data.studyTime?.toString() ?? "");
-      setPhoneTime(data.phoneTime?.toString() ?? "");
-      setSleepTime(data.sleepTime ?? "");
-      setSatisfaction(data.satisfaction ?? "");
-    } else {
-      setStudyTime("");
-      setPhoneTime("");
-      setSleepTime("");
-      setSatisfaction("");
-    }
-  };
-
   useEffect(() => {
     if (user) fetchLogs(user.uid);
   }, [user]);
 
-
-  useEffect(() => {
-    if (user && date) {
-      loadData(user.uid, date);
-    }
-  }, [user, date]);
-
-  // 今週生成（過去週対応）
+  //  今週生成（過去週対応）
   const getWeekDates = (offset = 0) => {
     const today = new Date();
 
@@ -161,6 +130,7 @@ await fetchLogs(user.uid);
       today.getDate() - (day === 0 ? 6 : day - 1)
     );
 
+    // 週移動
     monday.setDate(monday.getDate() + offset * 7);
 
     const week = [];
@@ -180,7 +150,6 @@ await fetchLogs(user.uid);
   };
 
   const weekDates = getWeekDates(weekOffset);
-
   const weekMonth = (() => {
     const months = weekDates.map(
       (d) => new Date(d.date).getMonth() + 1
@@ -261,7 +230,7 @@ await fetchLogs(user.uid);
             style={inputStyle}
           />
 
-          {/* 満足度 */}
+          {/* 満足度*/}
           <div>
             <p>満足度</p>
 
@@ -366,7 +335,6 @@ await fetchLogs(user.uid);
   );
 }
 
-// styles
 const inputStyle = {
   padding: 12,
   border: "1px solid #ccc",
