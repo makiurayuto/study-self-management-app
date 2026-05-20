@@ -62,7 +62,7 @@ export default function Home() {
         name: "",
         role: "student",
       });
-      setStep("app");
+      setStep("name");
       return;
     }
 
@@ -200,7 +200,7 @@ export default function Home() {
           name: "",
           role: "student",
         });
-        setStep("app");
+        setStep("name");
         return;
       }
 
