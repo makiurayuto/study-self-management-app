@@ -46,9 +46,15 @@ export default function Home() {
   // login
   // =====================
   const login = async () => {
-    setStep("loading");
+    console.log("login clicked");
 
     const provider = new GoogleAuthProvider();
+
+    // 🔥 重要：必ずアカウント選択させる
+    provider.setCustomParameters({
+      prompt: "select_account",
+    });
+
     const result = await signInWithPopup(auth, provider);
 
     const u = result.user;
@@ -179,12 +185,17 @@ export default function Home() {
     if (user) fetchLogs(user.uid);
   }, [user]);
 
+
+
   useEffect(() => {
     if (user && date) loadData(user.uid, date);
   }, [user, date]);
 
+
+
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (u) => {
+
       if (!u) {
         setUser(null);
         setStep("login");
@@ -195,11 +206,7 @@ export default function Home() {
       const snap = await getDoc(ref);
 
       if (!snap.exists()) {
-        setUser({
-          uid: u.uid,
-          name: "",
-          role: "student",
-        });
+        setUser({ uid: u.uid, name: "", role: "student" });
         setStep("name");
         return;
       }
@@ -212,7 +219,7 @@ export default function Home() {
         role: data.role,
       });
 
-      setStep(data.role === "teacher" ? "teacher" : "app");
+      setStep("app");
     });
 
     return () => unsub();
@@ -491,4 +498,4 @@ const thStyle = {
 const tdStyle = {
   border: "1px solid #ccc",
   padding: 12,
-}// setDoc
+}
