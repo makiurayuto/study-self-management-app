@@ -16,7 +16,19 @@ import {
 } from "firebase/firestore";
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
+  type AppUser = {
+  uid: string;
+  name: string;
+  role: "student" | "teacher";
+  };
+  const [user, setUser] = useState<AppUser | null>(null);
+
+  const [step, setStep] = useState("loading");
+
+  console.log("step:", step);
+  console.log("user:", user);
+
+  const [tempName, setTempName] = useState("");
 
   const [date, setDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -34,23 +46,35 @@ export default function Home() {
   // login
   // =====================
   const login = async () => {
+    setStep("loading");
+
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
 
     const u = result.user;
-    setUser(u);
 
     const ref = doc(db, "users", u.uid);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      const customName = prompt("表示名を入力してください");
-
-      await setDoc(ref, {
-        name: customName || "名無し",
+      setUser({
+        uid: u.uid,
+        name: "",
         role: "student",
       });
+      setStep("app");
+      return;
     }
+
+    const data = snap.data();
+
+    setUser({
+      uid: u.uid,
+      name: data.name,
+      role: data.role,
+    });
+
+    setStep(data.role === "teacher" ? "teacher" : "app");
   };
 
   // =====================
@@ -60,6 +84,23 @@ export default function Home() {
     await signOut(auth);
     setUser(null);
     setLogs([]);
+  };
+
+  const registerName = async () => {
+    if (!user) return;
+
+    await setDoc(doc(db, "users", user.uid), {
+      name: tempName,
+      role: "student",
+    });
+
+    setUser({
+      uid: user.uid,
+      name: tempName,
+      role: "student",
+    });
+
+    setStep("app");
   };
 
   // =====================
@@ -142,6 +183,41 @@ export default function Home() {
     if (user && date) loadData(user.uid, date);
   }, [user, date]);
 
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged(async (u) => {
+      if (!u) {
+        setUser(null);
+        setStep("login");
+        return;
+      }
+
+      const ref = doc(db, "users", u.uid);
+      const snap = await getDoc(ref);
+
+      if (!snap.exists()) {
+        setUser({
+          uid: u.uid,
+          name: "",
+          role: "student",
+        });
+        setStep("app");
+        return;
+      }
+
+      const data = snap.data();
+
+      setUser({
+        uid: u.uid,
+        name: data.name,
+        role: data.role,
+      });
+
+      setStep(data.role === "teacher" ? "teacher" : "app");
+    });
+
+    return () => unsub();
+  }, []);
+
   // =====================
   // 週生成（そのまま）
   // =====================
@@ -193,6 +269,40 @@ export default function Home() {
   // =====================
   // UI（ここはほぼそのまま）
   // =====================
+
+// 👇 名前入力画面
+  if (step === "loading") {
+    return <div>読み込み中...</div>;
+  }
+
+  if (step === "login") {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>ログインしてください</h2>
+        <button onClick={login}>Googleでログイン</button>
+      </div>
+    );
+  }
+
+  if (step === "name") {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>名前を入力してください</h2>
+
+        <input
+          value={tempName}
+          onChange={(e) => setTempName(e.target.value)}
+          style={inputStyle}
+        />
+
+        <button onClick={registerName}>登録</button>
+      </div>
+    );
+  }
+
+  if (step === "teacher") {
+    return <div>👨‍🏫 先生画面（管理画面）</div>;
+  }
   return (
     <div
       style={{
@@ -201,12 +311,14 @@ export default function Home() {
         padding: 16,
         fontFamily: "sans-serif",
       }}
+
     >
+
       <h1>勉強時間自己管理表</h1>
 
       {user ? (
         <div>
-          <p>ログイン中：{user.displayName}</p>
+          <p>ログイン中：{user?.name}</p>
           <button onClick={logout} style={buttonStyle}>
             ログアウト
           </button>
@@ -379,4 +491,4 @@ const thStyle = {
 const tdStyle = {
   border: "1px solid #ccc",
   padding: 12,
-}
+}// setDoc
