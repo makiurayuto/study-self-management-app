@@ -46,7 +46,6 @@ export default function Home() {
   const [logs, setLogs] = useState<any[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
-  
 
   // =====================
   // login
@@ -388,16 +387,15 @@ export default function Home() {
   }
 
   return (
-      <div
-        style={{
-          maxWidth: 500,
-          margin: "0 auto",
-          padding: 16,
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
+    <div
+      style={{
+        maxWidth: 900,
+        margin: "0 auto",
+        padding: 16,
+        fontFamily: "sans-serif",
+      }}
+
+    >
 
       <h1>勉強時間自己管理表</h1>
 
@@ -432,35 +430,18 @@ export default function Home() {
               onChange={handleDateChange}
             />
 
-          <div
-            style={{
-              background: "white",
-              borderRadius: 12,
-              padding: 16,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
-          >
-            <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
-
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label>勉強時間</label>
             <input
-              type="number"
-              value={studyTime}
-              onChange={(e) => setStudyTime(e.target.value)}
-              style={{
-                padding: 12,
-                borderRadius: 8,
-                border: "1px solid #ddd",
-                outline: "none",
-              }}
+                type="number"
+                value={studyTime}
+                onChange={(e) => setStudyTime(e.target.value)}
+                style={inputStyle}
             />
           </div>
 
-          <div style={cardStyle}>
-            <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
-
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label>スマホ時間</label>
             <input
               type="number"
               value={phoneTime}
@@ -469,8 +450,8 @@ export default function Home() {
             />
           </div>
 
-          <div style={cardStyle}>
-            <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontWeight: "bold" }}>就寝時間</label>
 
             <select
               value={sleepTime}
@@ -478,7 +459,7 @@ export default function Home() {
               style={inputStyle}
             >
               <option value="" disabled>
-                選択してください
+                就寝時間を選択
               </option>
 
               {Array.from({ length: 96 }).map((_, i) => {
@@ -605,22 +586,13 @@ export default function Home() {
   );
 }
 
-const cardStyle = {
-  background: "white",
-  borderRadius: 12,
-  padding: 16,
-  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-  display: "flex",
-  flexDirection: "column",
-  gap: 8,
-};
-
+// styles（そのまま）
 const inputStyle = {
   padding: 12,
+  border: "1px solid #ccc",
   borderRadius: 8,
-  border: "1px solid #ddd",
-  outline: "none",
-  fontSize: 14,
+  width: "100%",
+  boxSizing: "border-box" as const,
 };
 
 const buttonStyle = {
