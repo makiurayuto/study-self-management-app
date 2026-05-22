@@ -72,6 +72,8 @@ const wrapper: CSSProperties = {
 const scrollArea: CSSProperties = {
   height: "100%",
   overflowY: "scroll",
+  overflowX: "hidden",
+  scrollSnapType: "y mandatory",
   WebkitOverflowScrolling: "touch",
 };
 
@@ -92,8 +94,6 @@ const centerLine: CSSProperties = {
   right: 0,
   height: 44,
   transform: "translateY(-50%)",
-  borderTop: "1px solid rgba(0,0,0,0.1)",
-  borderBottom: "1px solid rgba(0,0,0,0.1)",
   pointerEvents: "none",
 };
 
