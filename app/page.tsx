@@ -47,6 +47,13 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   
+  const cardStyle = {
+    background: "white",
+    borderRadius: 12,
+    padding: 16,
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+  };
+  
 
   // =====================
   // login
@@ -457,7 +464,7 @@ export default function Home() {
               }}
             />
           </div>
-
+          
           <div style={cardStyle}>
             <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
 
@@ -601,19 +608,9 @@ export default function Home() {
           </div>
         </div>
       )}
-    </div>
+      </div>
   );
 }
-
-const cardStyle = {
-  background: "white",
-  borderRadius: 12,
-  padding: 16,
-  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-  display: "flex",
-  flexDirection: "column",
-  gap: 8,
-};
 
 const inputStyle = {
   padding: 12,
