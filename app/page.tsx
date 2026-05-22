@@ -50,12 +50,11 @@ export default function Home() {
   const cardStyle: React.CSSProperties = {
     background: "var(--card)",
     border: "1px solid var(--border)",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: 10,
   };
   
 
@@ -431,6 +430,7 @@ export default function Home() {
             display: "flex", 
             flexDirection: "column",
             gap: 24,
+            padding: 16,
           }}>
 
           <h2>記録入力</h2>
@@ -632,11 +632,14 @@ const inputStyle = {
   outline: "none",
   fontSize: 14,
 };
-const buttonStyle = {
-  padding: "12px 16px",
-  borderRadius: 8,
+const buttonStyle: React.CSSProperties = {
+  padding: "14px 16px",
+  borderRadius: 12,
   border: "none",
-  cursor: "pointer",
+  background: "#4f46e5",
+  color: "white",
+  fontWeight: 600,
+  transition: "0.2s",
 };
 
 const thStyle = {
