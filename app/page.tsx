@@ -475,7 +475,12 @@ export default function Home() {
         <div>
           <h2>1週間記録</h2>
 
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              marginBottom: 24,
+            }}
+          >
             <table
               style={{
                 width: "100%",
@@ -539,11 +544,13 @@ const buttonStyle = {
 
 const thStyle = {
   border: "1px solid #ccc",
-  padding: 12,
+  padding: 6,
   background: "#f3f4f6",
+  textAlign: "center" as const,
 };
 
 const tdStyle = {
   border: "1px solid #ccc",
-  padding: 12,
-}
+  padding: 6,
+  textAlign: "center" as const,
+};
