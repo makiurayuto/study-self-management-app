@@ -49,17 +49,16 @@ export default function Home() {
   const [touchStartX, setTouchStartX] = useState(0);
   const [openSleepPicker, setOpenSleepPicker] = useState(false);
 
-const cardStyle: React.CSSProperties = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: 16,
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-  boxSizing: "border-box",
-};
-    
+  const cardStyle: React.CSSProperties = {
+    background: "var(--card)",
+    border: "1px solid var(--border)",
+    borderRadius: 16,
+    padding: 16,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    boxSizing: "border-box",
+  }; 
 
   const lineStyle: React.CSSProperties = {
     position: "absolute",
@@ -465,7 +464,9 @@ const cardStyle: React.CSSProperties = {
 
           <h2>記録入力</h2>
             <div style={cardStyle}>
-              <div style={{ fontWeight: "bold" }}>📅 日付</div>
+              <div style={{ fontWeight: "bold" }}>
+                📅 日付
+              </div>
 
               <input
                 type="date"
@@ -473,13 +474,16 @@ const cardStyle: React.CSSProperties = {
                 onChange={handleDateChange}
                 style={{
                   width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
+                  padding: "12px 14px",
+                  borderRadius: 12,
                   border: "1px solid var(--border)",
-                  background: "var(--card)",
+                  background: "var(--bg)",
                   color: "var(--text)",
                   fontSize: 16,
+                  outline: "none",
                   boxSizing: "border-box",
+                  appearance: "none",
+                  WebkitAppearance: "none",
                 }}
               />
             </div>
@@ -665,7 +669,7 @@ const cardStyle: React.CSSProperties = {
           </button>
         </div>
       )}
-      
+
     </div>
   );
 }
