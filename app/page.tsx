@@ -440,12 +440,8 @@ export default function Home() {
   return (
     <div
       style={{
-        background: "var(--bg)",
-        color: "var(--text)",
         minHeight: "100vh",
-        padding: "16px 20px",
-        maxWidth: 500,
-        margin: "0 auto",
+        background: "var(--bg)",
       }}
     >
 
