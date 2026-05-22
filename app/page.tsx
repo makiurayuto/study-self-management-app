@@ -670,6 +670,14 @@ export default function Home() {
         </div>
       )}
 
+      <div
+        style={{
+          marginBottom: 24,
+          display: "flex",
+          gap: 8,
+        }}
+      ></div>
+
     </div>
   );
 }
