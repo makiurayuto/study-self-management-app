@@ -410,7 +410,7 @@ export default function Home() {
     return (
       <div style={{ padding: 20 }}>
         <h2>ログインしてください</h2>
-        <button onClick={login}>Googleでログイン</button>
+        <button onClick={login} style={buttonStyle}>Googleでログイン</button>
       </div>
     );
   }
@@ -426,7 +426,7 @@ export default function Home() {
           style={inputStyle}
         />
 
-        <button onClick={registerName}>登録</button>
+        <button onClick={registerName} style={buttonStyle}>登録</button>
       </div>
     );
   }
@@ -669,15 +669,21 @@ export default function Home() {
       {/* 週切替 */}
       {user && (
         <div style={{ marginBottom: 10 }}>
-          <button onClick={() => setWeekOffset(weekOffset - 1)}>
+          <button onClick={() => setWeekOffset(weekOffset - 1)} style={buttonStyle}>
             ← 前の週
           </button>
 
-          <button onClick={() => setWeekOffset(0)} style={{ margin: "0 10px" }}>
+          <button
+            onClick={() => setWeekOffset(0)}
+            style={{
+              ...buttonStyle,
+              margin: "0 10px",
+            }}
+          >
             今週
           </button>
 
-          <button onClick={() => setWeekOffset(weekOffset + 1)}>
+          <button onClick={() => setWeekOffset(weekOffset + 1)} style={buttonStyle}>
             次の週 →
           </button>
         </div>
