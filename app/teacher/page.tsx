@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
+import Button from "@/components/Button";
 
 // =========================
 // 型

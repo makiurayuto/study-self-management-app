@@ -8,6 +8,7 @@ type Props = {
   variant?: "primary" | "secondary" | "glass";
   color?: string;
   disabled?: boolean;
+  className?: string;
 };
 
 export default function Button({
@@ -63,21 +64,22 @@ export default function Button({
     <button
       onClick={onClick}
       disabled={disabled}
-      style={base}
+      style={{
+        ...base,
+        ...getStyle(),
+        transform: "scale(1)",
+      }}
       onMouseDown={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.transform =
-          "scale(0.96)";
+        e.currentTarget.style.transform = "scale(0.96)";
       }}
       onMouseUp={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.transform =
-          "scale(1)";
+        e.currentTarget.style.transform = "scale(1)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.transform =
-          "scale(1)";
+        e.currentTarget.style.transform = "scale(1)";
       }}
     >
-      <span style={getStyle()}>{children}</span>
+      {children}
     </button>
   );
 }

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import SleepTimePicker from "./components/SleepTimePicker";
+import Button from "./components/Button";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
@@ -410,7 +411,7 @@ export default function Home() {
     return (
       <div style={{ padding: 20 }}>
         <h2>ログインしてください</h2>
-        <button onClick={login} style={buttonStyle}>Googleでログイン</button>
+        <Button onClick={login}>Googleでログイン</Button>
       </div>
     );
   }
@@ -426,7 +427,7 @@ export default function Home() {
           style={inputStyle}
         />
 
-        <button onClick={registerName} style={buttonStyle}>登録</button>
+        <Button onClick={registerName}>登録</Button>
       </div>
     );
   }
@@ -453,14 +454,14 @@ export default function Home() {
       {user ? (
         <div>
           <p>ログイン中：{user?.name}</p>
-          <button onClick={logout} style={buttonStyle}>
+          <Button onClick={logout}>
             ログアウト
-          </button>
+          </Button>
         </div>
       ) : (
-        <button onClick={login} style={buttonStyle}>
+        <Button onClick={login}>
           Googleでログイン
-        </button>
+        </Button>
       )}
 
       <hr style={{ margin: 24 }} />
@@ -602,9 +603,9 @@ export default function Home() {
             <p>選択中：{satisfaction}</p>
           </div>
 
-          <button onClick={saveData} style={buttonStyle}>
+          <Button onClick={saveData}>
             保存
-          </button>
+          </Button>
         </div>
       )}
 
@@ -668,24 +669,18 @@ export default function Home() {
 
       {/* 週切替 */}
       {user && (
-        <div style={{ marginBottom: 10 }}>
-          <button onClick={() => setWeekOffset(weekOffset - 1)} style={buttonStyle}>
-            ← 前の週
-          </button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setWeekOffset(-1)}>
+            前の週
+          </Button>
 
-          <button
-            onClick={() => setWeekOffset(0)}
-            style={{
-              ...buttonStyle,
-              margin: "0 10px",
-            }}
-          >
+          <Button variant="secondary" onClick={() => setWeekOffset(0)}>
             今週
-          </button>
+          </Button>
 
-          <button onClick={() => setWeekOffset(weekOffset + 1)} style={buttonStyle}>
-            次の週 →
-          </button>
+          <Button variant="secondary" onClick={() => setWeekOffset(1)}>
+            次の週
+          </Button>
         </div>
       )}
 
