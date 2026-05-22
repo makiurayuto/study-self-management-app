@@ -420,7 +420,7 @@ export default function Home() {
 
           <div>
             <p>満足度</p>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
               {["◎", "○", "△", "×"].map((s) => (
                 <button
                   key={s}
@@ -480,8 +480,8 @@ export default function Home() {
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                minWidth: 500,
-                fontSize: 12,
+                minWidth: 350,
+                fontSize: 10,
               }}
             >
               <thead>
@@ -505,7 +505,7 @@ export default function Home() {
                     <tr key={day.date}>
                       <td style={tdStyle}>{day.displayDate}</td>
                       <td style={tdStyle}>{day.dayName}</td>
-                      <td style={tdStyle}>{log?.studyTime || ""}</td>
+                      <td style={tdStyle}>{log?.studyTime ?? ""}</td>
                       <td style={tdStyle}>{log?.phoneTime || ""}</td>
                       <td style={tdStyle}>{log?.sleepTime || ""}</td>
                       <td style={tdStyle}>{log?.satisfaction || ""}</td>
@@ -527,6 +527,7 @@ const inputStyle = {
   border: "1px solid #ccc",
   borderRadius: 8,
   width: "100%",
+  boxSizing: "border-box" as const,
 };
 
 const buttonStyle = {
