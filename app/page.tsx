@@ -427,7 +427,7 @@ export default function Home() {
           style={inputStyle}
         />
 
-        <Button onClick={registerName}>登録</Button>
+        <Button variant="primary" onClick={registerName}>登録</Button>
       </div>
     );
   }
@@ -454,12 +454,12 @@ export default function Home() {
       {user ? (
         <div>
           <p>ログイン中：{user?.name}</p>
-          <Button onClick={logout}>
+          <Button variant="secondary" onClick={logout}>
             ログアウト
           </Button>
         </div>
       ) : (
-        <Button onClick={login}>
+        <Button variant="primary" onClick={login}>
           Googleでログイン
         </Button>
       )}
@@ -603,7 +603,7 @@ export default function Home() {
             <p>選択中：{satisfaction}</p>
           </div>
 
-          <Button onClick={saveData}>
+          <Button variant="primary" onClick={saveData}>
             保存
           </Button>
         </div>

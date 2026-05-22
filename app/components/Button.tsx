@@ -36,7 +36,7 @@ export default function Button({
   const primary: CSSProperties = {
     background: color,
     color: "white",
-    boxShadow: "0 6px 16px rgba(79,70,229,0.25)",
+    boxShadow: "0 8px 20px rgba(79,70,229,0.25)",
   };
 
   const secondary: CSSProperties = {
@@ -51,7 +51,7 @@ export default function Button({
     WebkitBackdropFilter: "blur(12px)",
     color: "#111",
     border: "1px solid rgba(255,255,255,0.3)",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
   };
 
   const getStyle = () => {
