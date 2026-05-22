@@ -49,6 +49,7 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [openSleepPicker, setOpenSleepPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const cardStyle: React.CSSProperties = {
     background: "var(--card)",
@@ -112,6 +113,14 @@ export default function Home() {
     });
 
     setStep(data.role === "teacher" ? "teacher" : "app");
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+
+    await signInWithPopup(auth, provider);
+
+    setLoading(false);
   };
 
   // =====================
@@ -416,6 +425,14 @@ export default function Home() {
     );
   }
 
+  if (step === "loading") {
+    return (
+      <div>
+        <p>移動中...</p>
+      </div>
+    );
+  }
+
   if (step === "name") {
     return (
       <div style={{ padding: 20 }}>
@@ -442,6 +459,7 @@ export default function Home() {
       style={{
         minHeight: "100vh",
         background: "var(--bg)",
+        padding: "0 16px",
       }}
     >
       <div style={{ padding: "0 16px" }}>
@@ -683,7 +701,7 @@ export default function Home() {
 
         <div
         style={{ paddingBottom: 40 }}>
-          
+
         </div>
       </div>
     </div>
