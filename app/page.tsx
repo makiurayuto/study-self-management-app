@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -21,9 +22,12 @@ export default function Home() {
   name: string;
   role: "student" | "teacher";
   };
+
   const [user, setUser] = useState<AppUser | null>(null);
 
   const [step, setStep] = useState("loading");
+
+  const router = useRouter();
 
   console.log("step:", step);
   console.log("user:", user);
@@ -31,7 +35,7 @@ export default function Home() {
   const [tempName, setTempName] = useState("");
 
   const [date, setDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toLocaleDateString("sv-SE")
   );
 
   const [studyTime, setStudyTime] = useState("");
@@ -161,10 +165,47 @@ export default function Home() {
   };
 
   // =====================
+  // 日付変更関数
+  // =====================
+  const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value;
+
+    setDate(newDate);
+
+    if (!user) return;
+
+    const ref = doc(
+      db,
+      "weeklyLogs",
+      `${user.uid}_${newDate}`
+    );
+
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      const data = snap.data();
+
+      setStudyTime(data.studyTime?.toString() ?? "");
+      setPhoneTime(data.phoneTime?.toString() ?? "");
+      setSleepTime(data.sleepTime ?? "");
+      setSatisfaction(data.satisfaction ?? "");
+    } else {
+      setStudyTime("");
+      setPhoneTime("");
+      setSleepTime("");
+      setSatisfaction("");
+    }
+  };
+
+  // =====================
   // 1日読み込み（そのまま維持）
   // =====================
   const loadData = async (uid: string, d: string) => {
-    const ref = doc(db, "weeklyLogs", `${uid}_${d}`);
+    const ref = doc(
+      db,
+      "weeklyLogs",
+      `${uid}_${d}`
+    );
     const snap = await getDoc(ref);
 
     if (snap.exists()) {
@@ -180,18 +221,6 @@ export default function Home() {
       setSatisfaction("");
     }
   };
-
-  useEffect(() => {
-    if (user) fetchLogs(user.uid);
-  }, [user]);
-
-
-
-  useEffect(() => {
-    if (user && date) loadData(user.uid, date);
-  }, [user, date]);
-
-
 
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (u) => {
@@ -219,11 +248,21 @@ export default function Home() {
         role: data.role,
       });
 
-      setStep("app");
+      setStep(data.role === "teacher" ? "teacher" : "app");
     });
 
     return () => unsub();
   }, []);
+
+  useEffect(() => {
+    if (user?.role === "teacher") {
+      router.push("/teacher");
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchLogs(user.uid);
+  }, [user]);
 
   // =====================
   // 週生成（そのまま）
@@ -243,8 +282,13 @@ export default function Home() {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
 
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+
+      const formatted = `${yyyy}-${mm}-${dd}`;
       week.push({
-        date: d.toISOString().split("T")[0],
+        date: formatted,
         dayName: ["日", "月", "火", "水", "木", "金", "土"][d.getDay()],
         displayDate: d.getDate() + "日",
       });
@@ -308,8 +352,10 @@ export default function Home() {
   }
 
   if (step === "teacher") {
-    return <div>👨‍🏫 先生画面（管理画面）</div>;
+    router.push("/teacher");
+    return <div>移動中...</div>;
   }
+
   return (
     <div
       style={{
@@ -346,8 +392,7 @@ export default function Home() {
           <input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={inputStyle}
+            onChange={handleDateChange}
           />
 
           <input
@@ -452,8 +497,10 @@ export default function Home() {
 
               <tbody>
                 {weekDates.map((day) => {
-                  const log = logs.find((l) => l.date === day.date);
 
+                  const log = logs.find((l) => {
+                    return l.date === day.date;
+                  });
                   return (
                     <tr key={day.date}>
                       <td style={tdStyle}>{day.displayDate}</td>
