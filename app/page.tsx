@@ -143,6 +143,16 @@ export default function Home() {
   // 保存（修正済み）
   // =====================
   const saveData = async () => {
+    if (
+      !studyTime ||
+      !phoneTime ||
+      !sleepTime ||
+      !satisfaction
+    ) {
+      alert("未入力があります");
+      return;
+    }
+
     if (!user) return alert("ログインしてください");
 
     try {
