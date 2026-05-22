@@ -432,6 +432,9 @@ export default function Home() {
         background: "var(--bg)",
         color: "var(--text)",
         minHeight: "100vh",
+        padding: "16px 20px",
+        maxWidth: 500,
+        margin: "0 auto",
       }}
     >
 
