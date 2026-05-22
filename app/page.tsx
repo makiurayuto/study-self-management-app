@@ -115,14 +115,6 @@ export default function Home() {
     setStep(data.role === "teacher" ? "teacher" : "app");
   };
 
-  const handleLogin = async () => {
-    setLoading(true);
-
-    await signInWithPopup(auth, provider);
-
-    setLoading(false);
-  };
-
   // =====================
   // logout
   // =====================
@@ -462,247 +454,245 @@ export default function Home() {
         padding: "0 16px",
       }}
     >
-      <div style={{ padding: "0 16px" }}>
 
-        <h1>勉強時間自己管理表</h1>
+      <h1>勉強時間自己管理表</h1>
 
-        {user ? (
-          <div>
-            <p>ログイン中：{user?.name}</p>
-            <Button variant="secondary" onClick={logout}>
-              ログアウト
-            </Button>
-          </div>
-        ) : (
-          <Button variant="primary" onClick={login}>
-            Googleでログイン
+      {user ? (
+        <div>
+          <p>ログイン中：{user?.name}</p>
+          <Button variant="secondary" onClick={logout}>
+            ログアウト
           </Button>
-        )}
+        </div>
+      ) : (
+        <Button variant="primary" onClick={login}>
+          Googleでログイン
+        </Button>
+      )}
 
-        <hr style={{ margin: 24 }} />
+      <hr style={{ margin: 24 }} />
 
-        {/* 入力 */}
-        {user && (
-          <div 
-            style={{ 
-              display: "flex", 
-              flexDirection: "column",
-              gap: 24,
+      {/* 入力 */}
+      {user && (
+        <div 
+          style={{ 
+            display: "flex", 
+            flexDirection: "column",
+            gap: 24,
+            padding: 16,
+          }}>
+
+          <h2>記録入力</h2>
+            <div style={cardStyle}>
+              <div style={{ fontWeight: "bold" }}>
+                📅 日付
+              </div>
+
+              <input
+                type="date"
+                value={date}
+                onChange={handleDateChange}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1px solid var(--border)",
+                  background: "var(--bg)",
+                  color: "var(--text)",
+                  fontSize: 16,
+                  outline: "none",
+                  boxSizing: "border-box",
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                }}
+              />
+            </div>
+
+          <div
+            style={{
+              background: "var(--card)",
+              borderRadius: 12,
               padding: 16,
-            }}>
+              boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+          <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
 
-            <h2>記録入力</h2>
-              <div style={cardStyle}>
-                <div style={{ fontWeight: "bold" }}>
-                  📅 日付
-                </div>
+            <input
+              type="number"
+              value={studyTime}
+              onChange={(e) => setStudyTime(e.target.value)}
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                background: "var(--bg)",
+                outline: "none",
+              }}
+            />
+          </div>
+          
+          <div style={cardStyle}>
+            <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
 
-                <input
-                  type="date"
-                  value={date}
-                  onChange={handleDateChange}
-                  style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: "1px solid var(--border)",
-                    background: "var(--bg)",
-                    color: "var(--text)",
-                    fontSize: 16,
-                    outline: "none",
-                    boxSizing: "border-box",
-                    appearance: "none",
-                    WebkitAppearance: "none",
+            <input
+              type="number"
+              value={phoneTime}
+              onChange={(e) => setPhoneTime(e.target.value)}
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                background: "var(--bg)",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div style={cardStyle} onClick={() => setOpenSleepPicker(true)}>
+            <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
+
+            <div
+              style={{
+                marginTop: 8,
+                padding: 12,
+                borderRadius: 10,
+                background: "var(--bg)",
+                border: "1px solid var(--border)",
+                fontSize: 16,
+              }}
+            >
+              {sleepTime || "未選択"}
+            </div>
+          </div>
+          {openSleepPicker && (
+            <div style={overlayStyle} onClick={() => setOpenSleepPicker(false)}>
+              <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+                
+                <SleepTimePicker
+                  value={sleepTime}
+                  onChange={(v) => {
+                    setSleepTime(v);
+                    setOpenSleepPicker(false);
                   }}
                 />
-              </div>
 
-            <div
-              style={{
-                background: "var(--card)",
-                borderRadius: 12,
-                padding: 16,
-                boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-              }}
-            >
-            <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
-
-              <input
-                type="number"
-                value={studyTime}
-                onChange={(e) => setStudyTime(e.target.value)}
-                style={{
-                  padding: 12,
-                  borderRadius: 8,
-                  background: "var(--bg)",
-                  outline: "none",
-                }}
-              />
-            </div>
-            
-            <div style={cardStyle}>
-              <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
-
-              <input
-                type="number"
-                value={phoneTime}
-                onChange={(e) => setPhoneTime(e.target.value)}
-                style={{
-                  padding: 12,
-                  borderRadius: 8,
-                  background: "var(--bg)",
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            <div style={cardStyle} onClick={() => setOpenSleepPicker(true)}>
-              <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
-
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: 12,
-                  borderRadius: 10,
-                  background: "var(--bg)",
-                  border: "1px solid var(--border)",
-                  fontSize: 16,
-                }}
-              >
-                {sleepTime || "未選択"}
               </div>
             </div>
-            {openSleepPicker && (
-              <div style={overlayStyle} onClick={() => setOpenSleepPicker(false)}>
-                <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-                  
-                  <SleepTimePicker
-                    value={sleepTime}
-                    onChange={(v) => {
-                      setSleepTime(v);
-                      setOpenSleepPicker(false);
-                    }}
-                  />
+          )}
 
-                </div>
-              </div>
-            )}
-
-            <div>
-              <p>満足度</p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
-                {["◎", "○", "△", "×"].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSatisfaction(s)}
-                    style={{
-                      fontSize: 24,
-                      padding: "10px 16px",
-                      borderRadius: 8,
-                      border:
-                        satisfaction === s
-                          ? "2px solid black"
-                          : "1px solid #ccc",
-                      background:
-                        satisfaction === s ? "#f0f0f0" : "white",
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-
-              <p>選択中：{satisfaction}</p>
-            </div>
-
-            <Button variant="primary" onClick={saveData}>
-              保存
-            </Button>
-          </div>
-        )}
-
-        <hr style={{ margin: 24 }} />
-
-        {/* 表 */}
-        {user && (
           <div>
-            <h2>1週間記録</h2>
-
-            <div
-              style={{
-                overflowX: "hidden",
-                marginBottom: 24,
-                touchAction: "pan-x",
-                userSelect: "none",
-              }}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
-              <table
-                style={{
-                  width: "95%",
-                  borderCollapse: "collapse",
-                  fontSize: 10,
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th style={thStyle}>{weekMonth}</th>
-                    <th style={thStyle}>曜日</th>
-                    <th style={thStyle}>勉強</th>
-                    <th style={thStyle}>スマホ</th>
-                    <th style={thStyle}>就寝</th>
-                    <th style={thStyle}>満足度</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {weekDates.map((day) => {
-
-                    const log = logs.find((l) => {
-                      return l.date === day.date;
-                    });
-                    return (
-                      <tr key={day.date}>
-                        <td style={tdStyle}>{day.displayDate}</td>
-                        <td style={tdStyle}>{day.dayName}</td>
-                        <td style={tdStyle}>{log?.studyTime ?? ""}</td>
-                        <td style={tdStyle}>{log?.phoneTime || ""}</td>
-                        <td style={tdStyle}>{log?.sleepTime || ""}</td>
-                        <td style={tdStyle}>{log?.satisfaction || ""}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <p>満足度</p>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
+              {["◎", "○", "△", "×"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSatisfaction(s)}
+                  style={{
+                    fontSize: 24,
+                    padding: "10px 16px",
+                    borderRadius: 8,
+                    border:
+                      satisfaction === s
+                        ? "2px solid black"
+                        : "1px solid #ccc",
+                    background:
+                      satisfaction === s ? "#f0f0f0" : "white",
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
+
+            <p>選択中：{satisfaction}</p>
           </div>
-        )}
 
-        {/* 週切替 */}
-        {user && (
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => setWeekOffset(-1)}>
-              前の週
-            </Button>
-
-            <Button variant="secondary" onClick={() => setWeekOffset(0)}>
-              今週
-            </Button>
-
-            <Button variant="secondary" onClick={() => setWeekOffset(1)}>
-              次の週
-            </Button>
-          </div>
-        )}
-
-        <div
-        style={{ paddingBottom: 40 }}>
-
+          <Button variant="primary" onClick={saveData}>
+            保存
+          </Button>
         </div>
+      )}
+
+      <hr style={{ margin: 24 }} />
+
+      {/* 表 */}
+      {user && (
+        <div>
+          <h2>1週間記録</h2>
+
+          <div
+            style={{
+              overflowX: "hidden",
+              marginBottom: 24,
+              touchAction: "pan-x",
+              userSelect: "none",
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <table
+              style={{
+                width: "95%",
+                borderCollapse: "collapse",
+                fontSize: 10,
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={thStyle}>{weekMonth}</th>
+                  <th style={thStyle}>曜日</th>
+                  <th style={thStyle}>勉強</th>
+                  <th style={thStyle}>スマホ</th>
+                  <th style={thStyle}>就寝</th>
+                  <th style={thStyle}>満足度</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {weekDates.map((day) => {
+
+                  const log = logs.find((l) => {
+                    return l.date === day.date;
+                  });
+                  return (
+                    <tr key={day.date}>
+                      <td style={tdStyle}>{day.displayDate}</td>
+                      <td style={tdStyle}>{day.dayName}</td>
+                      <td style={tdStyle}>{log?.studyTime ?? ""}</td>
+                      <td style={tdStyle}>{log?.phoneTime || ""}</td>
+                      <td style={tdStyle}>{log?.sleepTime || ""}</td>
+                      <td style={tdStyle}>{log?.satisfaction || ""}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 週切替 */}
+      {user && (
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setWeekOffset(-1)}>
+            前の週
+          </Button>
+
+          <Button variant="secondary" onClick={() => setWeekOffset(0)}>
+            今週
+          </Button>
+
+          <Button variant="secondary" onClick={() => setWeekOffset(1)}>
+            次の週
+          </Button>
+        </div>
+      )}
+
+      <div
+      style={{ paddingBottom: 40 }}>
+
       </div>
     </div>
   );
