@@ -473,7 +473,12 @@ export default function Home() {
               type="number"
               value={phoneTime}
               onChange={(e) => setPhoneTime(e.target.value)}
-              style={inputStyle}
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                background: "var(--bg)",
+                outline: "none",
+              }}
             />
           </div>
 
@@ -483,7 +488,12 @@ export default function Home() {
             <select
               value={sleepTime}
               onChange={(e) => setSleepTime(e.target.value)}
-              style={inputStyle}
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                background: "var(--bg)",
+                outline: "none",
+              }}
             >
               <option value="" disabled>
                 選択してください
