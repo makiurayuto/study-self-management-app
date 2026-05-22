@@ -516,25 +516,25 @@ export default function Home() {
             />
           </div>
 
-          {openSleepPicker && (
-        <div style={modalOverlay} onClick={() => setOpenSleepPicker(false)}>
-          <div style={modalBox} onClick={(e) => e.stopPropagation()}>
-            
-            <div style={{ fontWeight: "bold", marginBottom: 10 }}>
-              🌙 就寝時間を選択
-            </div>
-
-            <SleepTimePicker
-              value={sleepTime}
-              onChange={(v) => {
-                setSleepTime(v);
-                setOpenSleepPicker(false);
-              }}
-            />
-
+          <div style={cardStyle} onClick={() => setOpenSleepPicker(true)}>
+            <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
+            <p>{sleepTime || "未選択"}</p>
           </div>
-        </div>
-      )}
+          {openSleepPicker && (
+            <div style={overlayStyle} onClick={() => setOpenSleepPicker(false)}>
+              <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+                
+                <SleepTimePicker
+                  value={sleepTime}
+                  onChange={(v) => {
+                    setSleepTime(v);
+                    setOpenSleepPicker(false);
+                  }}
+                />
+
+              </div>
+            </div>
+          )}
 
           <div>
             <p>満足度</p>
@@ -698,4 +698,24 @@ const modalBox = {
   borderRadius: 16,
   width: "90%",
   maxWidth: 320,
+};
+
+const overlayStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "flex-end",
+  justifyContent: "center",
+  zIndex: 9999,
+};
+
+const modalStyle: React.CSSProperties = {
+  width: "100%",
+  maxWidth: 500,
+  background: "var(--card)",
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  padding: 20,
+  maxHeight: "60vh",
 };
