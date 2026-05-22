@@ -57,8 +57,9 @@ export default function Home() {
     display: "flex",
     flexDirection: "column",
     gap: 10,
+    cursor: "pointer",
   };
-  
+    
 
   const lineStyle: React.CSSProperties = {
     position: "absolute",
@@ -470,7 +471,15 @@ export default function Home() {
                 type="date"
                 value={date}
                 onChange={handleDateChange}
-                style={inputStyle}
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  fontSize: 16,
+                }}
               />
             </div>
 
@@ -516,9 +525,15 @@ export default function Home() {
             />
           </div>
 
-          <div style={cardStyle} onClick={() => setOpenSleepPicker(true)}>
+          <div
+            style={cardStyle}
+            onClick={() => setOpenSleepPicker(true)}
+          >
             <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
-            <p>{sleepTime || "未選択"}</p>
+
+            <div style={{ marginTop: 8, fontSize: 16 }}>
+              {sleepTime || "未選択"}
+            </div>
           </div>
           {openSleepPicker && (
             <div style={overlayStyle} onClick={() => setOpenSleepPicker(false)}>
