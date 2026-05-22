@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
+import SleepTimePicker from "./components/SleepTimePicker";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
@@ -15,7 +16,6 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import SleepTimePicker from "@/components/SleepTimePicker";
 
 export default function Home() {
   type AppUser = {
