@@ -15,6 +15,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import SleepTimePicker from "@/components/SleepTimePicker";
 
 export default function Home() {
   type AppUser = {
@@ -337,6 +338,21 @@ export default function Home() {
     }
   };
 
+  const sleepOptions = Array.from({ length: 96 }).map((_, i) => {
+    const h = String(Math.floor(i / 4)).padStart(2, "0");
+    const m = String((i % 4) * 15).padStart(2, "0");
+    return `${h}:${m}`;
+  });
+
+  // 20:00 = 80番目
+  const startIndex = 80;
+
+  // 20:00 → 19:45 の順に並べる
+  const reorderedSleepOptions = [
+    ...sleepOptions.slice(startIndex),
+    ...sleepOptions.slice(0, startIndex),
+  ];
+
 
   const weekDates = getWeekDates(weekOffset);
 
@@ -434,11 +450,16 @@ export default function Home() {
           }}>
 
           <h2>記録入力</h2>
-            <input
-              type="date"
-              value={date}
-              onChange={handleDateChange}
-            />
+            <div style={cardStyle}>
+              <div style={{ fontWeight: "bold" }}>📅 日付</div>
+
+              <input
+                type="date"
+                value={date}
+                onChange={handleDateChange}
+                style={inputStyle}
+              />
+            </div>
 
           <div
             style={{
@@ -485,31 +506,10 @@ export default function Home() {
           <div style={cardStyle}>
             <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
 
-            <select
+            <SleepTimePicker
               value={sleepTime}
-              onChange={(e) => setSleepTime(e.target.value)}
-              style={{
-                padding: 12,
-                borderRadius: 8,
-                background: "var(--bg)",
-                outline: "none",
-              }}
-            >
-              <option value="" disabled>
-                選択してください
-              </option>
-
-              {Array.from({ length: 96 }).map((_, i) => {
-                const h = String(Math.floor(i / 4)).padStart(2, "0");
-                const m = String((i % 4) * 15).padStart(2, "0");
-
-                return (
-                  <option key={i} value={`${h}:${m}`}>
-                    {h}:{m}
-                  </option>
-                );
-              })}
-            </select>
+              onChange={setSleepTime}
+            />
           </div>
 
           <div>
