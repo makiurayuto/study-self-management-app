@@ -405,7 +405,18 @@ export default function Home() {
 
 // 👇 名前入力画面
   if (step === "loading") {
-    return <div>読み込み中...</div>;
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 16,
+        color: "#666",
+      }}>
+        <p>移動中...</p>
+      </div>
+    );
   }
 
   if (step === "login") {
@@ -413,14 +424,6 @@ export default function Home() {
       <div style={{ padding: 20 }}>
         <h2>ログインしてください</h2>
         <Button onClick={login}>Googleでログイン</Button>
-      </div>
-    );
-  }
-
-  if (step === "loading") {
-    return (
-      <div>
-        <p>移動中...</p>
       </div>
     );
   }
@@ -441,10 +444,11 @@ export default function Home() {
     );
   }
 
-  if (step === "teacher") {
-    router.push("/teacher");
-    return <div>移動中...</div>;
-  }
+  useEffect(() => {
+    if (step === "teacher") {
+      router.push("/teacher");
+    }
+  }, [step]);
 
   return (
     <div
