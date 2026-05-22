@@ -40,7 +40,7 @@ export default function Home() {
 
   const [studyTime, setStudyTime] = useState("");
   const [phoneTime, setPhoneTime] = useState("");
-  const [sleepTime, setSleepTime] = useState("");
+  const [sleepTime, setSleepTime] = useState("00:00");
   const [satisfaction, setSatisfaction] = useState("");
 
   const [logs, setLogs] = useState<any[]>([]);
@@ -316,12 +316,12 @@ export default function Home() {
     const diff = touchStartX - touchEndX;
 
     // 左スワイプ
-    if (diff > 50) {
+    if (diff > 80) {
       setWeekOffset((prev) => prev + 1);
     }
 
     // 右スワイプ
-    if (diff < -50) {
+    if (diff < -80) {
       setWeekOffset((prev) => prev - 1);
     }
   };
@@ -416,37 +416,64 @@ export default function Home() {
 
       {/* 入力 */}
       {user && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div 
+          style={{ 
+            display: "flex", 
+            flexDirection: "column",
+            gap: 20,
+          }}>
+
           <h2>記録入力</h2>
+            <input
+              type="date"
+              value={date}
+              onChange={handleDateChange}
+            />
 
-          <input
-            type="date"
-            value={date}
-            onChange={handleDateChange}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label>勉強時間</label>
+            <input
+                type="number"
+                value={studyTime}
+                onChange={(e) => setStudyTime(e.target.value)}
+                style={inputStyle}
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="勉強時間"
-            value={studyTime}
-            onChange={(e) => setStudyTime(e.target.value)}
-            style={inputStyle}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label>スマホ時間</label>
+            <input
+              type="number"
+              value={phoneTime}
+              onChange={(e) => setPhoneTime(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="スマホ時間"
-            value={phoneTime}
-            onChange={(e) => setPhoneTime(e.target.value)}
-            style={inputStyle}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontWeight: "bold" }}>就寝時間</label>
 
-          <input
-            type="time"
-            value={sleepTime}
-            onChange={(e) => setSleepTime(e.target.value)}
-            style={inputStyle}
-          />
+            <select
+              value={sleepTime}
+              onChange={(e) => setSleepTime(e.target.value)}
+              style={inputStyle}
+            >
+              <option value="" disabled>
+                就寝時間を選択
+              </option>
+
+              {Array.from({ length: 96 }).map((_, i) => {
+                const h = String(Math.floor(i / 4)).padStart(2, "0");
+                const m = String((i % 4) * 15).padStart(2, "0");
+
+                return (
+                  <option key={i} value={`${h}:${m}`}>
+                    {h}:{m}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
 
           <div>
             <p>満足度</p>
@@ -509,6 +536,8 @@ export default function Home() {
             style={{
               overflowX: "hidden",
               marginBottom: 24,
+              touchAction: "pan-x",
+              userSelect: "none",
             }}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
