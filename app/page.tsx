@@ -47,19 +47,20 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
 
-  const cardStyle = {
-    background: "#fff",
+  const cardStyle: React.CSSProperties = {
+    background: "var(--card)",
+    border: "1px solid var(--border)",
     borderRadius: 12,
     padding: 16,
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-    border: "1px solid #eee",
-    transition: "0.2s",
-    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
   };
   
 
   // =====================
-  // login
+  //ログイン
   // =====================
   const login = async () => {
     console.log("login clicked");
@@ -399,17 +400,12 @@ export default function Home() {
 
   return (
     <div
-        style={{
-          background: "#f5f6f8",
-          minHeight: "100vh",
-          maxWidth: 500,
-          margin: "0 auto",
-          padding: 16,
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
+      style={{
+        background: "var(--bg)",
+        color: "var(--text)",
+        minHeight: "100vh",
+      }}
+    >
 
       <h1>勉強時間自己管理表</h1>
 
@@ -446,7 +442,7 @@ export default function Home() {
 
           <div
             style={{
-              background: "white",
+              background: "var(--card)",
               borderRadius: 12,
               padding: 16,
               boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
@@ -464,7 +460,8 @@ export default function Home() {
               style={{
                 padding: 12,
                 borderRadius: 8,
-                border: "1px solid #ddd",
+                background: "var(--bg)",
+                minHeight: "100vh",
                 outline: "none",
               }}
             />
@@ -620,11 +617,12 @@ export default function Home() {
 const inputStyle = {
   padding: 12,
   borderRadius: 8,
-  border: "1px solid #ddd",
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+  color: "var(--text)",
   outline: "none",
   fontSize: 14,
 };
-
 const buttonStyle = {
   padding: "12px 16px",
   borderRadius: 8,
