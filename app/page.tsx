@@ -614,7 +614,7 @@ export default function Home() {
           >
             <table
               style={{
-                width: "100%",
+                width: "95%",
                 borderCollapse: "collapse",
                 fontSize: 10,
               }}
