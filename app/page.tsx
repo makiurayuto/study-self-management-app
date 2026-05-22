@@ -261,6 +261,12 @@ export default function Home() {
   };
 
   useEffect(() => {
+  if (step === "teacher") {
+    router.push("/teacher");
+  }
+}, [step]);
+
+  useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (u) => {
 
       if (!u) {
@@ -405,19 +411,19 @@ export default function Home() {
 
 // 👇 名前入力画面
   if (step === "loading") {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 16,
-        color: "#666",
-      }}>
-        <p>移動中...</p>
-      </div>
-    );
-  }
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 16,
+      color: "#666",
+    }}>
+      <p>移動中...</p>
+    </div>
+  );
+}
 
   if (step === "login") {
     return (
@@ -443,12 +449,6 @@ export default function Home() {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (step === "teacher") {
-      router.push("/teacher");
-    }
-  }, [step]);
 
   return (
     <div
