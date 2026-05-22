@@ -461,7 +461,6 @@ export default function Home() {
                 padding: 12,
                 borderRadius: 8,
                 background: "var(--bg)",
-                minHeight: "100vh",
                 outline: "none",
               }}
             />
