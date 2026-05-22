@@ -45,6 +45,7 @@ export default function Home() {
 
   const [logs, setLogs] = useState<any[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(0);
 
   // =====================
   // login
@@ -267,6 +268,7 @@ export default function Home() {
   // =====================
   // 週生成（そのまま）
   // =====================
+
   const getWeekDates = (offset = 0) => {
     const today = new Date();
     const day = today.getDay();
@@ -296,6 +298,34 @@ export default function Home() {
 
     return week;
   };
+
+  // =====================
+  // 表スクロール関数
+  // =====================
+  const handleTouchStart = (
+    e: React.TouchEvent<HTMLDivElement>
+  ) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (
+    e: React.TouchEvent<HTMLDivElement>
+  ) => {
+    const touchEndX = e.changedTouches[0].clientX;
+
+    const diff = touchStartX - touchEndX;
+
+    // 左スワイプ
+    if (diff > 50) {
+      setWeekOffset((prev) => prev + 1);
+    }
+
+    // 右スワイプ
+    if (diff < -50) {
+      setWeekOffset((prev) => prev - 1);
+    }
+  };
+
 
   const weekDates = getWeekDates(weekOffset);
 
@@ -477,15 +507,16 @@ export default function Home() {
 
           <div
             style={{
-              overflowX: "auto",
+              overflowX: "hidden",
               marginBottom: 24,
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
             <table
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                minWidth: 350,
                 fontSize: 10,
               }}
             >
