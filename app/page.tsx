@@ -47,6 +47,7 @@ export default function Home() {
   const [logs, setLogs] = useState<any[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
+  const [openSleepPicker, setOpenSleepPicker] = useState(false);
 
   const cardStyle: React.CSSProperties = {
     background: "var(--card)",
@@ -58,6 +59,18 @@ export default function Home() {
     gap: 10,
   };
   
+
+  const lineStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "50%",
+    left: 0,
+    right: 0,
+    height: 2,
+    transform: "translateY(-50%)",
+    borderTop: "1px solid #ddd",
+    borderBottom: "1px solid #ddd",
+    pointerEvents: "none",
+  };
 
   // =====================
   //ログイン
@@ -503,20 +516,25 @@ export default function Home() {
             />
           </div>
 
-          <div style={cardStyle}>
-              <div style={{ fontWeight: "bold", marginBottom: 8 }}>
-                🌙 就寝時間
-              </div>
+          {openSleepPicker && (
+        <div style={modalOverlay} onClick={() => setOpenSleepPicker(false)}>
+          <div style={modalBox} onClick={(e) => e.stopPropagation()}>
+            
+            <div style={{ fontWeight: "bold", marginBottom: 10 }}>
+              🌙 就寝時間を選択
+            </div>
 
-              <SleepTimePicker
-                value={sleepTime}
-                onChange={setSleepTime}
-              />
+            <SleepTimePicker
+              value={sleepTime}
+              onChange={(v) => {
+                setSleepTime(v);
+                setOpenSleepPicker(false);
+              }}
+            />
 
-              <p style={{ marginTop: 8 }}>
-                選択中：{sleepTime || "未選択"}
-              </p>
           </div>
+        </div>
+      )}
 
           <div>
             <p>満足度</p>
@@ -659,4 +677,25 @@ const tdStyle = {
   border: "1px solid #ccc",
   padding: 6,
   textAlign: "center" as const,
+};
+
+const modalOverlay = {
+  position: "fixed" as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: "rgba(0,0,0,0.4)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1000,
+};
+
+const modalBox = {
+  background: "var(--card)",
+  padding: 20,
+  borderRadius: 16,
+  width: "90%",
+  maxWidth: 320,
 };
