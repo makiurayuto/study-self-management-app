@@ -46,12 +46,15 @@ export default function Home() {
   const [logs, setLogs] = useState<any[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
-  
+
   const cardStyle = {
-    background: "white",
+    background: "#fff",
     borderRadius: 12,
     padding: 16,
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    border: "1px solid #eee",
+    transition: "0.2s",
+    cursor: "pointer",
   };
   
 
@@ -395,8 +398,10 @@ export default function Home() {
   }
 
   return (
-      <div
+    <div
         style={{
+          background: "#f5f6f8",
+          minHeight: "100vh",
           maxWidth: 500,
           margin: "0 auto",
           padding: 16,
@@ -429,7 +434,7 @@ export default function Home() {
           style={{ 
             display: "flex", 
             flexDirection: "column",
-            gap: 20,
+            gap: 24,
           }}>
 
           <h2>記録入力</h2>
@@ -450,7 +455,7 @@ export default function Home() {
               gap: 8,
             }}
           >
-            <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
+          <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
 
             <input
               type="number"
@@ -608,7 +613,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      </div>
+    </div>
   );
 }
 
