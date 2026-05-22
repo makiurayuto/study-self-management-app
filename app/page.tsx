@@ -49,16 +49,16 @@ export default function Home() {
   const [touchStartX, setTouchStartX] = useState(0);
   const [openSleepPicker, setOpenSleepPicker] = useState(false);
 
-  const cardStyle: React.CSSProperties = {
-    background: "var(--card)",
-    border: "1px solid var(--border)",
-    borderRadius: 16,
-    padding: 16,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-    cursor: "pointer",
-  };
+const cardStyle: React.CSSProperties = {
+  background: "var(--card)",
+  border: "1px solid var(--border)",
+  borderRadius: 16,
+  padding: 16,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+  boxSizing: "border-box",
+};
     
 
   const lineStyle: React.CSSProperties = {
@@ -479,6 +479,7 @@ export default function Home() {
                   background: "var(--card)",
                   color: "var(--text)",
                   fontSize: 16,
+                  boxSizing: "border-box",
                 }}
               />
             </div>
@@ -525,13 +526,19 @@ export default function Home() {
             />
           </div>
 
-          <div
-            style={cardStyle}
-            onClick={() => setOpenSleepPicker(true)}
-          >
+          <div style={cardStyle} onClick={() => setOpenSleepPicker(true)}>
             <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
 
-            <div style={{ marginTop: 8, fontSize: 16 }}>
+            <div
+              style={{
+                marginTop: 8,
+                padding: 12,
+                borderRadius: 10,
+                background: "var(--bg)",
+                border: "1px solid var(--border)",
+                fontSize: 16,
+              }}
+            >
               {sleepTime || "未選択"}
             </div>
           </div>
@@ -585,23 +592,6 @@ export default function Home() {
       )}
 
       <hr style={{ margin: 24 }} />
-
-      {/* 週切替 */}
-      {user && (
-        <div style={{ marginBottom: 10 }}>
-          <button onClick={() => setWeekOffset(weekOffset - 1)}>
-            ← 前の週
-          </button>
-
-          <button onClick={() => setWeekOffset(0)} style={{ margin: "0 10px" }}>
-            今週
-          </button>
-
-          <button onClick={() => setWeekOffset(weekOffset + 1)}>
-            次の週 →
-          </button>
-        </div>
-      )}
 
       {/* 表 */}
       {user && (
@@ -658,6 +648,24 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* 週切替 */}
+      {user && (
+        <div style={{ marginBottom: 10 }}>
+          <button onClick={() => setWeekOffset(weekOffset - 1)}>
+            ← 前の週
+          </button>
+
+          <button onClick={() => setWeekOffset(0)} style={{ margin: "0 10px" }}>
+            今週
+          </button>
+
+          <button onClick={() => setWeekOffset(weekOffset + 1)}>
+            次の週 →
+          </button>
+        </div>
+      )}
+      
     </div>
   );
 }
