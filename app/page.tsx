@@ -41,7 +41,7 @@ export default function Home() {
 
   const [studyTime, setStudyTime] = useState("");
   const [phoneTime, setPhoneTime] = useState("");
-  const [sleepTime, setSleepTime] = useState("00:00");
+  const [sleepTime, setSleepTime] = useState("");
   const [satisfaction, setSatisfaction] = useState("");
 
   const [logs, setLogs] = useState<any[]>([]);
@@ -504,12 +504,18 @@ export default function Home() {
           </div>
 
           <div style={cardStyle}>
-            <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
+              <div style={{ fontWeight: "bold", marginBottom: 8 }}>
+                🌙 就寝時間
+              </div>
 
-            <SleepTimePicker
-              value={sleepTime}
-              onChange={setSleepTime}
-            />
+              <SleepTimePicker
+                value={sleepTime}
+                onChange={setSleepTime}
+              />
+
+              <p style={{ marginTop: 8 }}>
+                選択中：{sleepTime || "未選択"}
+              </p>
           </div>
 
           <div>
