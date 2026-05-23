@@ -8,8 +8,7 @@ import Button from "./components/Button";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
+  signInWithRedirect,
 } from "firebase/auth";
 import {
   collection,
@@ -78,41 +77,15 @@ export default function Home() {
   //ログイン
   // =====================
   const login = async () => {
-    console.log("login clicked");
-
     const provider = new GoogleAuthProvider();
 
-    // 🔥 重要：必ずアカウント選択させる
     provider.setCustomParameters({
       prompt: "select_account",
     });
 
-    const result = await signInWithPopup(auth, provider);
+    setStep("loading");
 
-    const u = result.user;
-
-    const ref = doc(db, "users", u.uid);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      setUser({
-        uid: u.uid,
-        name: "",
-        role: "student",
-      });
-      setStep("name");
-      return;
-    }
-
-    const data = snap.data();
-
-    setUser({
-      uid: u.uid,
-      name: data.name,
-      role: data.role,
-    });
-
-    setStep(data.role === "teacher" ? "teacher" : "app");
+    await signInWithRedirect(auth, provider);
   };
 
   // =====================
