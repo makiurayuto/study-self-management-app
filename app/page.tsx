@@ -9,6 +9,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
   signInWithRedirect,
+  signOut,
 } from "firebase/auth";
 import {
   collection,
@@ -38,7 +39,8 @@ export default function Home() {
   const [date, setDate] = useState(
     new Date().toLocaleDateString("sv-SE")
   );
-
+  const [message, setMessage] = useState("");
+  const [messageColor, setMessageColor] = useState("");
   const [studyTime, setStudyTime] = useState("");
   const [phoneTime, setPhoneTime] = useState("");
   const [sleepTime, setSleepTime] = useState("");
@@ -124,7 +126,8 @@ export default function Home() {
       !sleepTime ||
       !satisfaction
     ) {
-      alert("未入力があります");
+      setMessage("⚠ 未入力があります");
+      setMessageColor("#ef4444");
       return;
     }
 
@@ -143,7 +146,12 @@ export default function Home() {
         }
       );
 
-      alert("保存しました！");
+      setMessage("✅ 保存しました！");
+      setMessageColor("#22c55e");
+
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
 
       setStudyTime("");
       setPhoneTime("");
@@ -484,6 +492,21 @@ export default function Home() {
                 }}
               />
             </div>
+
+            {message && (
+              <div
+                style={{
+                  background: `${messageColor}15`,
+                  color: messageColor,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  fontWeight: 600,
+                  fontSize: 14,
+                }}
+              >
+                {message}
+              </div>
+            )}
 
           <div
             style={{
