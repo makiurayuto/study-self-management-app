@@ -52,6 +52,16 @@ export default function Home() {
   const [openSleepPicker, setOpenSleepPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    type: "success",
+  });
+
   const cardStyle: React.CSSProperties = {
     background: "var(--card)",
     border: "1px solid var(--border)",
@@ -430,6 +440,7 @@ export default function Home() {
       </div>
     );
   }
+  
 
   return (
     <div
@@ -439,6 +450,59 @@ export default function Home() {
         padding: "0 16px",
       }}
     >
+      {dialog.open && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setDialog({ ...dialog, open: false })}
+        >
+          <div
+            style={{
+              background: "var(--card)",
+              padding: 20,
+              borderRadius: 16,
+              width: 280,
+              textAlign: "center",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+              transform: "scale(1)",
+              animation: "pop 0.15s ease",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p
+              style={{
+                color: dialog.type === "success" ? "#22c55e" : "#ef4444",
+                fontWeight: "bold",
+                fontSize: 16,
+              }}
+            >
+              {dialog.message}
+            </p>
+
+            <button
+              onClick={() => setDialog({ ...dialog, open: false })}
+              style={{
+                marginTop: 16,
+                padding: "10px 14px",
+                borderRadius: 10,
+                background: "#4f46e5",
+                color: "white",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       <h1>勉強時間自己管理表</h1>
 
