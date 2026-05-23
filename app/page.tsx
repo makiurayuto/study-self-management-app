@@ -557,21 +557,6 @@ export default function Home() {
               />
             </div>
 
-            {message && (
-              <div
-                style={{
-                  background: `${messageColor}15`,
-                  color: messageColor,
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              >
-                {message}
-              </div>
-            )}
-
           <div
             style={{
               background: "var(--card)",
@@ -672,6 +657,20 @@ export default function Home() {
 
             <p>選択中：{satisfaction}</p>
           </div>
+
+            {message && (
+              <div style={{
+                marginBottom: 10,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: `${messageColor}15`,
+                color: messageColor,
+                fontWeight: 600,
+              }}>
+                {message}
+              </div>
+            )}
+
 
           <Button variant="primary" onClick={saveData}>
             保存
@@ -782,15 +781,17 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const thStyle = {
-  border: "1px solid #ccc",
+  border: "1px solid var(--border)",
   padding: 6,
-  background: "#f3f4f6",
+  background: "var(--card)",
+  color: "var(--text)",
   textAlign: "center" as const,
 };
 
 const tdStyle = {
-  border: "1px solid #ccc",
+  border: "1px solid var(--border)",
   padding: 6,
+  color: "var(--text)",
   textAlign: "center" as const,
 };
 
