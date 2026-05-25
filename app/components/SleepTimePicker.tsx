@@ -15,6 +15,9 @@ const sleepTimes = Array.from({ length: 96 }).map((_, i) => {
   return `${h}:${m}`;
 });
 
+const base = sleepTimes; // 00:00〜23:45
+const infinite = [...base, ...base, ...base];
+
 // 20:00開始
 const startIndex = sleepTimes.findIndex((t) => t === "20:00");
 
@@ -30,6 +33,21 @@ const infiniteOptions = [
   ...reordered,
 ];
 
+const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const el = e.currentTarget;
+  const itemHeight = 40;
+
+  const index = Math.round(el.scrollTop / itemHeight);
+
+  if (index < base.length) {
+    el.scrollTop = index + base.length * itemHeight;
+  }
+
+  if (index > base.length * 2) {
+    el.scrollTop = index - base.length * itemHeight;
+  }
+};
+
 export default function SleepTimePicker({
   value,
   onChange,
@@ -37,43 +55,37 @@ export default function SleepTimePicker({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (containerRef.current) {
-      const itemHeight = 44;
+    if (!containerRef.current) return;
 
-      // 真ん中から開始
-      containerRef.current.scrollTop =
-        reordered.length * itemHeight;
-    }
+    const itemHeight = 40;
+    containerRef.current.scrollTop = base.length * itemHeight;
   }, []);
 
   return (
-    <div style={wrapper}>
-      <div ref={containerRef} style={scrollArea}>
-        {infiniteOptions.map((time, i) => (
-          <div
-            key={i}
-            onClick={() => onChange(time)}
-            style={{
-              ...item,
-              background:
-                value === time
-                  ? "rgba(79,70,229,0.15)"
-                  : "transparent",
-
-              fontWeight:
-                value === time ? "bold" : "normal",
-            }}
-          >
-            {time}
-          </div>
-        ))}
-      </div>
-
-      <div style={centerLine} />
-      <div style={fadeTop} />
-      <div style={fadeBottom} />
+    <div
+      ref={containerRef}
+      onScroll={handleScroll}
+      style={{
+        height: 240,
+        overflowY: "scroll",
+      }}
+    >
+      {infinite.map((t, i) => (
+        <div
+          key={i}
+          onClick={() => onChange(t)}
+          style={{
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {t}
+        </div>
+      ))}
     </div>
-  );
+      );
 }
 
 const wrapper: CSSProperties = {
