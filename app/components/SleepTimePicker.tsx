@@ -34,9 +34,11 @@ export default function SleepTimePicker({ value, onChange }: Props) {
     const index = base.findIndex((t) => t === (value || "20:00"));
     const startIndex = index === -1 ? 0 : index;
 
-    ref.current.scrollTop =
-      (base.length + startIndex) * ITEM_HEIGHT;
-  }, []);
+    requestAnimationFrame(() => {
+      ref.current!.scrollTop =
+        (base.length + startIndex) * ITEM_HEIGHT;
+    });
+  }, [value]);
 
   // スクロール停止検知
   const handleScroll = () => {
@@ -44,33 +46,37 @@ export default function SleepTimePicker({ value, onChange }: Props) {
 
     const el = ref.current;
 
-    const index = Math.round(el.scrollTop / ITEM_HEIGHT);
+    // 現在のインデックス
+    const rawIndex = el.scrollTop / ITEM_HEIGHT;
+    const index = Math.round(rawIndex);
 
-    // 停止タイマー（0.1秒止まったら補正）
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    const baseLen = base.length;
 
-    timeoutRef.current = setTimeout(() => {
-      const baseLen = base.length;
+    // 0〜baseLen-1 に正規化
+    const normalizedIndex =
+      ((index % baseLen) + baseLen) % baseLen;
 
-      let newIndex = index;
+    // 中央ゾーン
+    const centerIndex = baseLen + normalizedIndex;
 
-      // 上側に行きすぎた
-      if (index < baseLen) {
-        newIndex = index + baseLen;
-      }
+    // スクロール補正（やりすぎ防止）
+    const shouldFix =
+      index < baseLen || index >= baseLen * 2;
 
-      // 下側に行きすぎた
-      if (index >= baseLen * 2) {
-        newIndex = index - baseLen;
-      }
+    if (shouldFix) {
+      requestAnimationFrame(() => {
+        if (!ref.current) return;
+        ref.current.scrollTop = centerIndex * ITEM_HEIGHT;
+      });
+    }
 
-      if (newIndex !== index) {
-        el.scrollTop = newIndex * ITEM_HEIGHT;
-      }
+    // 選択値（安定版）
+    const selected = base[normalizedIndex];
 
-      const selected = list[newIndex];
-      if (selected) onChange(selected);
-    }, 80);
+    // 連続発火防止（同じ値なら更新しない）
+    if (selected && selected !== value) {
+      onChange(selected);
+    }
   };
 
   return (
