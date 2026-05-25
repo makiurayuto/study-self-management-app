@@ -360,6 +360,14 @@ export default function Home() {
     }
   };
 
+  const timeToDecimal = (time: string) => {
+    if (!time) return null;
+
+    const [h, m] = time.split(":").map(Number);
+
+    return h + m / 60;
+  };
+
   const sleepOptions = Array.from({ length: 96 }).map((_, i) => {
     const h = String(Math.floor(i / 4)).padStart(2, "0");
     const m = String((i % 4) * 15).padStart(2, "0");
@@ -641,13 +649,32 @@ export default function Home() {
                   style={{
                     fontSize: 24,
                     padding: "10px 16px",
-                    borderRadius: 8,
+                    borderRadius: 10,
                     border:
                       satisfaction === s
-                        ? "2px solid black"
-                        : "1px solid #ccc",
+                        ? "2px solid #4f46e5"
+                        : "1px solid var(--border)",
                     background:
-                      satisfaction === s ? "#f0f0f0" : "white",
+                      satisfaction === s 
+                        ? "rgba(79,70,229,0.15)"
+                         : "var(--card)",
+
+                    color: "var(--text)",
+
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+
+                    transform:
+                      satisfaction === s
+                        ? "scale(1.05)"
+                        : "scale(1)",
+
+                    boxShadow:
+                      satisfaction === s
+                        ? "0 4px 12px rgba(79,70,229,0.25)"
+                        : "none",
+                        
                   }}
                 >
                   {s}
@@ -655,7 +682,9 @@ export default function Home() {
               ))}
             </div>
 
-            <p>選択中：{satisfaction}</p>
+            <p style={{ marginTop: 8, color: "var(--text)" }}>
+              選択中：{satisfaction || "未選択"}
+            </p>
           </div>
 
             {message && (
