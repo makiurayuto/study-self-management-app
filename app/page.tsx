@@ -643,21 +643,36 @@ export default function Home() {
           <div style={cardStyle}>
             <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
 
-            <input
-              type="time"
-              value={sleepTime}
-              onChange={(e) => setSleepTime(e.target.value)}
+            <div
               style={{
-                marginTop: 8,
-                width: "100%",
-                padding: 12,
-                borderRadius: 10,
+                height: 200,
+                overflowY: "scroll",
                 border: "1px solid var(--border)",
-                background: "var(--bg)",
-                color: "var(--text)",
-                fontSize: 16,
+                borderRadius: 10,
+                marginTop: 10,
+                scrollSnapType: "y mandatory",
               }}
-            />
+            >
+              {reorderedSleepOptions.map((t) => (
+                <div
+                  key={t}
+                  onClick={() => setSleepTime(t)}
+                  style={{
+                    padding: 12,
+                    textAlign: "center",
+                    scrollSnapAlign: "center",
+                    background: sleepTime === t ? "rgba(79,70,229,0.2)" : "transparent",
+                    fontWeight: sleepTime === t ? "bold" : "normal",
+                  }}
+                >
+                  {t}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 8 }}>
+              選択中：{sleepTime || "未選択"}
+            </div>
           </div>
 
           <div>
