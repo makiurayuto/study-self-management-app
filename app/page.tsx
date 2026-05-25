@@ -174,6 +174,7 @@ export default function Home() {
     }
   };
 
+
   // =====================
   // logs取得
   // =====================
@@ -395,6 +396,25 @@ export default function Home() {
     ...sleepOptions.slice(startIndex),
     ...sleepOptions.slice(0, startIndex),
   ];
+
+  const startHour = 20;
+
+  const timeToSleepClock = (time: string) => {
+    if (!time) return "";
+
+    const [h, m] = time.split(":").map(Number);
+
+    const totalMinutes = h * 60 + m;
+
+    const startMinutes = startHour * 60;
+
+    const result = startMinutes + totalMinutes;
+
+    const hh = Math.floor(result / 60) % 24;
+    const mm = result % 60;
+
+    return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  };
 
 
   const weekDates = getWeekDates(weekOffset);
@@ -620,37 +640,25 @@ export default function Home() {
             />
           </div>
 
-          <div style={cardStyle} onClick={() => setOpenSleepPicker(true)}>
+          <div style={cardStyle}>
             <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
 
-            <div
+            <input
+              type="time"
+              value={sleepTime}
+              onChange={(e) => setSleepTime(e.target.value)}
               style={{
                 marginTop: 8,
+                width: "100%",
                 padding: 12,
                 borderRadius: 10,
-                background: "var(--bg)",
                 border: "1px solid var(--border)",
+                background: "var(--bg)",
+                color: "var(--text)",
                 fontSize: 16,
               }}
-            >
-              {sleepTime || "未選択"}
-            </div>
+            />
           </div>
-          {openSleepPicker && (
-            <div style={overlayStyle} onClick={() => setOpenSleepPicker(false)}>
-              <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-                
-                <SleepTimePicker
-                  value={sleepTime}
-                  onChange={(v) => {
-                    setSleepTime(v);
-                    setOpenSleepPicker(false);
-                  }}
-                />
-
-              </div>
-            </div>
-          )}
 
           <div>
             <p>満足度</p>
@@ -772,7 +780,11 @@ export default function Home() {
                       <td style={tdStyle}>
                         {log?.phoneTime ? (log.phoneTime / 60).toFixed(1) + "h" : ""}
                       </td>
-                      <td style={tdStyle}>{log?.sleepTime || ""}</td>
+                      <td>
+                        {log?.sleepTime
+                          ? timeToSleepClock(log.sleepTime)
+                          : ""}
+                      </td>
                       <td style={tdStyle}>{log?.satisfaction || ""}</td>
                     </tr>
                   );
