@@ -625,52 +625,44 @@ export default function Home() {
             />
           </div>
 
-          <div style={cardStyle}>
+          <div
+            style={cardStyle}
+            onClick={() => setOpenSleepPicker(true)}
+          >
             <div style={{ fontWeight: "bold" }}>
-              🌙 就寝時間</div>
-
+              🌙 就寝時間
+            </div>
             <div
               style={{
-                height: 240,
-                overflowY: "scroll",
-                border: "1px solid var(--border)",
+                marginTop: 8,
+                padding: 12,
                 borderRadius: 10,
-                scrollSnapType: "y mandatory",
+                border: "1px solid var(--border)",
+                background: "var(--bg)",
               }}
             >
-              {[
-          ].map((t, i) => (
-            <div
-              key={`${t}-${i}`}
-              onClick={() => {
-                setSleepTime(t);
-                setOpenSleepPicker(false);
-              }}
-              style={{
-                height: 40,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                scrollSnapAlign: "center",
-                background:
-                  sleepTime === t
-                    ? "rgba(79,70,229,0.2)"
-                    : "transparent",
-                fontWeight:
-                  sleepTime === t ? "bold" : "normal",
-                cursor: "pointer",
-              }}
-            >
-              {t}
-            </div>
-          ))}
-
-            </div>
-
-            <div style={{ marginTop: 8 }}>
-              選択中：{sleepTime || "未選択"}
+              {sleepTime || "未選択"}
             </div>
           </div>
+          {openSleepPicker && (
+            <div
+              style={overlayStyle}
+              onClick={() => setOpenSleepPicker(false)}
+            >
+              <div
+                style={modalStyle}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SleepTimePicker
+                  value={sleepTime}
+                  onChange={(v) => {
+                    setSleepTime(v);
+                    setOpenSleepPicker(false);
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <p>満足度</p>
