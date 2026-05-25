@@ -18,8 +18,8 @@ const sleepTimes = Array.from({ length: 96 }).map((_, i) => {
 const base = sleepTimes; // 00:00〜23:45
 const infinite = [...base, ...base, ...base];
 
-// 20:00開始
-const startIndex = sleepTimes.findIndex((t) => t === "20:00");
+// 22:00開始
+const startIndex = sleepTimes.findIndex((t) => t === "22:00");
 
 const reordered = [
   ...sleepTimes.slice(startIndex),
@@ -33,18 +33,32 @@ const infiniteOptions = [
   ...reordered,
 ];
 
+let isAdjusting = false;
+
 const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  if (isAdjusting) return;
+
   const el = e.currentTarget;
   const itemHeight = 40;
 
   const index = Math.round(el.scrollTop / itemHeight);
 
   if (index < base.length) {
-    el.scrollTop = index + base.length * itemHeight;
+    isAdjusting = true;
+
+    requestAnimationFrame(() => {
+      el.scrollTop = index + base.length * itemHeight;
+      isAdjusting = false;
+    });
   }
 
   if (index > base.length * 2) {
-    el.scrollTop = index - base.length * itemHeight;
+    isAdjusting = true;
+
+    requestAnimationFrame(() => {
+      el.scrollTop = index - base.length * itemHeight;
+      isAdjusting = false;
+    });
   }
 };
 
@@ -59,6 +73,9 @@ export default function SleepTimePicker({
 
     const itemHeight = 40;
     containerRef.current.scrollTop = base.length * itemHeight;
+
+    containerRef.current.scrollTop =
+    (base.length + startIndex) * itemHeight;
   }, []);
 
   return (
