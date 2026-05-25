@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, db } from "@/firebase";
 import SleepTimePicker from "./components/SleepTimePicker";
 import Button from "./components/Button";
@@ -382,21 +382,6 @@ export default function Home() {
     return `${h}:${m}`;
   };
 
-  const sleepOptions = Array.from({ length: 96 }).map((_, i) => {
-    const h = String(Math.floor(i / 4)).padStart(2, "0");
-    const m = String((i % 4) * 15).padStart(2, "0");
-    return `${h}:${m}`;
-  });
-
-  // 20:00 = 80番目
-  const startIndex = 80;
-
-  // 20:00 → 19:45 の順に並べる
-  const reorderedSleepOptions = [
-    ...sleepOptions.slice(startIndex),
-    ...sleepOptions.slice(0, startIndex),
-  ];
-
   const startHour = 20;
 
   const timeToSleepClock = (time: string) => {
@@ -641,33 +626,45 @@ export default function Home() {
           </div>
 
           <div style={cardStyle}>
-            <div style={{ fontWeight: "bold" }}>🌙 就寝時間</div>
+            <div style={{ fontWeight: "bold" }}>
+              🌙 就寝時間</div>
 
             <div
               style={{
-                height: 200,
+                height: 240,
                 overflowY: "scroll",
                 border: "1px solid var(--border)",
                 borderRadius: 10,
-                marginTop: 10,
                 scrollSnapType: "y mandatory",
               }}
             >
-              {reorderedSleepOptions.map((t) => (
-                <div
-                  key={t}
-                  onClick={() => setSleepTime(t)}
-                  style={{
-                    padding: 12,
-                    textAlign: "center",
-                    scrollSnapAlign: "center",
-                    background: sleepTime === t ? "rgba(79,70,229,0.2)" : "transparent",
-                    fontWeight: sleepTime === t ? "bold" : "normal",
-                  }}
-                >
-                  {t}
-                </div>
-              ))}
+              {[
+          ].map((t, i) => (
+            <div
+              key={`${t}-${i}`}
+              onClick={() => {
+                setSleepTime(t);
+                setOpenSleepPicker(false);
+              }}
+              style={{
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                scrollSnapAlign: "center",
+                background:
+                  sleepTime === t
+                    ? "rgba(79,70,229,0.2)"
+                    : "transparent",
+                fontWeight:
+                  sleepTime === t ? "bold" : "normal",
+                cursor: "pointer",
+              }}
+            >
+              {t}
+            </div>
+          ))}
+
             </div>
 
             <div style={{ marginTop: 8 }}>

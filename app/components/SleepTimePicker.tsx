@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 
 type Props = {
@@ -8,59 +8,74 @@ type Props = {
   onChange: (v: string) => void;
 };
 
+// 15分刻み
 const sleepTimes = Array.from({ length: 96 }).map((_, i) => {
   const h = String(Math.floor(i / 4)).padStart(2, "0");
   const m = String((i % 4) * 15).padStart(2, "0");
   return `${h}:${m}`;
 });
 
+// 20:00開始
 const startIndex = sleepTimes.findIndex((t) => t === "20:00");
 
-const list = [
+const reordered = [
   ...sleepTimes.slice(startIndex),
   ...sleepTimes.slice(0, startIndex),
 ];
 
-export default function SleepTimePicker({ value, onChange }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
+// 無限ループ風
+const infiniteOptions = [
+  ...reordered,
+  ...reordered,
+  ...reordered,
+];
+
+export default function SleepTimePicker({
+  value,
+  onChange,
+}: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const itemHeight = 44;
+
+      // 真ん中から開始
+      containerRef.current.scrollTop =
+        reordered.length * itemHeight;
+    }
+  }, []);
 
   return (
     <div style={wrapper}>
-      {/* 上フェード */}
-      <div style={fadeTop} />
+      <div ref={containerRef} style={scrollArea}>
+        {infiniteOptions.map((time, i) => (
+          <div
+            key={i}
+            onClick={() => onChange(time)}
+            style={{
+              ...item,
+              background:
+                value === time
+                  ? "rgba(79,70,229,0.15)"
+                  : "transparent",
 
-      {/* 下フェード */}
-      <div style={fadeBottom} />
-
-      {/* スクロールエリア */}
-      <div ref={ref} style={scrollArea}>
-        <div style={{ paddingTop: 88, paddingBottom: 88 }}>
-          {list.map((t) => {
-            const active = value === t;
-
-            return (
-              <div
-                key={t}
-                onClick={() => onChange(t)}
-                style={{
-                  ...item,
-                  transform: active ? "scale(1.1)" : "scale(0.95)",
-                  opacity: active ? 1 : 0.35,
-                  fontWeight: active ? 600 : 400,
-                }}
-              >
-                {t}
-              </div>
-            );
-          })}
-        </div>
+              fontWeight:
+                value === time ? "bold" : "normal",
+            }}
+          >
+            {time}
+          </div>
+        ))}
       </div>
 
-      {/* 中央ライン */}
       <div style={centerLine} />
+      <div style={fadeTop} />
+      <div style={fadeBottom} />
     </div>
   );
 }
+
 const wrapper: CSSProperties = {
   position: "relative",
   height: 220,
@@ -82,6 +97,7 @@ const item: CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  scrollSnapAlign: "center",
   transition: "0.15s",
   fontSize: 18,
   cursor: "pointer",
@@ -94,6 +110,8 @@ const centerLine: CSSProperties = {
   right: 0,
   height: 44,
   transform: "translateY(-50%)",
+  borderTop: "1px solid var(--border)",
+  borderBottom: "1px solid var(--border)",
   pointerEvents: "none",
 };
 
@@ -103,7 +121,8 @@ const fadeTop: CSSProperties = {
   left: 0,
   right: 0,
   height: 60,
-  background: "linear-gradient(to bottom, var(--card), transparent)",
+  background:
+    "linear-gradient(to bottom, var(--card), transparent)",
   pointerEvents: "none",
 };
 
@@ -113,6 +132,7 @@ const fadeBottom: CSSProperties = {
   left: 0,
   right: 0,
   height: 60,
-  background: "linear-gradient(to top, var(--card), transparent)",
+  background:
+    "linear-gradient(to top, var(--card), transparent)",
   pointerEvents: "none",
 };
