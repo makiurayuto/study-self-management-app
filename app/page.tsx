@@ -149,8 +149,8 @@ export default function Home() {
         {
           uid: user.uid,
           date,
-          studyTime: studyTime === "" ? null : Number(studyTime),
-          phoneTime: phoneTime === "" ? null : Number(phoneTime),
+          studyTime: studyTime === "" ? null : timeToMinutes(studyTime),
+          phoneTime: phoneTime === "" ? null : timeToMinutes(phoneTime),
           sleepTime,
           satisfaction,
         }
@@ -360,12 +360,25 @@ export default function Home() {
     }
   };
 
+  // "02:30" → 2.5
   const timeToDecimal = (time: string) => {
-    if (!time) return null;
-
+    if (!time) return 0;
     const [h, m] = time.split(":").map(Number);
-
     return h + m / 60;
+  };
+
+  // "02:30" → 150（分）
+  const timeToMinutes = (time: string) => {
+    if (!time) return 0;
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  // 150（分） → "02:30"
+  const minutesToTime = (min: number) => {
+    const h = String(Math.floor(min / 60)).padStart(2, "0");
+    const m = String(min % 60).padStart(2, "0");
+    return `${h}:${m}`;
   };
 
   const sleepOptions = Array.from({ length: 96 }).map((_, i) => {
@@ -579,7 +592,7 @@ export default function Home() {
           <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
 
             <input
-              type="number"
+              type="time"
               value={studyTime}
               onChange={(e) => setStudyTime(e.target.value)}
               style={{
@@ -595,7 +608,7 @@ export default function Home() {
             <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
 
             <input
-              type="number"
+              type="time"
               value={phoneTime}
               onChange={(e) => setPhoneTime(e.target.value)}
               style={{
@@ -752,8 +765,13 @@ export default function Home() {
                     <tr key={day.date}>
                       <td style={tdStyle}>{day.displayDate}</td>
                       <td style={tdStyle}>{day.dayName}</td>
-                      <td style={tdStyle}>{log?.studyTime ?? ""}</td>
-                      <td style={tdStyle}>{log?.phoneTime || ""}</td>
+                      <td style={tdStyle}>
+                        {log?.studyTime ? (log.studyTime / 60).toFixed(1) + "h" : ""}
+                      </td>
+
+                      <td style={tdStyle}>
+                        {log?.phoneTime ? (log.phoneTime / 60).toFixed(1) + "h" : ""}
+                      </td>
                       <td style={tdStyle}>{log?.sleepTime || ""}</td>
                       <td style={tdStyle}>{log?.satisfaction || ""}</td>
                     </tr>
