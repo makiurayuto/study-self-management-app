@@ -784,10 +784,8 @@ export default function Home() {
                       <td style={tdStyle}>
                         {log?.phoneTime ? (log.phoneTime / 60).toFixed(1) + "h" : ""}
                       </td>
-                      <td>
-                        {log?.sleepTime
-                          ? timeToSleepClock(log.sleepTime)
-                          : ""}
+                      <td style={tdStyle}>
+                        {log?.sleepTime ? log.sleepTime : ""}
                       </td>
                       <td style={tdStyle}>{log?.satisfaction || ""}</td>
                     </tr>
