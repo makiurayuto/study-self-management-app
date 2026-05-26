@@ -99,8 +99,8 @@ export default function Home() {
         name: trimmedName,
         role: "student",
       });
+      window.location.reload();
 
-      // 🔥 追加ここ
       const snap = await getDoc(doc(db, "users", user.uid));
 
       // AuthContextを使ってるなら一番簡単なのはリロード or 再ログイン状態反映
