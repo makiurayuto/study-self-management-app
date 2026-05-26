@@ -134,8 +134,6 @@ export default function SleepTimePicker({
           height: ITEM_HEIGHT,
           transform: "translateY(-50%)",
           pointerEvents: "none",
-          borderTop: "1px solid #ddd",
-          borderBottom: "1px solid #ddd",
         }}
       />
     </div>

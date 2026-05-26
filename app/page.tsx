@@ -75,18 +75,6 @@ export default function Home() {
     boxSizing: "border-box",
   }; 
 
-  const lineStyle: React.CSSProperties = {
-    position: "absolute",
-    top: "50%",
-    left: 0,
-    right: 0,
-    height: 2,
-    transform: "translateY(-50%)",
-    borderTop: "1px solid #ddd",
-    borderBottom: "1px solid #ddd",
-    pointerEvents: "none",
-  };
-
   // =====================
   //ログイン
   // =====================
