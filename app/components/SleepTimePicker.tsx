@@ -9,13 +9,16 @@ type Props = {
 
 const ITEM_HEIGHT = 40;
 
-const [tempValue, setTempValue] = useState(
-  value || "22:00"
-);
-
-export default function SleepTimePicker({ value, onChange }: Props) {
+export default function SleepTimePicker({
+  value,
+  onChange,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 仮選択（スクロール中表示用）
+  const [tempValue, setTempValue] = useState(
+    value || "22:00"
+  );
 
   // 00:00〜23:45（15分刻み）
   const base = useMemo(() => {
@@ -26,60 +29,68 @@ export default function SleepTimePicker({ value, onChange }: Props) {
     });
   }, []);
 
-  // 3倍にする（無限ループ用）
+  // 無限ループ用
   const list = useMemo(() => {
     return [...base, ...base, ...base];
   }, [base]);
 
-  // 中央スタート位置
+  // 初期位置
   useEffect(() => {
     if (!ref.current) return;
 
-    const index = base.findIndex((t) => t === (value || "20:00"));
+    const index = base.findIndex(
+      (t) => t === (value || "22:00")
+    );
+
     const startIndex = index === -1 ? 0 : index;
 
     requestAnimationFrame(() => {
-      ref.current!.scrollTop =
+      if (!ref.current) return;
+
+      ref.current.scrollTop =
         (base.length + startIndex) * ITEM_HEIGHT;
     });
-  }, [value]);
+  }, [base, value]);
 
-  // スクロール停止検知
+  // スクロール時
   const handleScroll = () => {
     if (!ref.current) return;
 
     const el = ref.current;
 
-    // 現在のインデックス
+    // 現在位置
     const rawIndex = el.scrollTop / ITEM_HEIGHT;
     const index = Math.round(rawIndex);
 
     const baseLen = base.length;
 
-    // 0〜baseLen-1 に正規化
+    // 0〜95に変換
     const normalizedIndex =
       ((index % baseLen) + baseLen) % baseLen;
 
-    // 中央ゾーン
+    // 真ん中ゾーン
     const centerIndex = baseLen + normalizedIndex;
 
-    // スクロール補正（やりすぎ防止）
+    // 端に行きすぎたら中央へ戻す
     const shouldFix =
       index < baseLen || index >= baseLen * 2;
 
     if (shouldFix) {
       requestAnimationFrame(() => {
         if (!ref.current) return;
-        ref.current.scrollTop = centerIndex * ITEM_HEIGHT;
+
+        ref.current.scrollTop =
+          centerIndex * ITEM_HEIGHT;
       });
     }
 
-    // 選択値（安定版）
+    // 仮表示だけ更新
     const selected = base[normalizedIndex];
 
     if (selected) {
       setTempValue(selected);
-    };
+    }
+  };
 
   return (
     <div
@@ -110,19 +121,24 @@ export default function SleepTimePicker({ value, onChange }: Props) {
           return (
             <div
               key={i}
+              onClick={() => {
+                setTempValue(t);
+                onChange(t);
+              }}
               style={{
                 height: ITEM_HEIGHT,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 18,
-                fontWeight: isActive ? "bold" : "normal",
-                color: isActive ? "#4f46e5" : "var(--text)",
+                fontWeight: isActive
+                  ? "bold"
+                  : "normal",
+                color: isActive
+                  ? "#4f46e5"
+                  : "var(--text)",
                 transition: "0.15s",
-              }}
-              onClick={() => {
-                setTempValue(t);
-                onChange(t);
+                cursor: "pointer",
               }}
             >
               {t}
