@@ -9,6 +9,10 @@ type Props = {
 
 const ITEM_HEIGHT = 40;
 
+const [tempValue, setTempValue] = useState(
+  value || "22:00"
+);
+
 export default function SleepTimePicker({ value, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -73,11 +77,9 @@ export default function SleepTimePicker({ value, onChange }: Props) {
     // 選択値（安定版）
     const selected = base[normalizedIndex];
 
-    // 連続発火防止（同じ値なら更新しない）
-    if (selected && selected !== value) {
-      onChange(selected);
-    }
-  };
+    if (selected) {
+      setTempValue(selected);
+    };
 
   return (
     <div
@@ -103,7 +105,7 @@ export default function SleepTimePicker({ value, onChange }: Props) {
         }}
       >
         {list.map((t, i) => {
-          const isActive = t === value;
+          const isActive = t === tempValue;
 
           return (
             <div
@@ -118,7 +120,10 @@ export default function SleepTimePicker({ value, onChange }: Props) {
                 color: isActive ? "#4f46e5" : "var(--text)",
                 transition: "0.15s",
               }}
-              onClick={() => onChange(t)}
+              onClick={() => {
+                setTempValue(t);
+                onChange(t);
+              }}
             >
               {t}
             </div>
