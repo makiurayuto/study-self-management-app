@@ -625,52 +625,52 @@ export default function Home() {
             </div>
           )}
 
-          <div>
-            <p>満足度</p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
-              {["◎", "○", "△", "×"].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSatisfaction(s)}
-                  style={{
-                    fontSize: 24,
-                    padding: "10px 16px",
-                    borderRadius: 10,
-                    border:
-                      satisfaction === s
-                        ? "2px solid #4f46e5"
-                        : "1px solid var(--border)",
-                    background:
-                      satisfaction === s 
-                        ? "rgba(79,70,229,0.15)"
-                         : "var(--card)",
+          <div style={cardStyle}>
+            <div>
+              <p>満足度</p>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
+                {["◎", "○", "△", "×"].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSatisfaction(s)}
+                    style={{
+                      fontSize: 24,
+                      padding: "10px 16px",
+                      borderRadius: 10,
+                      border:
+                        satisfaction === s
+                          ? "2px solid #4f46e5"
+                          : "1px solid var(--border)",
+                      background:
+                        satisfaction === s 
+                          ? "rgba(79,70,229,0.15)"
+                          : "var(--card)",
 
-                    color: "var(--text)",
+                      color: "var(--text)",
 
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
 
-                    transform:
-                      satisfaction === s
-                        ? "scale(1.05)"
-                        : "scale(1)",
+                      transform:
+                        satisfaction === s
+                          ? "scale(1.05)"
+                          : "scale(1)",
 
-                    boxShadow:
-                      satisfaction === s
-                        ? "0 4px 12px rgba(79,70,229,0.25)"
-                        : "none",
-                        
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
+                      boxShadow:
+                        satisfaction === s
+                          ? "0 4px 12px rgba(79,70,229,0.25)"
+                          : "none",
+                          
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              
             </div>
-
-            <p style={{ marginTop: 8, color: "var(--text)" }}>
-              選択中：{satisfaction || "未選択"}
-            </p>
           </div>
 
             {message && (
