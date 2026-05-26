@@ -625,6 +625,7 @@ export default function Home() {
                 <SleepTimePicker
                   value={sleepTime}
                   onChange={(v) => setSleepTime(v)}
+                  onClose={() => setOpenSleepPicker(false)}
                 />
 
                 <button onClick={() => setOpenSleepPicker(false)}>
