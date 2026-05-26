@@ -123,6 +123,12 @@ export default function TeacherPage() {
     }
   }, []);
 
+  const submittedUids = new Set(logs.map((l) => l.uid));
+
+  const missingStudents = students.filter(
+    (s) => !submittedUids.has(s.uid)
+  );
+
     // -------------------------
     // ログアウト関数
     // -------------------------
@@ -188,24 +194,25 @@ export default function TeacherPage() {
     >
       {/* タイトル */}
     <div style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-    }}>
-    <h1>👨‍🏫 先生ダッシュボード</h1>
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 24,
+      }}>
+      <h1>👨‍🏫 先生ダッシュボード</h1>
 
-    <Button variant="secondary" size="md" onClick={handleLogout}>
-        ログアウト
-    </Button>
-
-        <Button
+      
+      <Button
           variant="secondary"
           size="md"
           onClick={fetchData}
         >
           更新
         </Button>
+
+      <Button variant="secondary" size="md" onClick={handleLogout}>
+          ログアウト
+      </Button>
       </div>
 
       {/* 生徒数 */}
@@ -275,6 +282,22 @@ export default function TeacherPage() {
           </table>
         </div>
       </div>
+                {/* 未提出者 */}
+        <div style={cardStyle}>
+          <h2>未提出者</h2>
+
+          {missingStudents.length === 0 ? (
+            <p style={{ color: "green" }}>全員提出済み 🎉</p>
+          ) : (
+            <ul style={{ paddingLeft: 20 }}>
+              {missingStudents.map((s) => (
+                <li key={s.uid} style={{ color: "#ef4444" }}>
+                  {s.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
     </div>
   );
 }

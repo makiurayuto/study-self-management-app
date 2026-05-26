@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import Button from "@/app/components/Button";
 
 
 type Student = {
@@ -36,6 +37,8 @@ export default function TeacherPage() {
   // 👇選択中の生徒
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // uid → 名前マップ
   const studentMap = useMemo(() => {
@@ -90,6 +93,40 @@ export default function TeacherPage() {
     setLoading(false);
   };
 
+  const getWeekRange = (offset: number) => {
+    const today = new Date();
+    const day = today.getDay();
+
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    monday.setDate(monday.getDate() + offset * 7);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    return {
+      start: monday,
+      end: sunday,
+    };
+  };
+
+  const getWeekLabel = (offset: number) => {
+    if (offset === 0) return "今週";
+    if (offset === -1) return "先週";
+    if (offset === 1) return "来週";
+    return `${offset > 0 ? "+" : ""}${offset}週`;
+  };
+
+  const formatDate = (d: Date) =>
+  `${d.getMonth() + 1}/${d.getDate()}`;
+
+  const { start, end } = getWeekRange(weekOffset);
+
+  const filteredLogs = logs.filter((l) => {
+    const d = new Date(l.date);
+    return d >= start && d <= end;
+  });
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -124,23 +161,29 @@ export default function TeacherPage() {
           overflowY: "auto",
         }}
       >
-        <h2 style={{ padding: 12 }}>👥 生徒一覧</h2>
+        <h2 style={{ padding: 16 }}>👤 生徒一覧</h2>
 
         {students.map((s) => (
           <div
             key={s.uid}
             onClick={() => setSelectedUid(s.uid)}
             style={{
-              padding: 12,
+              padding: "12px 16px",
               cursor: "pointer",
-              borderBottom: "1px solid #eee",
-              background:
-                selectedUid === s.uid
-                  ? "#e5e7eb"
-                  : "white",
+              borderBottom: "1px solid #e5e7eb",
+              background: selectedUid === s.uid ? "#f0f9ff" : "white",
+              fontWeight: selectedUid === s.uid ? "bold" : "normal",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.borderBottom = "2px solid #3b82f6";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.borderBottom = "1px solid #e5e7eb";
             }}
           >
-            👤 {s.name}
+            <div style={{ color: "#2563eb" }}>
+              ・ {s.name}
+            </div>
           </div>
         ))}
       </div>
@@ -152,9 +195,29 @@ export default function TeacherPage() {
           <p>👈 生徒を選択してください</p>
         ) : (
           <>
-            <h2>
-              👤 {studentMap[selectedUid]}
-            </h2>
+            <div style={{ marginBottom: 12 }}>
+              <h2 style={{ marginBottom: 4 }}>
+                📅 {getWeekLabel(weekOffset)}
+              </h2>
+
+              <div style={{ color: "#666", fontSize: 14 }}>
+                {formatDate(start)} 〜 {formatDate(end)}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
+              <Button variant="secondary" size="md" onClick={() => setWeekOffset((p) => p - 1)}>
+                ← 前の週
+              </Button>
+
+              <Button variant="secondary" size="md" onClick={() => setWeekOffset(0)}>
+                今週
+              </Button>
+
+              <Button variant="secondary" size="md" onClick={() => setWeekOffset((p) => p + 1)}>
+                次の週 →
+              </Button>
+            </div>
 
             <div style={{ overflowX: "auto", marginTop: 20 }}>
               <table
@@ -175,7 +238,14 @@ export default function TeacherPage() {
 
                 <tbody>
                   {logs
-                    .filter((l) => l.uid === selectedUid)
+                    .filter((l) => {
+                      const d = new Date(l.date);
+                      return (
+                        l.uid === selectedUid &&
+                        d >= start &&
+                        d <= end
+                      );
+                    })
                     .map((log, i) => (
                       <tr key={i}>
                         <td style={tdStyle}>{log.date}</td>
