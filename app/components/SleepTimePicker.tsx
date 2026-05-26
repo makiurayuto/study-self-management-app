@@ -45,35 +45,36 @@ export default function SleepTimePicker({
   }, [base, value]);
 
   // スクロール（選ばない！移動だけ）
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleScroll = () => {
     if (!ref.current) return;
 
     const el = ref.current;
 
-    const rawIndex = el.scrollTop / ITEM_HEIGHT;
-    const index = Math.round(rawIndex);
-
-    const baseLen = base.length;
-
-    const normalizedIndex =
-      ((index % baseLen) + baseLen) % baseLen;
-
-    const centerIndex = baseLen + normalizedIndex;
-
-    const shouldFix =
-      index < baseLen || index >= baseLen * 2;
-
-    if (shouldFix) {
-      requestAnimationFrame(() => {
-        if (!ref.current) return;
-
-        ref.current.scrollTop =
-          centerIndex * ITEM_HEIGHT;
-      });
+    // スクロール中は何もしない
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
 
-    // ❌ ここで選ばない（重要）
-  };
+    timeoutRef.current = setTimeout(() => {
+      const rawIndex = el.scrollTop / ITEM_HEIGHT;
+      const index = Math.round(rawIndex);
+
+      const baseLen = base.length;
+
+      const normalizedIndex =
+        ((index % baseLen) + baseLen) % baseLen;
+
+      const centerIndex = baseLen + normalizedIndex;
+
+      // ここでだけ補正する
+      el.scrollTop = centerIndex * ITEM_HEIGHT;
+
+      // 仮選択更新
+      setTempValue(base[normalizedIndex]);
+    }, 80);
+};
 
   // タップで確定
   const handleSelect = (t: string) => {
