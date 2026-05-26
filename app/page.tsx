@@ -626,11 +626,10 @@ export default function Home() {
           )}
 
           <div style={cardStyle}>
-            <div>
-              <div style={{display: "flex", alignItems: "center", gap: 6, fontWeight: "bold" }}>
+            <div style={{display: "flex", alignItems: "center", gap: 6, fontWeight: "bold" }}>
                 満足度
-              </div>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
                 {["◎", "○", "△", "×"].map((s) => (
                   <button
                     key={s}
@@ -669,9 +668,6 @@ export default function Home() {
                     {s}
                   </button>
                 ))}
-              </div>
-
-              
             </div>
           </div>
 
