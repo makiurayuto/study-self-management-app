@@ -192,6 +192,27 @@ export default function TeacherPage() {
     );
   }
 
+
+  const changeTime = (
+    current: string,
+    diffMinutes: number,
+    setter: (v: string) => void
+  ) => {
+    const [h, m] = (current || "00:00")
+      .split(":")
+      .map(Number);
+
+    let total = h * 60 + m + diffMinutes;
+
+    // 0未満にしない
+    if (total < 0) total = 0;
+
+    const hh = String(Math.floor(total / 60)).padStart(2, "0");
+    const mm = String(total % 60).padStart(2, "0");
+
+    setter(`${hh}:${mm}`);
+  };
+
   // =========================
   // UI
   // =========================

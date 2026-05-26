@@ -17,6 +17,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import {addMinutes} from "@/app/utils/time";
 
 export default function Home() {
   type AppUser = {
@@ -583,46 +584,80 @@ export default function Home() {
               />
             </div>
 
-          <div
-            style={{
-              background: "var(--card)",
-              borderRadius: 12,
-              padding: 16,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
-          >
-          <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
+          <div style={cardStyle}>
+            <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
 
-            <input
-              type="time"
-              value={studyTime}
-              onChange={(e) => setStudyTime(e.target.value)}
-              style={{
-                padding: 12,
-                borderRadius: 8,
-                background: "var(--bg)",
-                outline: "none",
-              }}
-            />
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              
+              {/* -1h */}
+              <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, -60))}>
+                -1h
+              </Button>
+
+              {/* -15m */}
+              <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, -15))}>
+                -15m
+              </Button>
+
+              {/* 表示 */}
+              <div style={cardStyle}>
+                {studyTime || "00:00"}
+              </div>
+
+              {/* +15m */}
+               <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, 15))}>
+                +15m
+              </Button>
+
+              {/* +1h */}
+               <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, 60))}>
+                  +1h
+                </Button>
+
+            </div>
           </div>
-          
+                    
           <div style={cardStyle}>
             <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
 
-            <input
-              type="time"
-              value={phoneTime}
-              onChange={(e) => setPhoneTime(e.target.value)}
-              style={{
-                padding: 12,
-                borderRadius: 8,
-                background: "var(--bg)",
-                outline: "none",
-              }}
-            />
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              
+              {/* -1h */}
+              <Button variant="secondary" onClick={() => setPhoneTime(addMinutes(phoneTime, -60))}>
+                -1h
+              </Button>
+
+              {/* -15m */}
+              <Button variant="secondary" onClick={() => setPhoneTime(addMinutes(phoneTime, -15))}>
+                -15m
+              </Button>
+
+              {/* 表示 */}
+              <div
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  minWidth: 80,
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  background: "var(--bg)",
+                }}
+              >
+                {phoneTime || "00:00"}
+              </div>
+
+              {/* +15m */}
+              <Button variant="secondary" onClick={() => setPhoneTime(addMinutes(phoneTime, 15))}>
+                +15m
+              </Button>
+
+              {/* +1h */}
+              <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, 60))}>
+                +1h
+              </Button>
+
+            </div>
           </div>
 
           <div
@@ -645,21 +680,19 @@ export default function Home() {
             </div>
           </div>
           {openSleepPicker && (
-            <div
-              style={overlayStyle}
-              onClick={() => setOpenSleepPicker(false)}
-            >
+            <div style={overlayStyle} onClick={() => setOpenSleepPicker(false)}>
               <div
                 style={modalStyle}
                 onClick={(e) => e.stopPropagation()}
               >
                 <SleepTimePicker
                   value={sleepTime}
-                  onChange={(v) => {
-                    setSleepTime(v);
-                    setOpenSleepPicker(false);
-                  }}
+                  onChange={(v) => setSleepTime(v)}
                 />
+
+                <button onClick={() => setOpenSleepPicker(false)}>
+                  完了
+                </button>
               </div>
             </div>
           )}
