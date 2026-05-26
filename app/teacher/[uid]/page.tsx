@@ -20,6 +20,7 @@ type Log = {
   sleepTime: string;
   satisfaction: string;
 };
+import Button from "@/app/components/Button";
 
 export default function StudentPage() {
   const { uid } = useParams() as { uid: string };
@@ -130,21 +131,35 @@ export default function StudentPage() {
       <h2>👤 {name}</h2>
 
       {/* 週移動 */}
-      <div style={{ marginBottom: 10 }}>
-        <button onClick={() => setWeekOffset((p) => p - 1)}>
+      <div
+        style={{
+          marginBottom: 10,
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => setWeekOffset((p) => p - 1)}>
           ← 前の週
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="primary"
+          size="md"
           onClick={() => setWeekOffset(0)}
-          style={{ margin: "0 10px" }}
         >
           今週
-        </button>
+        </Button>
 
-        <button onClick={() => setWeekOffset((p) => p + 1)}>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => setWeekOffset((p) => p + 1)}>
           次の週 →
-        </button>
+        </Button>
       </div>
 
       {/* テーブル */}
@@ -182,8 +197,16 @@ export default function StudentPage() {
                 {/* ✔️ ここが重要（未提出を確実表示） */}
                 {log ? (
                   <>
-                    <td>{log.studyTime ?? ""}</td>
-                    <td>{log.phoneTime ?? ""}</td>
+                    <td>
+                      {log.studyTime
+                        ? `${(log.studyTime / 60).toFixed(1)}h`
+                        : ""}
+                    </td>
+                    <td>
+                      {log.phoneTime
+                        ? `${(log.phoneTime / 60).toFixed(1)}h`
+                        : ""}
+                    </td>
                     <td>{log.sleepTime ?? ""}</td>
                     <td>{log.satisfaction ?? ""}</td>
                   </>

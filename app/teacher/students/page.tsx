@@ -179,8 +179,17 @@ export default function TeacherPage() {
                     .map((log, i) => (
                       <tr key={i}>
                         <td style={tdStyle}>{log.date}</td>
-                        <td style={tdStyle}>{log.studyTime}</td>
-                        <td style={tdStyle}>{log.phoneTime}</td>
+                        <td style={tdStyle}>
+                          {log.studyTime
+                            ? `${(log.studyTime / 60).toFixed(1)}h`
+                            : ""}
+                        </td>
+
+                        <td style={tdStyle}>
+                          {log.phoneTime
+                            ? `${(log.phoneTime / 60).toFixed(1)}h`
+                            : ""}
+                        </td>
                         <td style={tdStyle}>{log.sleepTime}</td>
                         <td style={tdStyle}>{log.satisfaction}</td>
                       </tr>

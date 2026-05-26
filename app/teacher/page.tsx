@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { auth, db } from "@/firebase";
+import { db } from "@/firebase";
+import { useRouter } from "next/navigation";
+import Button from "@/app/components/Button";
+import { useAuth } from "@/app/contexts/AuthContext";
 import {
   collection,
   getDocs,
-  doc,
-  getDoc,
+  query,
+  where,
 } from "firebase/firestore";
-import { useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
 
 
 // =========================
@@ -67,14 +68,26 @@ export default function TeacherPage() {
     try {
       setLoading(true);
 
+      // 今日の日付
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+
       const userSnap = await getDocs(collection(db, "users"));
-      const logSnap = await getDocs(collection(db, "weeklyLogs"));
+
+      const logSnap = await getDocs(
+        query(
+          collection(db, "weeklyLogs"),
+          where("date", "==", todayStr)
+        )
+      );
 
       const studentList: Student[] = [];
 
       userSnap.forEach((d) => {
         const data = d.data();
-
         if (data.role === "student") {
           studentList.push({
             uid: d.id,
@@ -101,13 +114,10 @@ export default function TeacherPage() {
       });
 
       logList.sort((a, b) => b.date.localeCompare(a.date));
-
       setLogs(logList);
 
     } catch (e) {
       console.error("データ取得エラー", e);
-      alert("データ取得に失敗しました");
-
     } finally {
       setLoading(false);
     }
@@ -118,10 +128,11 @@ export default function TeacherPage() {
     // -------------------------
 
     const router = useRouter();
+    const { user, authLoading, logout } = useAuth();
 
     const handleLogout = async () => {
-    await signOut(auth);
-    router.push("/");
+      await logout();
+      router.push("/");
     };
 
   // =========================
@@ -129,30 +140,26 @@ export default function TeacherPage() {
   // =========================
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
-      if (!u) {
-        router.push("/");
-        return;
-      }
+    if (authLoading) return;
 
-      const snap = await getDoc(doc(db, "users", u.uid));
+    if (!user) {
+      router.push("/");
+      return;
+    }
 
-      if (!snap.exists() || snap.data()?.role !== "teacher") {
-        router.push("/");
-        return;
-      }
+    if (user.role !== "teacher") {
+      router.push("/");
+      return;
+    }
 
-      await fetchData();
-    });
-
-    return () => unsub();
-  }, [router, fetchData]);
+    fetchData();
+  }, [user, authLoading, fetchData]);
 
   // =========================
   // ローディング
   // =========================
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div
         style={{
@@ -188,39 +195,28 @@ export default function TeacherPage() {
     }}>
     <h1>👨‍🏫 先生ダッシュボード</h1>
 
-    <button onClick={handleLogout} style={buttonStyle}>
+    <Button variant="secondary" size="md" onClick={handleLogout}>
         ログアウト
-    </button>
+    </Button>
 
-        <button
+        <Button
+          variant="secondary"
+          size="md"
           onClick={fetchData}
-          style={buttonStyle}
         >
           更新
-        </button>
+        </Button>
       </div>
 
       {/* 生徒数 */}
       <div style={cardStyle}>
-        <a
-        href="/teacher/students"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-            display: "inline-block",
-            padding: "12px 18px",
-            borderRadius: 10,
-            background: "#111827",
-            color: "#ffffff",
-            textDecoration: "none",
-            fontWeight: 600,
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            transition: "0.2s",
-        }}
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => router.push("/teacher/students")}
         >
-        生徒一覧
-        </a>
+          生徒一覧
+        </Button>
 
         <p>生徒数：{students.length}人</p>
       </div>
@@ -255,11 +251,15 @@ export default function TeacherPage() {
                 </td>
 
                   <td style={tdStyle}>
-                    {log.studyTime ?? ""}
+                    {log.studyTime
+                      ? `${(log.studyTime / 60).toFixed(1)}h`
+                      : ""}
                   </td>
 
                   <td style={tdStyle}>
-                    {log.phoneTime ?? ""}
+                    {log.phoneTime
+                      ? `${(log.phoneTime / 60).toFixed(1)}h`
+                      : ""}
                   </td>
 
                   <td style={tdStyle}>

@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { signOut } from "firebase/auth";
 
 type AppUser = {
   uid: string;
@@ -14,11 +15,13 @@ type AppUser = {
 type AuthContextType = {
   user: AppUser | null;
   authLoading: boolean;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   authLoading: true,
+  logout: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -63,7 +66,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
   return (
-    <AuthContext.Provider value={{ user, authLoading }}>
+    <AuthContext.Provider
+        value={{
+            user,
+            authLoading,
+            logout: async () => {
+            await signOut(auth);
+            },
+        }}
+    >
       {children}
     </AuthContext.Provider>
   );
