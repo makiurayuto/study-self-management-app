@@ -627,7 +627,9 @@ export default function Home() {
 
           <div style={cardStyle}>
             <div>
-              <p>満足度</p>
+              <div style={{ fontWeight: "bold" }}>
+                満足度
+              </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap",}}>
                 {["◎", "○", "△", "×"].map((s) => (
                   <button
