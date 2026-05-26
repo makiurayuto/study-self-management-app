@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type Props = {
   value: string;
   onChange: (v: string) => void;
+  onClose: () => void; // ← 追加
 };
 
 const ITEM_HEIGHT = 40;
@@ -12,15 +13,12 @@ const ITEM_HEIGHT = 40;
 export default function SleepTimePicker({
   value,
   onChange,
+  onClose,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // 仮選択（スクロール中表示用）
-  const [tempValue, setTempValue] = useState(
-    value || "22:00"
-  );
+  const [tempValue, setTempValue] = useState(value || "22:00");
 
-  // 00:00〜23:45（15分刻み）
   const base = useMemo(() => {
     return Array.from({ length: 96 }).map((_, i) => {
       const h = String(Math.floor(i / 4)).padStart(2, "0");
@@ -29,19 +27,13 @@ export default function SleepTimePicker({
     });
   }, []);
 
-  // 無限ループ用
-  const list = useMemo(() => {
-    return [...base, ...base, ...base];
-  }, [base]);
+  const list = useMemo(() => [...base, ...base, ...base], [base]);
 
   // 初期位置
   useEffect(() => {
     if (!ref.current) return;
 
-    const index = base.findIndex(
-      (t) => t === (value || "22:00")
-    );
-
+    const index = base.findIndex(t => t === (value || "22:00"));
     const startIndex = index === -1 ? 0 : index;
 
     requestAnimationFrame(() => {
@@ -52,26 +44,22 @@ export default function SleepTimePicker({
     });
   }, [base, value]);
 
-  // スクロール時
+  // スクロール（選ばない！移動だけ）
   const handleScroll = () => {
     if (!ref.current) return;
 
     const el = ref.current;
 
-    // 現在位置
     const rawIndex = el.scrollTop / ITEM_HEIGHT;
     const index = Math.round(rawIndex);
 
     const baseLen = base.length;
 
-    // 0〜95に変換
     const normalizedIndex =
       ((index % baseLen) + baseLen) % baseLen;
 
-    // 真ん中ゾーン
     const centerIndex = baseLen + normalizedIndex;
 
-    // 端に行きすぎたら中央へ戻す
     const shouldFix =
       index < baseLen || index >= baseLen * 2;
 
@@ -84,12 +72,14 @@ export default function SleepTimePicker({
       });
     }
 
-    // 仮表示だけ更新
-    const selected = base[normalizedIndex];
+    // ❌ ここで選ばない（重要）
+  };
 
-    if (selected) {
-      setTempValue(selected);
-    }
+  // タップで確定
+  const handleSelect = (t: string) => {
+    setTempValue(t);   // 表示用
+    onChange(t);       // 確定
+    onClose();         // 閉じる
   };
 
   return (
@@ -102,15 +92,12 @@ export default function SleepTimePicker({
         background: "var(--card)",
       }}
     >
-      {/* スクロール領域 */}
       <div
         ref={ref}
         onScroll={handleScroll}
         style={{
           height: "100%",
           overflowY: "scroll",
-          scrollBehavior: "auto",
-          WebkitOverflowScrolling: "touch",
           paddingTop: ITEM_HEIGHT * 2,
           paddingBottom: ITEM_HEIGHT * 2,
         }}
@@ -121,24 +108,14 @@ export default function SleepTimePicker({
           return (
             <div
               key={i}
-              onClick={() => {
-                setTempValue(t);
-                onChange(t);
-              }}
+              onClick={() => handleSelect(t)}
               style={{
                 height: ITEM_HEIGHT,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 18,
-                fontWeight: isActive
-                  ? "bold"
-                  : "normal",
-                color: isActive
-                  ? "#4f46e5"
-                  : "var(--text)",
-                transition: "0.15s",
-                cursor: "pointer",
+                fontWeight: isActive ? "bold" : "normal",
+                color: isActive ? "#4f46e5" : "var(--text)",
               }}
             >
               {t}
@@ -156,9 +133,9 @@ export default function SleepTimePicker({
           right: 0,
           height: ITEM_HEIGHT,
           transform: "translateY(-50%)",
+          pointerEvents: "none",
           borderTop: "1px solid #ddd",
           borderBottom: "1px solid #ddd",
-          pointerEvents: "none",
         }}
       />
     </div>

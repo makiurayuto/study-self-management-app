@@ -44,6 +44,30 @@ export default function TimeControl({ label, value, setValue }: Props) {
         
         {/* 1段目 */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+
+            <Button
+                variant="secondary"
+                onClick={() => setValue(addMinutes(value, 180))}
+            >
+                +3h
+          </Button>
+
+            <Button
+                variant="secondary"
+                onClick={() => setValue(addMinutes(value, 60))}
+            >
+                +1h
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setValue(addMinutes(value, 15))}
+          >
+            +15m
+          </Button>
+        </div>
+
+        {/* 2段目 */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Button
             variant="secondary"
             onClick={() => setValue(addMinutes(value, -60))}
@@ -56,22 +80,6 @@ export default function TimeControl({ label, value, setValue }: Props) {
             onClick={() => setValue(addMinutes(value, -15))}
           >
             -15m
-          </Button>
-        </div>
-
-        {/* 2段目 */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Button
-                variant="secondary"
-                onClick={() => setValue(addMinutes(value, 60))}
-            >
-                +1h
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setValue(addMinutes(value, 15))}
-          >
-            +15m
           </Button>
         </div>
 
