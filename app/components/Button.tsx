@@ -9,6 +9,7 @@ type Props = {
   color?: string;
   disabled?: boolean;
   className?: string;
+  size?: "sm" | "md" | "lg";
 };
 
 export default function Button({
@@ -17,6 +18,8 @@ export default function Button({
   variant = "primary",
   color = "#4f46e5",
   disabled = false,
+  size = "md",
+  className,
 }: Props) {
   const base: CSSProperties = {
     padding: "12px 18px",
@@ -54,6 +57,24 @@ export default function Button({
     boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
   };
 
+  const sizeStyle = {
+    sm: {
+      padding: "6px 10px",
+      fontSize: 12,
+      borderRadius: 10,
+    },
+    md: {
+      padding: "12px 18px",
+      fontSize: 14,
+      borderRadius: 14,
+    },
+    lg: {
+      padding: "14px 22px",
+      fontSize: 16,
+      borderRadius: 16,
+    },
+  }[size ?? "md"];
+
   const getStyle = () => {
     if (variant === "primary") return primary;
     if (variant === "secondary") return secondary;
@@ -64,19 +85,11 @@ export default function Button({
     <button
       onClick={onClick}
       disabled={disabled}
+      className={["btn", className].filter(Boolean).join(" ")}
       style={{
         ...base,
+        ...sizeStyle,
         ...getStyle(),
-        transform: "scale(1)",
-      }}
-      onMouseDown={(e) => {
-        e.currentTarget.style.transform = "scale(0.96)";
-      }}
-      onMouseUp={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
       }}
     >
       {children}

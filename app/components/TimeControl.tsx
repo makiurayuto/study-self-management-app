@@ -46,26 +46,26 @@ export default function TimeControl({ label, value, setValue }: Props) {
         
         {/* 増加系 */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button variant="secondary" onClick={() => setValue(addMinutes(value, 180))}>
+          <Button variant="secondary" size="md" onClick={() => setValue(addMinutes(value, 180))}>
             +3h
           </Button>
 
-          <Button variant="secondary" onClick={() => setValue(addMinutes(value, 60))}>
+          <Button variant="secondary" size="md" onClick={() => setValue(addMinutes(value, 60))}>
             +1h
           </Button>
 
-          <Button variant="secondary" onClick={() => setValue(addMinutes(value, 15))}>
+          <Button variant="secondary" size="md" onClick={() => setValue(addMinutes(value, 15))}>
             +15m
           </Button>
         </div>
 
         {/* 減少系 */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button variant="secondary" onClick={() => setValue(addMinutes(value, -60))}>
+          <Button variant="secondary" size="md" onClick={() => setValue(addMinutes(value, -60))}>
             -1h
           </Button>
 
-          <Button variant="secondary" onClick={() => setValue(addMinutes(value, -15))}>
+          <Button variant="secondary" size="md" onClick={() => setValue(addMinutes(value, -15))}>
             -15m
           </Button>
         </div>

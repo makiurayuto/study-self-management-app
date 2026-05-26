@@ -363,7 +363,7 @@ export default function Home() {
     return (
       <div style={{ padding: 20 }}>
         <h2>ログインしてください</h2>
-        <Button onClick={login}>Googleでログイン</Button>
+        <Button variant="primary" size="md" onClick={login}>Googleでログイン</Button>
       </div>
     );
   }
@@ -379,7 +379,7 @@ export default function Home() {
           style={inputStyle}
         />
 
-        <Button variant="primary" onClick={registerName}>登録</Button>
+        <Button variant="primary" size="md" onClick={registerName}>登録</Button>
       </div>
     );
   }
@@ -452,12 +452,18 @@ export default function Home() {
       {user ? (
         <div>
           <p>ログイン中：{user?.name}</p>
-          <Button variant="secondary" onClick={logout}>
-            ログアウト
-          </Button>
+          <div style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+          }}>
+            <Button variant="secondary" size="sm" onClick={logout}>
+              ログアウト
+            </Button>
+          </div>
         </div>
       ) : (
-        <Button variant="primary" onClick={login}>
+        <Button variant="primary" size="md" onClick={login}>
           Googleでログイン
         </Button>
       )}
@@ -612,7 +618,7 @@ export default function Home() {
             )}
 
 
-          <Button variant="primary" onClick={saveData}>
+          <Button variant="primary" size="md" onClick={saveData}>
             保存
           </Button>
         </div>
@@ -683,15 +689,15 @@ export default function Home() {
       {/* 週切替 */}
       {user && (
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setWeekOffset((prev) => prev - 1)}>
+          <Button variant="secondary" size="md" onClick={() => setWeekOffset((prev) => prev - 1)}>
             前の週
           </Button>
 
-          <Button variant="secondary" onClick={() => setWeekOffset(0)}>
+          <Button variant="secondary" size="md" onClick={() => setWeekOffset(0)}>
             今週
           </Button>
 
-          <Button variant="secondary" onClick={() => setWeekOffset((prev) => prev + 1)}>
+          <Button variant="secondary" size="md" onClick={() => setWeekOffset((prev) => prev + 1)}>
             次の週
           </Button>
         </div>
