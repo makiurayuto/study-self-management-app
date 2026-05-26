@@ -13,7 +13,7 @@ export default function TimeControl({ label, value, setValue }: Props) {
   return (
     <div
       style={{
-        background: "var(--card)",   // ← cardStyle相当
+        background: "var(--card)",
         borderRadius: 12,
         padding: 16,
         display: "flex",
@@ -24,38 +24,57 @@ export default function TimeControl({ label, value, setValue }: Props) {
       {/* ラベル */}
       <div style={{ fontWeight: "bold" }}>{label}</div>
 
-      {/* 操作エリア */}
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <Button variant="secondary" onClick={() => setValue(addMinutes(value, -60))}>
-          -1h
-        </Button>
+      {/* 表示 */}
+      <div
+        style={{
+          padding: "8px 14px",
+          borderRadius: 8,
+          border: "1px solid var(--border)",
+          minWidth: 80,
+          textAlign: "center",
+          fontWeight: "bold",
+          background: "var(--bg)",
+        }}
+      >
+        {value || "00:00"}
+      </div>
 
-        <Button variant="secondary" onClick={() => setValue(addMinutes(value, -15))}>
-          -15m
-        </Button>
+      {/* ボタン（2段構成） */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        
+        {/* 1段目 */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Button
+            variant="secondary"
+            onClick={() => setValue(addMinutes(value, -60))}
+          >
+            -1h
+          </Button>
 
-        {/* 表示部分（cardStyleの中の「小カード」） */}
-        <div
-          style={{
-            padding: "8px 14px",
-            borderRadius: 8,
-            border: "1px solid var(--border)",
-            minWidth: 80,
-            textAlign: "center",
-            fontWeight: "bold",
-            background: "var(--bg)",
-          }}
-        >
-          {value || "00:00"}
+          <Button
+            variant="secondary"
+            onClick={() => setValue(addMinutes(value, -15))}
+          >
+            -15m
+          </Button>
         </div>
 
-        <Button variant="secondary" onClick={() => setValue(addMinutes(value, 15))}>
-          +15m
-        </Button>
+        {/* 2段目 */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Button
+                variant="secondary"
+                onClick={() => setValue(addMinutes(value, 60))}
+            >
+                +1h
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setValue(addMinutes(value, 15))}
+          >
+            +15m
+          </Button>
+        </div>
 
-        <Button variant="secondary" onClick={() => setValue(addMinutes(value, 60))}>
-          +1h
-        </Button>
       </div>
     </div>
   );
