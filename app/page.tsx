@@ -761,7 +761,7 @@ export default function Home() {
       {/* 週切替 */}
       {user && (
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setWeekOffset(-1)}>
+          <Button variant="secondary" onClick={() => setWeekOffset((prev) => prev - 1)}>
             前の週
           </Button>
 
@@ -769,7 +769,7 @@ export default function Home() {
             今週
           </Button>
 
-          <Button variant="secondary" onClick={() => setWeekOffset(1)}>
+          <Button variant="secondary" onClick={() => setWeekOffset((prev) => prev + 1)}>
             次の週
           </Button>
         </div>
