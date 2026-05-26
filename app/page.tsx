@@ -569,6 +569,7 @@ export default function Home() {
                   boxSizing: "border-box",
                   appearance: "none",
                   WebkitAppearance: "none",
+                  textAlign: "center", 
                 }}
               />
             </div>
@@ -599,6 +600,7 @@ export default function Home() {
                 borderRadius: 10,
                 border: "1px solid var(--border)",
                 background: "var(--bg)",
+                textAlign: "center",
               }}
             >
               {sleepTime || "未選択"}
