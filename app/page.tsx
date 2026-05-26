@@ -18,6 +18,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import {addMinutes} from "@/app/utils/time";
+import TimeControl from "./components/TimeControl";
 
 export default function Home() {
   type AppUser = {
@@ -584,81 +585,17 @@ export default function Home() {
               />
             </div>
 
-          <div style={cardStyle}>
-            <div style={{ fontWeight: "bold" }}>📚 勉強時間</div>
-
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              
-              {/* -1h */}
-              <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, -60))}>
-                -1h
-              </Button>
-
-              {/* -15m */}
-              <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, -15))}>
-                -15m
-              </Button>
-
-              {/* 表示 */}
-              <div style={cardStyle}>
-                {studyTime || "00:00"}
-              </div>
-
-              {/* +15m */}
-               <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, 15))}>
-                +15m
-              </Button>
-
-              {/* +1h */}
-               <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, 60))}>
-                  +1h
-                </Button>
-
-            </div>
-          </div>
+          <TimeControl
+            label="📚 勉強時間"
+            value={studyTime}
+            setValue={setStudyTime}
+          />
                     
-          <div style={cardStyle}>
-            <div style={{ fontWeight: "bold" }}>📱 スマホ時間</div>
-
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              
-              {/* -1h */}
-              <Button variant="secondary" onClick={() => setPhoneTime(addMinutes(phoneTime, -60))}>
-                -1h
-              </Button>
-
-              {/* -15m */}
-              <Button variant="secondary" onClick={() => setPhoneTime(addMinutes(phoneTime, -15))}>
-                -15m
-              </Button>
-
-              {/* 表示 */}
-              <div
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  minWidth: 80,
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  background: "var(--bg)",
-                }}
-              >
-                {phoneTime || "00:00"}
-              </div>
-
-              {/* +15m */}
-              <Button variant="secondary" onClick={() => setPhoneTime(addMinutes(phoneTime, 15))}>
-                +15m
-              </Button>
-
-              {/* +1h */}
-              <Button variant="secondary" onClick={() => setStudyTime(addMinutes(studyTime, 60))}>
-                +1h
-              </Button>
-
-            </div>
-          </div>
+          <TimeControl
+            label="📱 スマホ時間"
+            value={phoneTime}
+            setValue={setPhoneTime}
+          />
 
           <div
             style={cardStyle}
