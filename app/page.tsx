@@ -100,6 +100,12 @@ export default function Home() {
         role: "student",
       });
 
+      // 🔥 追加ここ
+      const snap = await getDoc(doc(db, "users", user.uid));
+
+      // AuthContextを使ってるなら一番簡単なのはリロード or 再ログイン状態反映
+      router.refresh(); // ← Next.jsで一番現実的
+
     } catch (e) {
       console.error(e);
       alert("登録に失敗しました");
@@ -368,7 +374,7 @@ export default function Home() {
     );
   }
 
-  if (user && !user.name) {
+  if (!user?.name) {
     return (
       <div style={{ padding: 20 }}>
         <h2>名前を入力してください</h2>
@@ -379,7 +385,11 @@ export default function Home() {
           style={inputStyle}
         />
 
-        <Button variant="primary" size="md" onClick={registerName}>登録</Button>
+        <div style={{ marginTop: 16 }}>
+          <Button variant="primary" size="md" onClick={registerName}>
+            登録
+          </Button>
+        </div>
       </div>
     );
   }
