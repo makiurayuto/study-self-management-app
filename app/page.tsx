@@ -278,33 +278,6 @@ export default function Home() {
     return week;
   };
 
-  // =====================
-  // 表スクロール関数
-  // =====================
-  const handleTouchStart = (
-    e: React.TouchEvent<HTMLDivElement>
-  ) => {
-    setTouchStartX(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (
-    e: React.TouchEvent<HTMLDivElement>
-  ) => {
-    const touchEndX = e.changedTouches[0].clientX;
-
-    const diff = touchStartX - touchEndX;
-
-    // 左スワイプ
-    if (diff > 80) {
-      setWeekOffset((prev) => prev + 1);
-    }
-
-    // 右スワイプ
-    if (diff < -80) {
-      setWeekOffset((prev) => prev - 1);
-    }
-  };
-
   // "02:30" → 2.5
   const timeToDecimal = (time: string) => {
     if (!time) return 0;
@@ -656,11 +629,8 @@ export default function Home() {
             style={{
               overflowX: "hidden",
               marginBottom: 24,
-              touchAction: "pan-x",
               userSelect: "none",
             }}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
           >
             <table
               style={{
