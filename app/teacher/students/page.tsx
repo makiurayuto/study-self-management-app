@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { auth, db } from "@/firebase";
+import { db } from "@/firebase";
 import {
   collection,
   getDocs,
@@ -9,6 +9,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 
 type Student = {
@@ -26,14 +27,15 @@ type Log = {
 };
 
 export default function TeacherPage() {
+  const { user, authLoading } = useAuth();
   const router = useRouter();
 
   const [students, setStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // 👇選択中の生徒
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // uid → 名前マップ
   const studentMap = useMemo(() => {
@@ -46,7 +48,10 @@ export default function TeacherPage() {
   // データ取得
   // =========================
   const fetchData = async () => {
+    setLoading(true);
+
     const userSnap = await getDocs(collection(db, "users"));
+    const logSnap = await getDocs(collection(db, "weeklyLogs"));
 
     const studentList: Student[] = [];
 
@@ -63,46 +68,45 @@ export default function TeacherPage() {
 
     setStudents(studentList);
 
-    const logSnap = await getDocs(collection(db, "weeklyLogs"));
-
     const logList: Log[] = [];
 
     logSnap.forEach((d) => {
-      logList.push(d.data() as Log);
+      const data = d.data();
+
+      logList.push({
+        uid: data.uid ?? "",
+        date: data.date ?? "",
+        studyTime: data.studyTime ?? null,
+        phoneTime: data.phoneTime ?? null,
+        sleepTime: data.sleepTime ?? "",
+        satisfaction: data.satisfaction ?? "",
+      });
     });
 
-    logList.sort((a, b) =>
-      b.date.localeCompare(a.date)
-    );
+    logList.sort((a, b) => b.date.localeCompare(a.date));
 
     setLogs(logList);
+
+    setLoading(false);
   };
 
-  // =========================
-  // 認証チェック
-  // =========================
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
-      if (!u) {
-        router.push("/");
-        return;
-      }
+    if (authLoading) return;
 
-      const snap = await getDoc(doc(db, "users", u.uid));
+    if (!user) {
+      router.push("/");
+      return;
+    }
 
-      if (snap.data()?.role !== "teacher") {
-        router.push("/");
-        return;
-      }
+    if (!user || user.role !== "teacher") {
+      router.push("/");
+      return;
+    }
 
-      await fetchData();
-      setLoading(false);
-    });
+    fetchData();
+  }, [user, authLoading]);
 
-    return () => unsub();
-  }, []);
-
-  if (loading) {
+  if (authLoading || loading) {
     return <div style={{ padding: 20 }}>読み込み中...</div>;
   }
 

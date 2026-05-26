@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { auth, db } from "@/firebase";
 import {
   collection,
@@ -63,13 +63,12 @@ export default function TeacherPage() {
   // データ取得
   // =========================
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      // -------------------------
-      // 生徒取得
-      // -------------------------
+      setLoading(true);
 
       const userSnap = await getDocs(collection(db, "users"));
+      const logSnap = await getDocs(collection(db, "weeklyLogs"));
 
       const studentList: Student[] = [];
 
@@ -86,40 +85,33 @@ export default function TeacherPage() {
 
       setStudents(studentList);
 
-      // -------------------------
-      // ログ取得
-      // -------------------------
-
-    const today = normalizeDate(
-      new Date().toLocaleDateString("sv-SE")
-    );
-
-    const logSnap = await getDocs(
-        collection(db, "weeklyLogs")
-    );
-
       const logList: Log[] = [];
 
       logSnap.forEach((d) => {
-        logList.push(d.data() as Log);
+        const data = d.data();
+
+        logList.push({
+          uid: data.uid,
+          date: data.date,
+          studyTime: data.studyTime ?? null,
+          phoneTime: data.phoneTime ?? null,
+          sleepTime: data.sleepTime ?? "",
+          satisfaction: data.satisfaction ?? "",
+        });
       });
 
-      // 日付降順
-      logList.sort((a, b) =>
-        b.date.localeCompare(a.date)
-        );
+      logList.sort((a, b) => b.date.localeCompare(a.date));
 
-        const todayLogs = logList.filter(
-        (log) =>
-            normalizeDate(log.date) === today
-        );
+      setLogs(logList);
 
-        setLogs(todayLogs);
     } catch (e) {
       console.error("データ取得エラー", e);
       alert("データ取得に失敗しました");
+
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
     // -------------------------
     // ログアウト関数
@@ -137,42 +129,24 @@ export default function TeacherPage() {
   // =========================
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(
-      async (u) => {
-        try {
-          // 未ログイン
-          if (!u) {
-            router.push("/");
-            return;
-          }
-
-          // users確認
-          const snap = await getDoc(
-            doc(db, "users", u.uid)
-          );
-
-          // teacher以外拒否
-          if (
-            !snap.exists() ||
-            snap.data()?.role !== "teacher"
-          ) {
-            router.push("/");
-            return;
-          }
-
-          // データ取得
-          await fetchData();
-
-          setLoading(false);
-        } catch (e) {
-          console.error("認証エラー", e);
-          router.push("/");
-        }
+    const unsub = auth.onAuthStateChanged(async (u) => {
+      if (!u) {
+        router.push("/");
+        return;
       }
-    );
+
+      const snap = await getDoc(doc(db, "users", u.uid));
+
+      if (!snap.exists() || snap.data()?.role !== "teacher") {
+        router.push("/");
+        return;
+      }
+
+      await fetchData();
+    });
 
     return () => unsub();
-  }, [router]);
+  }, [router, fetchData]);
 
   // =========================
   // ローディング
@@ -191,27 +165,6 @@ export default function TeacherPage() {
       </div>
     );
   }
-
-
-  const changeTime = (
-    current: string,
-    diffMinutes: number,
-    setter: (v: string) => void
-  ) => {
-    const [h, m] = (current || "00:00")
-      .split(":")
-      .map(Number);
-
-    let total = h * 60 + m + diffMinutes;
-
-    // 0未満にしない
-    if (total < 0) total = 0;
-
-    const hh = String(Math.floor(total / 60)).padStart(2, "0");
-    const mm = String(total % 60).padStart(2, "0");
-
-    setter(`${hh}:${mm}`);
-  };
 
   // =========================
   // UI
@@ -296,7 +249,7 @@ export default function TeacherPage() {
 
             <tbody>
               {logs.map((log, i) => (
-                <tr key={i}>
+                <tr key={log.uid + log.date}>
                 <td style={tdStyle}>
                         {studentMap[log.uid] || "不明"}
                 </td>

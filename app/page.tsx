@@ -1,14 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import SleepTimePicker from "./components/SleepTimePicker";
 import Button from "./components/Button";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
-  signInWithRedirect,
   signOut,
 } from "firebase/auth";
 import {
@@ -17,23 +16,13 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import {addMinutes} from "@/app/utils/time";
 import TimeControl from "./components/TimeControl";
+import { signInWithPopup } from "firebase/auth";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function Home() {
-  type AppUser = {
-  uid: string;
-  name: string;
-  role: "student" | "teacher";
-  };
-
-  const [user, setUser] = useState<AppUser | null>(null);
-
-  const [step, setStep] = useState("loading");
-
   const router = useRouter();
-
-  console.log("step:", step);
+  const { user, authLoading } = useAuth();
   console.log("user:", user);
 
   const [tempName, setTempName] = useState("");
@@ -52,8 +41,6 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [openSleepPicker, setOpenSleepPicker] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const [dialog, setDialog] = useState<{
     open: boolean;
     message: string;
@@ -85,9 +72,8 @@ export default function Home() {
       prompt: "select_account",
     });
 
-    setStep("loading");
 
-    await signInWithRedirect(auth, provider);
+    await signInWithPopup(auth, provider);
   };
 
   // =====================
@@ -95,25 +81,29 @@ export default function Home() {
   // =====================
   const logout = async () => {
     await signOut(auth);
-    setUser(null);
     setLogs([]);
   };
 
   const registerName = async () => {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    await setDoc(doc(db, "users", user.uid), {
-      name: tempName,
-      role: "student",
-    });
+    const trimmedName = tempName.trim();
 
-    setUser({
-      uid: user.uid,
-      name: tempName,
-      role: "student",
-    });
+    if (!trimmedName) {
+      alert("名前を入力してください");
+      return;
+    }
 
-    setStep("app");
+    try {
+      await setDoc(doc(db, "users", user.uid), {
+        name: trimmedName,
+        role: "student",
+      });
+
+    } catch (e) {
+      console.error(e);
+      alert("登録に失敗しました");
+    }
   };
 
   // =====================
@@ -192,7 +182,7 @@ export default function Home() {
 
     setDate(newDate);
 
-    if (!user) return;
+    if (!user?.uid) return;
 
     const ref = doc(
       db,
@@ -243,51 +233,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-  if (step === "teacher") {
-    router.push("/teacher");
-  }
-}, [step]);
-
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
-
-      if (!u) {
-        setUser(null);
-        setStep("login");
-        return;
-      }
-
-      const ref = doc(db, "users", u.uid);
-      const snap = await getDoc(ref);
-
-      if (!snap.exists()) {
-        setUser({ uid: u.uid, name: "", role: "student" });
-        setStep("name");
-        return;
-      }
-
-      const data = snap.data();
-
-      setUser({
-        uid: u.uid,
-        name: data.name,
-        role: data.role,
-      });
-
-      setStep(data.role === "teacher" ? "teacher" : "app");
-    });
-
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
     if (user?.role === "teacher") {
       router.push("/teacher");
     }
   }, [user]);
 
   useEffect(() => {
-    if (user) fetchLogs(user.uid);
+    if (user?.name) {
+      fetchLogs(user.uid);
+    }
   }, [user]);
 
   // =====================
@@ -417,7 +371,7 @@ export default function Home() {
   // =====================
 
 // 👇 名前入力画面
-  if (step === "loading") {
+  if (authLoading) {
   return (
     <div style={{
       minHeight: "100vh",
@@ -432,7 +386,7 @@ export default function Home() {
   );
 }
 
-  if (step === "login") {
+  if (!user) {
     return (
       <div style={{ padding: 20 }}>
         <h2>ログインしてください</h2>
@@ -441,7 +395,7 @@ export default function Home() {
     );
   }
 
-  if (step === "name") {
+  if (user && !user.name) {
     return (
       <div style={{ padding: 20 }}>
         <h2>名前を入力してください</h2>
