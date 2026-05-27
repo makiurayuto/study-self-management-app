@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
 import SleepTimePicker from "./components/SleepTimePicker";
 import Button from "./components/Button";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
   signOut,
@@ -36,6 +36,9 @@ export default function Home() {
   const [phoneTime, setPhoneTime] = useState("");
   const [sleepTime, setSleepTime] = useState("");
   const [satisfaction, setSatisfaction] = useState("");
+
+  const [showNameEdit, setShowNameEdit] = useState(false);
+  const [newName, setNewName] = useState("");
 
   const [logs, setLogs] = useState<any[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -346,6 +349,17 @@ export default function Home() {
   })();
 
   // =====================
+  // 名前変更関数
+  // =====================
+
+  const handleUpdateName = async () => {
+    if (!user) return;
+    await updateDoc(doc(db, "users", user.uid), {
+      name: newName,
+    });
+  };
+
+  // =====================
   // UI（ここはほぼそのまま）
   // =====================
 
@@ -469,23 +483,40 @@ export default function Home() {
       </div>
 
       {user ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <p style={{ margin: 0 }}>ユーザー：{user?.name}</p>
+        <div style={{ marginBottom: 20 }}>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={logout}
+          {/* 1行目：ユーザー + 右側ボタン */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
           >
-            ログアウト
-          </Button>
+            {/* 左：ユーザー名 */}
+            <p style={{ margin: 0 }}>
+              👤 ユーザー：{user?.name}
+            </p>
+
+            {/* 右：縦並びボタン */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <Button variant="secondary" onClick={logout} size="sm">
+                ログアウト
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setNewName(user?.name || "");
+                  setShowNameEdit(true);
+                }}
+              >
+                名前変更
+              </Button>
+            </div>
+          </div>
+
         </div>
       ) : (
         <Button variant="primary" size="md" onClick={login}>
@@ -708,6 +739,19 @@ export default function Home() {
               </tbody>
             </table>
           </div>
+            {showNameEdit && (
+              <div>
+                <input
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                />
+
+                <button onClick={handleUpdateName}>
+                  保存
+                </button>
+              </div>
+            )}
+
         </div>
       )}
 
