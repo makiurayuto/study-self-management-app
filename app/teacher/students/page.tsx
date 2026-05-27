@@ -124,6 +124,11 @@ export default function TeacherPage() {
     };
   };
 
+  const handleChangeMode = (mode: "students" | "hidden") => {
+    setViewMode(mode);
+    setSelectedUid(null);
+  };
+
   const getWeekLabel = (offset: number) => {
     if (offset === 0) return "今週";
     if (offset === -1) return "先週";
@@ -180,7 +185,7 @@ export default function TeacherPage() {
         {/* モード切替 */}
         <div style={{ padding: "0 16px", display: "flex", gap: 8 }}>
           <button
-            onClick={() => setViewMode("students")}
+            onClick={() => handleChangeMode("students")}
             style={{
               flex: 1,
               padding: 8,
@@ -191,7 +196,7 @@ export default function TeacherPage() {
           </button>
 
           <button
-            onClick={() => setViewMode("hidden")}
+            onClick={() => handleChangeMode("hidden")}
             style={{
               flex: 1,
               padding: 8,
@@ -232,23 +237,27 @@ export default function TeacherPage() {
                 cursor: "pointer",
                 borderBottom: "1px solid #e5e7eb",
                 background: "white",
+                display: "flex",
+                gap: 20,
               }}
             >
-              {s.name}
+              <span>{s.name}</span>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={async () => {
-                  await updateDoc(doc(db, "users", s.uid), {
-                    isHidden: false,
-                  });
+              <div style={{ marginLeft: "auto" }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={async () => {
+                    await updateDoc(doc(db, "users", s.uid), {
+                      isHidden: false,
+                    });
 
-                  fetchData();
-                }}
-              >
-                再表示
-              </Button>
+                    fetchData();
+                  }}
+                >
+                  再表示
+                </Button>
+              </div>
             </div>
           ))}
       </div>
@@ -256,11 +265,13 @@ export default function TeacherPage() {
       {/* ================= 右：詳細 ================= */}
       <div style={{ width: "70%", padding: 20 }}>
 
-        {!selectedUid ? (
+        {/* 未選択 */}
+        {!selectedUid && (
           <p>👈 生徒を選択してください</p>
-        ): null}
+        )}
 
-        {selectedUid && viewMode === "students" ? (
+        {/* 生徒選択中（生徒モード） */}
+        {selectedUid && viewMode === "students" && (
           <>
           <div style={{ marginBottom: 20 }}>
             <h2 style={{ fontSize: 20 }}>
@@ -367,30 +378,7 @@ export default function TeacherPage() {
               </Button>
             </div>
           </>
-        ) : null}
-        {viewMode === "hidden" ? (
-          <>
-            <h2>🚫 非表示リスト</h2>
-
-            {hiddenStudents.map((s) => (
-              <div key={s.uid}>
-                {s.name}
-
-                <button
-                  onClick={async () => {
-                    await updateDoc(doc(db, "users", s.uid), {
-                      isHidden: false,
-                    });
-
-                    fetchData();
-                  }}
-                >
-                  再表示
-                </button>
-              </div>
-            ))}
-          </>
-        ) : null}
+        )}
 
       </div>
     </div>
