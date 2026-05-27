@@ -41,16 +41,8 @@ export default function TeacherPage() {
   const [logs, setLogs] = useState<Log[]>([]);
 
   const [loading, setLoading] = useState(true);
-
-  // =========================
-  // 生徒UID → 名前Map
-  // =========================
-
-  const studentMap = useMemo(() => {
-    return Object.fromEntries(
-      students.map((s) => [s.uid, s.name])
-    );
-  }, [students]);
+  
+  const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
 
   const normalizeDate = (value: string) => {
     if (!value) return "";
@@ -85,18 +77,27 @@ export default function TeacherPage() {
       );
 
       const studentList: Student[] = [];
+      const hiddenList: Student[] = [];
 
       userSnap.forEach((d) => {
         const data = d.data();
+
         if (data.role === "student") {
-          studentList.push({
+          const student = {
             uid: d.id,
             name: data.name || "名前なし",
-          });
+          };
+
+          if (data.isHidden) {
+            hiddenList.push(student);
+          } else {
+            studentList.push(student);
+          }
         }
       });
 
       setStudents(studentList);
+      setHiddenStudents(hiddenList);
 
       const logList: Log[] = [];
 
@@ -124,11 +125,30 @@ export default function TeacherPage() {
   }, []);
 
   const submittedUids = new Set(logs.map((l) => l.uid));
+  
+    // -------------------------
+    // 非表示生徒フィルタ
+    // -------------------------
 
-  const missingStudents = students.filter(
-    (s) => !submittedUids.has(s.uid)
-  );
 
+  const visibleStudents = useMemo(() => {
+    return students.filter((s) => {
+      return !hiddenStudents.some((h) => h.uid === s.uid);
+    });
+  }, [students, hiddenStudents]);
+
+  const studentMap = useMemo(() => {
+    return Object.fromEntries(
+      visibleStudents.map((s) => [s.uid, s.name])
+    );
+  }, [visibleStudents]);
+  
+  const missingStudents = useMemo(() => {
+    return visibleStudents.filter(
+      (s) => !submittedUids.has(s.uid)
+    );
+  }, [visibleStudents, logs]);
+  
     // -------------------------
     // ログアウト関数
     // -------------------------
