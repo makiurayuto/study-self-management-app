@@ -457,11 +457,20 @@ export default function Home() {
         </div>
       )}
 
-      <h1>勉強時間自己管理表</h1>
+      <div style={{ marginBottom: 24 }}>
+        <h1
+          style={{
+            fontSize: 32,
+            fontWeight: "bold",
+          }}
+        >
+          勉強時間自己管理アプリ
+        </h1>
+      </div>
 
       {user ? (
         <div>
-          <p>ログイン中：{user?.name}</p>
+          <p>ユーザー：{user?.name}</p>
           <div style={{
             position: "absolute",
             top: 10,
