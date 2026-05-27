@@ -469,17 +469,23 @@ export default function Home() {
       </div>
 
       {user ? (
-        <div>
-          <p>ユーザー：{user?.name}</p>
-          <div style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-          }}>
-            <Button variant="secondary" size="sm" onClick={logout}>
-              ログアウト
-            </Button>
-          </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 24,
+          }}
+        >
+          <p style={{ margin: 0 }}>ユーザー：{user?.name}</p>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={logout}
+          >
+            ログアウト
+          </Button>
         </div>
       ) : (
         <Button variant="primary" size="md" onClick={login}>
