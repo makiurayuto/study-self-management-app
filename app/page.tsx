@@ -22,7 +22,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function Home() {
   const router = useRouter();
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, updateUserName  } = useAuth();
   console.log("user:", user);
 
   const [tempName, setTempName] = useState("");
@@ -354,9 +354,9 @@ export default function Home() {
 
   const handleUpdateName = async () => {
     if (!user) return;
-    await updateDoc(doc(db, "users", user.uid), {
-      name: newName,
-    });
+
+    await updateUserName(user.uid, newName);
+
     setShowNameEdit(false);
   };
 
@@ -497,7 +497,7 @@ export default function Home() {
           >
             {/* 左：ユーザー名 */}
             <p style={{ margin: 0 }}>
-              👤 ユーザー：{user?.name}
+              ユーザー：{user?.name}
             </p>
 
             {/* 右：縦並びボタン */}
@@ -520,38 +520,67 @@ export default function Home() {
               {showNameEdit && (
                 <div
                   style={overlayStyle}
-                  onClick={() => setShowNameEdit(false)} // 外側クリックで閉じる
+                  onClick={() => setShowNameEdit(false)}
                 >
-                  <div onClick={(e) => e.stopPropagation()} // ←これ超重要
+                  <div
+                    onClick={(e) => e.stopPropagation()}
                     style={{
-                      background: "#fff",
-                      padding: 16,
-                      borderRadius: 10,
+                      ...cardStyle,
+                      width: 320,
+                      background: "var(--card)",
                     }}
                   >
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      名前変更
+                    </div>
+
                     <input
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
+                      placeholder="新しい名前"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleUpdateName();
                       }}
+                      style={{
+                        width: "100%",
+                        padding: 12,
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: "var(--bg)",
+                        color: "var(--text)",
+                        fontSize: 16,
+                        boxSizing: "border-box",
+                      }}
                     />
 
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setShowNameEdit(false)}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: 8,
+                      }}
                     >
-                      キャンセル
-                    </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowNameEdit(false)}
+                      >
+                        キャンセル
+                      </Button>
 
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleUpdateName} // ←修正ここ
-                    >
-                      保存
-                    </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleUpdateName}
+                      >
+                        保存
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
