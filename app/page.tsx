@@ -357,6 +357,7 @@ export default function Home() {
     await updateDoc(doc(db, "users", user.uid), {
       name: newName,
     });
+    setShowNameEdit(false);
   };
 
   // =====================
@@ -488,6 +489,7 @@ export default function Home() {
           {/* 1行目：ユーザー + 右側ボタン */}
           <div
             style={{
+              position: "relative", // ←ここに追加
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
@@ -514,6 +516,46 @@ export default function Home() {
               >
                 名前変更
               </Button>
+              
+              {showNameEdit && (
+                <div
+                  style={overlayStyle}
+                  onClick={() => setShowNameEdit(false)} // 外側クリックで閉じる
+                >
+                  <div onClick={(e) => e.stopPropagation()} // ←これ超重要
+                    style={{
+                      background: "#fff",
+                      padding: 16,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleUpdateName();
+                      }}
+                    />
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowNameEdit(false)}
+                    >
+                      キャンセル
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleUpdateName} // ←修正ここ
+                    >
+                      保存
+                    </Button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 
@@ -739,19 +781,6 @@ export default function Home() {
               </tbody>
             </table>
           </div>
-            {showNameEdit && (
-              <div>
-                <input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                />
-
-                <button onClick={handleUpdateName}>
-                  保存
-                </button>
-              </div>
-            )}
-
         </div>
       )}
 
