@@ -659,9 +659,9 @@ export default function Home() {
           >
             <table
               style={{
-                width: "95%",
+                width: "100%",
                 borderCollapse: "collapse",
-                fontSize: 10,
+                fontSize: 16,
               }}
             >
               <thead>
@@ -751,17 +751,20 @@ const buttonStyle: React.CSSProperties = {
 
 const thStyle = {
   border: "1px solid var(--border)",
-  padding: 6,
+  padding: "8px 10px",
   background: "var(--card)",
   color: "var(--text)",
   textAlign: "center" as const,
+  fontSize: 16,
+  fontWeight: "bold",
 };
 
 const tdStyle = {
   border: "1px solid var(--border)",
-  padding: 6,
+  padding: "8px 10px",
   color: "var(--text)",
   textAlign: "center" as const,
+  fontSize: 16,
 };
 
 const modalOverlay = {
