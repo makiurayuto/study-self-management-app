@@ -7,6 +7,7 @@ import {
   getDocs,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
@@ -36,9 +37,13 @@ export default function TeacherPage() {
 
   // 👇選択中の生徒
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [viewMode, setViewMode] =
+    useState<"students" | "hidden">("students");
   const [loading, setLoading] = useState(true);
 
   const [weekOffset, setWeekOffset] = useState(0);
+
+  const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
 
   // uid → 名前マップ
   const studentMap = useMemo(() => {
@@ -57,19 +62,28 @@ export default function TeacherPage() {
     const logSnap = await getDocs(collection(db, "weeklyLogs"));
 
     const studentList: Student[] = [];
+    const hiddenList: Student[] = [];
 
     userSnap.forEach((d) => {
       const data = d.data();
 
       if (data.role === "student") {
-        studentList.push({
+        const student = {
           uid: d.id,
           name: data.name || "名前なし",
-        });
+        };
+
+        // 👇ここが超重要
+        if (data.isHidden) {
+          hiddenList.push(student);
+        } else {
+          studentList.push(student);
+        }
       }
     });
 
     setStudents(studentList);
+    setHiddenStudents(hiddenList);
 
     const logList: Log[] = [];
 
@@ -163,29 +177,80 @@ export default function TeacherPage() {
       >
         <h2 style={{ padding: 16 }}>👤 生徒一覧</h2>
 
-        {students.map((s) => (
-          <div
-            key={s.uid}
-            onClick={() => setSelectedUid(s.uid)}
+        {/* モード切替 */}
+        <div style={{ padding: "0 16px", display: "flex", gap: 8 }}>
+          <button
+            onClick={() => setViewMode("students")}
             style={{
-              padding: "12px 16px",
-              cursor: "pointer",
-              borderBottom: "1px solid #e5e7eb",
-              background: selectedUid === s.uid ? "#f0f9ff" : "white",
-              fontWeight: selectedUid === s.uid ? "bold" : "normal",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderBottom = "2px solid #3b82f6";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderBottom = "1px solid #e5e7eb";
+              flex: 1,
+              padding: 8,
+              background: viewMode === "students" ? "#dbeafe" : "#f3f4f6",
             }}
           >
-            <div style={{ color: "#2563eb" }}>
-              ・ {s.name}
+            👤 生徒
+          </button>
+
+          <button
+            onClick={() => setViewMode("hidden")}
+            style={{
+              flex: 1,
+              padding: 8,
+              background: viewMode === "hidden" ? "#fee2e2" : "#f3f4f6",
+            }}
+          >
+            🚫 非表示
+          </button>
+        </div>
+
+        <hr />
+
+        {/* 生徒一覧 */}
+        {viewMode === "students" &&
+          students.map((s) => (
+            <div
+              key={s.uid}
+              onClick={() => setSelectedUid(s.uid)}
+              style={{
+                padding: "12px 16px",
+                cursor: "pointer",
+                borderBottom: "1px solid #e5e7eb",
+                background: selectedUid === s.uid ? "#f0f9ff" : "white",
+              }}
+            >
+              {s.name}
             </div>
-          </div>
-        ))}
+          ))}
+
+        {/* 非表示リスト */}
+        {viewMode === "hidden" &&
+          hiddenStudents.map((s) => (
+            <div
+              key={s.uid}
+              onClick={() => setSelectedUid(s.uid)}
+              style={{
+                padding: "12px 16px",
+                cursor: "pointer",
+                borderBottom: "1px solid #e5e7eb",
+                background: "white",
+              }}
+            >
+              {s.name}
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  await updateDoc(doc(db, "users", s.uid), {
+                    isHidden: false,
+                  });
+
+                  fetchData();
+                }}
+              >
+                再表示
+              </Button>
+            </div>
+          ))}
       </div>
 
       {/* ================= 右：詳細 ================= */}
@@ -193,8 +258,11 @@ export default function TeacherPage() {
 
         {!selectedUid ? (
           <p>👈 生徒を選択してください</p>
-        ) : (
+        ): null}
+
+        {selectedUid && viewMode === "students" ? (
           <>
+            <h2>📊 生徒ログ</h2>
             <div style={{ marginBottom: 12 }}>
               <h2 style={{ marginBottom: 4 }}>
                 📅 {getWeekLabel(weekOffset)}
@@ -267,8 +335,48 @@ export default function TeacherPage() {
                 </tbody>
               </table>
             </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  await updateDoc(doc(db, "users", selectedUid), {
+                    isHidden: true,
+                  });
+
+                  setSelectedUid(null);
+                  setViewMode("hidden");
+                  fetchData();
+                }}
+              >
+                非表示にする
+              </Button>
+            </div>
           </>
-        )}
+        ) : null}
+        {viewMode === "hidden" ? (
+          <>
+            <h2>🚫 非表示リスト</h2>
+
+            {hiddenStudents.map((s) => (
+              <div key={s.uid}>
+                {s.name}
+
+                <button
+                  onClick={async () => {
+                    await updateDoc(doc(db, "users", s.uid), {
+                      isHidden: false,
+                    });
+
+                    fetchData();
+                  }}
+                >
+                  再表示
+                </button>
+              </div>
+            ))}
+          </>
+        ) : null}
+
       </div>
     </div>
   );

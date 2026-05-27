@@ -101,6 +101,7 @@ export default function Home() {
       await setDoc(doc(db, "users", user.uid), {
         name: trimmedName,
         role: "student",
+        isHidden: false,
       });
       window.location.reload();
 
@@ -567,7 +568,7 @@ export default function Home() {
                     >
                       <Button
                         variant="secondary"
-                        size="sm"
+                        size="md"
                         onClick={() => setShowNameEdit(false)}
                       >
                         キャンセル
@@ -575,7 +576,7 @@ export default function Home() {
 
                       <Button
                         variant="primary"
-                        size="sm"
+                        size="md"
                         onClick={handleUpdateName}
                       >
                         保存
