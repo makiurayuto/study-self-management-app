@@ -262,16 +262,28 @@ export default function TeacherPage() {
 
         {selectedUid && viewMode === "students" ? (
           <>
-            <h2>📊 生徒ログ</h2>
+          <div style={{ marginBottom: 20 }}>
+            <h2 style={{ fontSize: 20 }}>
+              📊{" "}
+              <span style={{ color: "#2563eb", fontWeight: 700 }}>
+                {studentMap[selectedUid ?? ""]}
+              </span>
+              <span style={{ color: "#666" }}> の学習ログ</span>
+            </h2>
+          </div>
+
+          <hr style={{ margin: "12px 0", borderColor: "#e5e7eb" }} />
+            
             <div style={{ marginBottom: 12 }}>
               <h2 style={{ marginBottom: 4 }}>
-                📅 {getWeekLabel(weekOffset)}
+                 {getWeekLabel(weekOffset)}
               </h2>
 
               <div style={{ color: "#666", fontSize: 14 }}>
                 {formatDate(start)} 〜 {formatDate(end)}
               </div>
             </div>
+
 
             <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
               <Button variant="secondary" size="md" onClick={() => setWeekOffset((p) => p - 1)}>
@@ -335,6 +347,9 @@ export default function TeacherPage() {
                 </tbody>
               </table>
             </div>
+
+            <div style={{ height: 24 }} />
+
             <div style={{ display: "flex", gap: 8 }}>
               <Button
                 variant="secondary"
