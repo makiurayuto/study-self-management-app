@@ -473,7 +473,7 @@ export default function Home() {
         </div>
       )}
 
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginTop: 24, marginBottom: 24 }}>
         <h1
           style={{
             textAlign: "center",
