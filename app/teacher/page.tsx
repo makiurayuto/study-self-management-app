@@ -123,31 +123,36 @@ export default function TeacherPage() {
       setLoading(false);
     }
   }, []);
-
-  const submittedUids = new Set(logs.map((l) => l.uid));
   
     // -------------------------
     // 非表示生徒フィルタ
     // -------------------------
 
+  const visibleStudents = students;
 
-  const visibleStudents = useMemo(() => {
-    return students.filter((s) => {
-      return !hiddenStudents.some((h) => h.uid === s.uid);
-    });
-  }, [students, hiddenStudents]);
+  const allStudents = [...students, ...hiddenStudents];
 
   const studentMap = useMemo(() => {
     return Object.fromEntries(
-      visibleStudents.map((s) => [s.uid, s.name])
+      allStudents.map((s) => [s.uid, s.name])
     );
-  }, [visibleStudents]);
-  
+  }, [allStudents]);
+
+  const submittedUids = useMemo(() => {
+    return new Set(logs.map((l) => l.uid));
+  }, [logs]);
+
   const missingStudents = useMemo(() => {
     return visibleStudents.filter(
       (s) => !submittedUids.has(s.uid)
     );
-  }, [visibleStudents, logs]);
+  }, [visibleStudents, submittedUids]);
+
+  const visibleLogs = useMemo(() => {
+    return logs.filter((log) =>
+      visibleStudents.some((s) => s.uid === log.uid)
+    );
+  }, [logs, visibleStudents]);
   
     // -------------------------
     // ログアウト関数
@@ -271,7 +276,7 @@ export default function TeacherPage() {
             </thead>
 
             <tbody>
-              {logs.map((log, i) => (
+              {visibleLogs.map((log, i) => (
                 <tr key={log.uid + log.date}>
                 <td style={tdStyle}>
                         {studentMap[log.uid] || "不明"}

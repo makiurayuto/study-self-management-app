@@ -476,7 +476,8 @@ export default function Home() {
       <div style={{ marginBottom: 24 }}>
         <h1
           style={{
-            fontSize: 32,
+            textAlign: "center",
+            fontSize: 25,
             fontWeight: "bold",
           }}
         >

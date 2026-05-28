@@ -45,13 +45,6 @@ export default function TeacherPage() {
 
   const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
 
-  // uid → 名前マップ
-  const studentMap = useMemo(() => {
-    return Object.fromEntries(
-      students.map((s) => [s.uid, s.name])
-    );
-  }, [students]);
-
   // =========================
   // データ取得
   // =========================
@@ -146,6 +139,12 @@ export default function TeacherPage() {
     return d >= start && d <= end;
   });
 
+  const studentMap = useMemo(() => {
+    return Object.fromEntries(
+      [...students, ...hiddenStudents].map((s) => [s.uid, s.name])
+    );
+  }, [students, hiddenStudents]);
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -162,10 +161,21 @@ export default function TeacherPage() {
     fetchData();
   }, [user, authLoading]);
 
+  useEffect(() => {
+    console.log(selectedUid);
+    console.log(studentMap);
+  }, [selectedUid, studentMap]);
+
   if (authLoading || loading) {
     return <div style={{ padding: 20 }}>読み込み中...</div>;
   }
 
+  const isHiddenStudent = hiddenStudents.some(
+    (s) => s.uid === selectedUid
+  );
+
+  console.log("selectedUid:", selectedUid);
+  console.log("studentMap:", studentMap);
   // =========================
   // UI
   // =========================
@@ -246,16 +256,15 @@ export default function TeacherPage() {
               <div style={{ marginLeft: "auto" }}>
                 <Button
                   variant="secondary"
-                  size="sm"
                   onClick={async () => {
-                    await updateDoc(doc(db, "users", s.uid), {
-                      isHidden: false,
+                    await updateDoc(doc(db, "users", selectedUid!), {
+                      isHidden: !isHiddenStudent,
                     });
 
                     fetchData();
                   }}
                 >
-                  再表示
+                  {isHiddenStudent ? "再表示" : "非表示にする"}
                 </Button>
               </div>
             </div>
@@ -271,13 +280,13 @@ export default function TeacherPage() {
         )}
 
         {/* 生徒選択中（生徒モード） */}
-        {selectedUid && viewMode === "students" && (
+        {selectedUid && (
           <>
           <div style={{ marginBottom: 20 }}>
             <h2 style={{ fontSize: 20 }}>
               📊{" "}
               <span style={{ color: "#2563eb", fontWeight: 700 }}>
-                {studentMap[selectedUid ?? ""]}
+                {studentMap[selectedUid] ?? "不明な生徒"}
               </span>
               <span style={{ color: "#666" }}> の学習ログ</span>
             </h2>
