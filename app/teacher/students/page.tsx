@@ -257,14 +257,14 @@ export default function TeacherPage() {
                 <Button
                   variant="secondary"
                   onClick={async () => {
-                    await updateDoc(doc(db, "users", selectedUid!), {
-                      isHidden: !isHiddenStudent,
+                    await updateDoc(doc(db, "users", s.uid), {
+                      isHidden: false,
                     });
 
                     fetchData();
                   }}
                 >
-                  {isHiddenStudent ? "再表示" : "非表示にする"}
+                  再表示
                 </Button>
               </div>
             </div>
@@ -370,22 +370,25 @@ export default function TeacherPage() {
 
             <div style={{ height: 24 }} />
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  await updateDoc(doc(db, "users", selectedUid), {
-                    isHidden: true,
-                  });
+            {selectedUid && viewMode === "students" && (
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button
+                  variant="secondary"
+                  colorVariant ="danger"
+                  onClick={async () => {
+                    await updateDoc(doc(db, "users", selectedUid), {
+                      isHidden: true,
+                    });
 
-                  setSelectedUid(null);
-                  setViewMode("hidden");
-                  fetchData();
-                }}
-              >
-                非表示にする
-              </Button>
-            </div>
+                    setSelectedUid(null);
+                    setViewMode("hidden");
+                    fetchData();
+                  }}
+                >
+                  非表示にする
+                </Button>
+              </div>
+            )}
           </>
         )}
 

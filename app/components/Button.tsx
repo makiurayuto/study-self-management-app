@@ -1,12 +1,27 @@
 "use client";
 
 import type { CSSProperties } from "react";
+const colors = {
+    default: {
+      primary: "#4f46e5",
+      secondary: "#4f46e5",
+    },
 
+    danger: {
+      primary: "#ef4444",
+      secondary: "#ef4444",
+    },
+
+    success: {
+      primary: "#22c55e",
+      secondary: "#22c55e",
+    },
+  };
 type Props = {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "primary" | "secondary" | "glass";
-  color?: string;
+  colorVariant?: "default" | "danger" | "success";
   disabled?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg";
@@ -16,11 +31,12 @@ export default function Button({
   children,
   onClick,
   variant = "primary",
-  color = "#4f46e5",
+  colorVariant = "default",
   disabled = false,
   size = "md",
   className,
 }: Props) {
+
   const base: CSSProperties = {
     padding: "12px 18px",
     borderRadius: 14,
@@ -36,17 +52,19 @@ export default function Button({
     justifyContent: "center",
   };
 
+  const selectedColor = colors[colorVariant].primary;
+
   const primary: CSSProperties = {
-    background: color,
+    background: selectedColor,
     color: "white",
-    boxShadow: "0 8px 20px rgba(79,70,229,0.25)",
+    boxShadow: `0 8px 20px ${selectedColor}40`,
   };
 
   const secondary: CSSProperties = {
-    background: "transparent",
-    color: color,
-    border: `1px solid ${color}`,
-  };
+  background: "transparent",
+  color: selectedColor,
+  border: `1px solid ${selectedColor}`,
+};
 
   const glass: CSSProperties = {
     background: "rgba(255,255,255,0.15)",
@@ -74,6 +92,7 @@ export default function Button({
       borderRadius: 16,
     },
   }[size ?? "md"];
+  
 
   const getStyle = () => {
     if (variant === "primary") return primary;
