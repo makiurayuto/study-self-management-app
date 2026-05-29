@@ -515,6 +515,7 @@ export default function Home() {
                 ログアウト
               </Button>
 
+              {/*
               <Button
                 variant="secondary"
                 size="sm"
@@ -593,6 +594,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
+              */}
 
             </div>
           </div>
@@ -616,7 +618,6 @@ export default function Home() {
             padding: 16,
           }}>
 
-          <h2>記録入力</h2>
             <div style={cardStyle}>
               <div style={{ fontWeight: "bold" }}>
                 📅 日付
