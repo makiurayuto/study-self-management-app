@@ -365,21 +365,24 @@ export default function Home() {
   // UI（ここはほぼそのまま）
   // =====================
 
-// 👇 名前入力画面
-  if (authLoading) {
-  return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 16,
-      color: "#666",
-    }}>
-      <p>移動中...</p>
-    </div>
-  );
-}
+  //👇 名前入力画面
+
+  const isReady = !authLoading;
+
+  if (!isReady) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 16,
+        color: "#666",
+      }}>
+        <p>移動中...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -393,7 +396,11 @@ export default function Home() {
   if (!user?.name) {
     return (
       <div style={{ padding: 20 }}>
-        <h2>名前を入力してください</h2>
+        <h2>名前を登録</h2>
+
+        <div style={{ marginBottom: 12, color: "#666", fontSize: 14 }}>
+          ※本名で登録してください（ニックネーム不可）
+        </div>
 
         <input
           value={tempName}
