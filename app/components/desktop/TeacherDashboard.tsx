@@ -68,13 +68,7 @@ export default function TeacherDashboard({
           </Button>
         </div>
 
-        <div
-          style={{
-            opacity: loading ? 0.4 : 1,
-            pointerEvents: loading ? "none" : "auto",
-            transition: "0.2s",
-          }}
-        >
+        <div style={{ overflowX: "auto" }}>
           <table
             style={{
               width: "100%",

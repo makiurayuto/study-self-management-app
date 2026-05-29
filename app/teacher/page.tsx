@@ -268,6 +268,7 @@ export default function TeacherPage() {
       {isMobile ? (
         <MobileTeacherDashboard
           logs={visibleLogs}
+          missingStudents={missingStudents}
           studentMap={studentMap}
         />
       ) : (
