@@ -62,18 +62,23 @@ export default function TeacherPage() {
 
       // 今日の日付
       const today = new Date();
+      today.setDate(today.getDate() - 1); //昨日
+
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");
-      const todayStr = `${yyyy}-${mm}-${dd}`;
 
-      const userSnap = await getDocs(collection(db, "users"));
+      const targetDate = `${yyyy}-${mm}-${dd}`;
 
       const logSnap = await getDocs(
         query(
           collection(db, "weeklyLogs"),
-          where("date", "==", todayStr)
+          where("date", "==", targetDate)
         )
+      );
+
+      const userSnap = await getDocs(
+        query(collection(db, "users"), where("role", "==", "student"))
       );
 
       const studentList: Student[] = [];
@@ -82,17 +87,15 @@ export default function TeacherPage() {
       userSnap.forEach((d) => {
         const data = d.data();
 
-        if (data.role === "student") {
-          const student = {
-            uid: d.id,
-            name: data.name || "名前なし",
-          };
+        const student = {
+          uid: d.id,
+          name: data.name || "名前なし",
+        };
 
-          if (data.isHidden) {
-            hiddenList.push(student);
-          } else {
-            studentList.push(student);
-          }
+        if (data.isHidden) {
+          hiddenList.push(student);
+        } else {
+          studentList.push(student);
         }
       });
 
@@ -255,7 +258,7 @@ export default function TeacherPage() {
 
       {/* ログ一覧 */}
       <div style={cardStyle}>
-        <h2>今日の記録</h2>
+        <h2>昨日の記録</h2>
 
         <div style={{ overflowX: "auto" }}>
           <table
