@@ -205,27 +205,39 @@ export default function TeacherPage() {
   return (
     <div
       style={{
-        padding: 20,
         maxWidth: 1200,
         margin: "0 auto",
+        padding: 20,
         fontFamily: "sans-serif",
       }}
     >
       {/* ヘッダー */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
-        }}
-      >
-        <h1>👨‍🏫 先生ダッシュボード</h1>
+      <div style={{ marginBottom: 24 }}>
+        {/* タイトル：中央 */}
+        <h1
+          style={{
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: "28px", // ← 追加
+            fontWeight: "bold",
+          }}
+        >
+          👨‍🏫 先生ダッシュボード
+        </h1>
 
-        <div style={{ display: "flex", gap: 8 }}>
+        {/* 右：ボタン群 */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             onClick={() =>
               fetchData(formatDateForQuery(currentDate))
             }
@@ -235,7 +247,7 @@ export default function TeacherPage() {
 
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             onClick={handleLogout}
           >
             ログアウト
@@ -250,7 +262,7 @@ export default function TeacherPage() {
           border: "1px solid #ddd",
           borderRadius: 12,
           padding: 20,
-          marginBottom: 24,
+          marginBottom: 12,
         }}
       >
         <Button
@@ -261,7 +273,7 @@ export default function TeacherPage() {
           生徒一覧
         </Button>
 
-        <p>生徒数：{students.length}人</p>
+        <p style={{ marginTop: 12 }}>生徒数：{students.length}人</p>
       </div>
 
       {/* UI切替 */}

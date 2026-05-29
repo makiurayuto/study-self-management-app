@@ -39,6 +39,9 @@ export default function MobileTeacherDashboard({
   missingStudents,
   studentMap,
 }: Props) {
+
+  const submittedLogs = logs;
+  const missing = missingStudents;
   const [openUid, setOpenUid] = useState<string | null>(null);
 
   const toggle = (uid: string) => {
@@ -73,23 +76,29 @@ export default function MobileTeacherDashboard({
 
         if (item.type === "missing") {
           return (
-            <div key={item.uid} style={missingCard}>
-              <div
-                style={headerStyleMissing}
-                onClick={() => toggle(item.uid)}
-              >
-                <strong>❌ {item.name}</strong>
-                <span>{isOpen ? "▲" : "▼"}</span>
-              </div>
+            <div style={cardStyle}>
+                <h3>未提出者</h3>
 
-              {isOpen && (
-                <div style={contentStyle}>
-                  <div style={{ color: "#ef4444" }}>
-                    未提出です
-                  </div>
+                {missing.length === 0 ? (
+                    <p style={{ color: "green" }}>
+                    全員提出済み 🎉
+                    </p>
+                ) : (
+                    <div>
+                    {missing.map((s) => (
+                        <div
+                        key={s.uid}
+                        style={{
+                            color: "#ef4444",
+                            padding: "4px 0",
+                        }}
+                        >
+                        ・{s.name}
+                        </div>
+                    ))}
+                    </div>
+                )}
                 </div>
-              )}
-            </div>
           );
         }
 
@@ -98,8 +107,14 @@ export default function MobileTeacherDashboard({
         // =========================
 
         const log = item.data;
-
+        
+        <div style={{ marginBottom: 8 }}>
+            <h3 style={{ margin: 0 }}>
+                提出済み
+            </h3>
+        </div>
         return (
+            
           <div key={log.uid + log.date} style={cardStyle}>
             <div
               style={headerStyle}
