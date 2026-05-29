@@ -79,7 +79,6 @@ export default function TeacherDashboard({
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              minWidth: 700,
             }}
           >
             <thead>
