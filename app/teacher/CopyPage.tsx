@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState,useRef , useCallback } from "react";
 import { db } from "@/firebase";
 import { useRouter } from "next/navigation";
-import Button from "@/app/components/Button";
+import Button from "@/app/components/shared/Button";
 import { useAuth } from "@/app/contexts/AuthContext";
 import {
   collection,
@@ -44,6 +44,11 @@ export default function TeacherPage() {
   
   const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
 
+
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const isFetching = useRef(false);
+
   const normalizeDate = (value: string) => {
     if (!value) return "";
 
@@ -56,27 +61,10 @@ export default function TeacherPage() {
   // データ取得
   // =========================
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (targetDate: string) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
-
-      // 今日の日付
-      const today = new Date();
-      today.setDate(today.getDate() - 1); //昨日
-
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-
-      const targetDate = `${yyyy}-${mm}-${dd}`;
-
-      const logSnap = await getDocs(
-        query(
-          collection(db, "weeklyLogs"),
-          where("date", "==", targetDate)
-        )
-      );
-
       const userSnap = await getDocs(
         query(collection(db, "users"), where("role", "==", "student"))
       );
@@ -92,15 +80,16 @@ export default function TeacherPage() {
           name: data.name || "名前なし",
         };
 
-        if (data.isHidden) {
-          hiddenList.push(student);
-        } else {
-          studentList.push(student);
-        }
+        if (data.isHidden) hiddenList.push(student);
+        else studentList.push(student);
       });
 
       setStudents(studentList);
       setHiddenStudents(hiddenList);
+
+      const logSnap = await getDocs(
+        query(collection(db, "weeklyLogs"), where("date", "==", targetDate))
+      );
 
       const logList: Log[] = [];
 
@@ -117,15 +106,38 @@ export default function TeacherPage() {
         });
       });
 
-      logList.sort((a, b) => b.date.localeCompare(a.date));
       setLogs(logList);
 
     } catch (e) {
-      console.error("データ取得エラー", e);
+      console.error(e);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const formatDateForQuery = (date: Date) => {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const formatDateForDisplay = (date: Date) => {
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+
+    return `${mm}/${dd}`;
+  };
+
+  const getYesterday = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d;
+};
+
+const [currentDate, setCurrentDate] = useState(getYesterday());
+  
   
     // -------------------------
     // 非表示生徒フィルタ
@@ -172,40 +184,19 @@ export default function TeacherPage() {
   // =========================
   // 認証 + 権限チェック
   // =========================
-
   useEffect(() => {
     if (authLoading) return;
 
-    if (!user) {
+    if (!user || user.role !== "teacher") {
       router.push("/");
       return;
     }
 
-    if (user.role !== "teacher") {
-      router.push("/");
-      return;
-    }
+    const date = formatDateForQuery(currentDate);
+    fetchData(date);
 
-    fetchData();
-  }, [user, authLoading, fetchData]);
+  }, [user, authLoading, currentDate]);
 
-  // =========================
-  // ローディング
-  // =========================
-
-  if (authLoading || loading) {
-    return (
-      <div
-        style={{
-          padding: 40,
-          textAlign: "center",
-          fontSize: 18,
-        }}
-      >
-        読み込み中...
-      </div>
-    );
-  }
 
   // =========================
   // UI
@@ -233,10 +224,13 @@ export default function TeacherPage() {
       <Button
           variant="secondary"
           size="md"
-          onClick={fetchData}
+          onClick={() => {
+            const date = formatDateForQuery(currentDate);
+            fetchData(date);
+          }}
         >
           更新
-        </Button>
+      </Button>
 
       <Button variant="secondary" size="md" onClick={handleLogout}>
           ログアウト
@@ -258,9 +252,49 @@ export default function TeacherPage() {
 
       {/* ログ一覧 */}
       <div style={cardStyle}>
-        <h2>昨日の記録</h2>
+        <h2>{formatDateForDisplay(currentDate)}の記録</h2>
+        <div style={{ display: "flex", gap: 8,marginTop: 16, marginBottom: 16 }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+                const d = new Date(currentDate);
+                d.setDate(d.getDate() - 1);
+                setCurrentDate(d);
+              }}
+          >
+            ← 前日
+          </Button>
 
-        <div style={{ overflowX: "auto" }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                setCurrentDate(d);
+              }}
+            >
+              昨日
+            </Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              const d = new Date(currentDate);
+              d.setDate(d.getDate() + 1);
+              setCurrentDate(d);
+            }}
+          >
+            次日 →
+          </Button>
+        </div>
+
+        <div
+          style={{
+            opacity: loading ? 0.4 : 1,
+            pointerEvents: loading ? "none" : "auto",
+            transition: "0.2s",
+          }}
+        >
           <table
             style={{
               width: "100%",

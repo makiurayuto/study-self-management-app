@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "./Button";
+import Button from "@/app/components/shared/Button";
 import { addMinutes } from "@/app/utils/time";
 
 type Props = {

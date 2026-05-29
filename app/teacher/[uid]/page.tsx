@@ -11,6 +11,7 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
+import Button from "@/app/components/shared/Button";
 
 type Log = {
   uid: string;
@@ -20,7 +21,6 @@ type Log = {
   sleepTime: string;
   satisfaction: string;
 };
-import Button from "@/app/components/Button";
 
 export default function StudentPage() {
   const { uid } = useParams() as { uid: string };

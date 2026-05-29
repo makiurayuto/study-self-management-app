@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
-import Button from "@/app/components/Button";
+import Button from "@/app/components/shared/Button";
 
 
 type Student = {

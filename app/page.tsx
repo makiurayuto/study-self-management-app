@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
-import SleepTimePicker from "./components/SleepTimePicker";
-import Button from "./components/Button";
+import Button from "@/app/components/shared/Button";
 import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,
@@ -16,9 +15,10 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import TimeControl from "./components/TimeControl";
+import TimeControl from "@/app/components/features/time/TimeControl";
 import { signInWithPopup } from "firebase/auth";
 import { useAuth } from "@/app/contexts/AuthContext";
+import SleepTimePicker from "@/app/components/features/sleep/SleepTimePicker";
 
 export default function Home() {
   const router = useRouter();

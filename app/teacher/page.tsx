@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState,useRef , useCallback } from "react";
 import { db } from "@/firebase";
 import { useRouter } from "next/navigation";
-import Button from "@/app/components/Button";
+import Button from "@/app/components/shared/Button";
 import { useAuth } from "@/app/contexts/AuthContext";
 import {
   collection,
@@ -11,6 +11,9 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import DesktopTeacherDashboard from "@/app/components/desktop/TeacherDashboard";
+import MobileTeacherDashboard from "@/app/components/mobile/TeacherDashboard";
+import StudentTable from "@/app/components/desktop/StudentTable";
 
 
 // =========================
@@ -48,6 +51,7 @@ export default function TeacherPage() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const isFetching = useRef(false);
+  const isMobile = window.innerWidth < 768;
 
   const normalizeDate = (value: string) => {
     if (!value) return "";
@@ -211,38 +215,47 @@ const [currentDate, setCurrentDate] = useState(getYesterday());
         fontFamily: "sans-serif",
       }}
     >
-      {/* タイトル */}
-    <div style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 24,
-      }}>
-      <h1>👨‍🏫 先生ダッシュボード</h1>
+      {/* ヘッダー */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
+        <h1>👨‍🏫 先生ダッシュボード</h1>
 
-      
-      <Button
-          variant="secondary"
-          size="md"
-          onClick={() => {
-            const date = formatDateForQuery(currentDate);
-            fetchData(date);
-          }}
-        >
-          更新
-      </Button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              const date = formatDateForQuery(currentDate);
+              fetchData(date);
+            }}
+          >
+            更新
+          </Button>
 
-      <Button variant="secondary" size="md" onClick={handleLogout}>
-          ログアウト
-      </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleLogout}
+          >
+            ログアウト
+          </Button>
+        </div>
       </div>
 
-      {/* 生徒数 */}
+      {/* 生徒一覧 */}
       <div style={cardStyle}>
         <Button
           variant="primary"
           size="md"
-          onClick={() => router.push("/teacher/students")}
+          onClick={() =>
+            router.push("/teacher/students")
+          }
         >
           生徒一覧
         </Button>
@@ -250,122 +263,46 @@ const [currentDate, setCurrentDate] = useState(getYesterday());
         <p>生徒数：{students.length}人</p>
       </div>
 
-      {/* ログ一覧 */}
-      <div style={cardStyle}>
-        <h2>{formatDateForDisplay(currentDate)}の記録</h2>
-        <div style={{ display: "flex", gap: 8,marginTop: 16, marginBottom: 16 }}>
-          <Button
-            variant="secondary"
-            onClick={() => {
-                const d = new Date(currentDate);
-                d.setDate(d.getDate() - 1);
-                setCurrentDate(d);
-              }}
-          >
-            ← 前日
-          </Button>
-
-            <Button
-              variant="secondary"
-              onClick={() => {
-                const d = new Date();
-                d.setDate(d.getDate() - 1);
-                setCurrentDate(d);
-              }}
-            >
-              昨日
-            </Button>
-
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const d = new Date(currentDate);
-              d.setDate(d.getDate() + 1);
-              setCurrentDate(d);
-            }}
-          >
-            次日 →
-          </Button>
-        </div>
-
-        <div
-          style={{
-            opacity: loading ? 0.4 : 1,
-            pointerEvents: loading ? "none" : "auto",
-            transition: "0.2s",
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 700,
-            }}
-          >
-            <thead>
-              <tr>
-                <th style={thStyle}>名前</th>
-                <th style={thStyle}>勉強時間</th>
-                <th style={thStyle}>スマホ時間</th>
-                <th style={thStyle}>就寝時間</th>
-                <th style={thStyle}>満足度</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {visibleLogs.map((log, i) => (
-                <tr key={log.uid + log.date}>
-                <td style={tdStyle}>
-                        {studentMap[log.uid] || "不明"}
-                </td>
-
-                  <td style={tdStyle}>
-                    {log.studyTime
-                      ? `${(log.studyTime / 60).toFixed(1)}h`
-                      : ""}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.phoneTime
-                      ? `${(log.phoneTime / 60).toFixed(1)}h`
-                      : ""}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.sleepTime || ""}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.satisfaction || ""}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-                {/* 未提出者 */}
-        <div style={cardStyle}>
-          <h2>未提出者</h2>
-
-          {missingStudents.length === 0 ? (
-            <p style={{ color: "green" }}>全員提出済み 🎉</p>
-          ) : (
-            <ul style={{ paddingLeft: 20 }}>
-              {missingStudents.map((s) => (
-                <li key={s.uid} style={{ color: "#ef4444" }}>
-                  {s.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {isMobile ? (
+  <MobileTeacherDashboard
+    logs={visibleLogs}
+    studentMap={studentMap}
+  />
+) : (
+  <StudentTable
+    visibleLogs={visibleLogs}
+    studentMap={studentMap}
+  />
+)}
+{/* Desktop UI（ここが分離済み） */}
+      <DesktopTeacherDashboard
+        currentDateLabel={formatDateForDisplay(currentDate)}
+        visibleLogs={visibleLogs}
+        missingStudents={missingStudents}
+        studentMap={studentMap}
+        loading={loading}
+        onPrevDay={() => {
+          const d = new Date(currentDate);
+          d.setDate(d.getDate() - 1);
+          setCurrentDate(d);
+        }}
+        onNextDay={() => {
+          const d = new Date(currentDate);
+          d.setDate(d.getDate() + 1);
+          setCurrentDate(d);
+        }}
+        onYesterday={() => {
+          const d = new Date();
+          d.setDate(d.getDate() - 1);
+          setCurrentDate(d);
+        }}
+      />
     </div>
   );
 }
 
 // =========================
-// styles
+// style
 // =========================
 
 const cardStyle = {
@@ -374,25 +311,4 @@ const cardStyle = {
   borderRadius: 12,
   padding: 20,
   marginBottom: 24,
-};
-
-const buttonStyle = {
-  padding: "10px 16px",
-  borderRadius: 8,
-  border: "none",
-  background: "#111827",
-  color: "white",
-  cursor: "pointer",
-};
-
-const thStyle = {
-  border: "1px solid #ccc",
-  padding: 12,
-  background: "#f3f4f6",
-  textAlign: "left" as const,
-};
-
-const tdStyle = {
-  border: "1px solid #ccc",
-  padding: 12,
 };
