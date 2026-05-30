@@ -58,109 +58,54 @@ export default function MobileTeacherDashboard({
       uid: log.uid,
       data: log,
     })),
-    ...missingStudents.map((s) => ({
-      type: "missing" as const,
-      uid: s.uid,
-      name: s.name,
-    })),
   ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {items.map((item) => {
-        const isOpen = openUid === item.uid;
 
-        // =========================
-        // 未提出者UI
-        // =========================
+      {/* ================= 未提出（1回だけ） ================= */}
+      <div style={cardStyle}>
+        <h3>未提出者</h3>
 
-        if (item.type === "missing") {
-          return (
-            <div style={cardStyle}>
-                <h3>未提出者</h3>
-
-                {missing.length === 0 ? (
-                    <p style={{ color: "green" }}>
-                    全員提出済み 🎉
-                    </p>
-                ) : (
-                    <div>
-                    {missing.map((s) => (
-                        <div
-                        key={s.uid}
-                        style={{
-                            color: "#ef4444",
-                            padding: "4px 0",
-                        }}
-                        >
-                        ・{s.name}
-                        </div>
-                    ))}
-                    </div>
-                )}
-                </div>
-          );
-        }
-
-        // =========================
-        // 提出済みUI
-        // =========================
-
-        const log = item.data;
-        
-        <div style={{ marginBottom: 8 }}>
-            <h3 style={{ margin: 0 }}>
-                提出済み
-            </h3>
-        </div>
-        return (
-            
-          <div key={log.uid + log.date} style={cardStyle}>
+        {missing.length === 0 ? (
+          <p style={{ color: "green" }}>
+            全員提出済み 🎉
+          </p>
+        ) : (
+          missing.map((s) => (
             <div
-              style={headerStyle}
-              onClick={() => toggle(log.uid)}
+              key={s.uid}
+              style={{ color: "#ef4444", padding: "4px 0" }}
             >
-              <strong>
-                ✅ {studentMap[log.uid] || "不明"}
-              </strong>
+              ・{s.name}
+            </div>
+          ))
+        )}
+      </div>
 
+      {/* ================= 提出済み ================= */}
+      {logs.map((log) => {
+        const isOpen = openUid === log.uid;
+
+        return (
+          <div key={log.uid + log.date} style={cardStyle}>
+            <div style={headerStyle} onClick={() => toggle(log.uid)}>
+              <strong>✅ {studentMap[log.uid] || "不明"}</strong>
               <span>{isOpen ? "▲" : "▼"}</span>
             </div>
 
             {isOpen && (
               <div style={contentStyle}>
-                <Row
-                  label="勉強時間"
-                  value={
-                    log.studyTime
-                      ? `${(log.studyTime / 60).toFixed(1)}h`
-                      : "-"
-                  }
-                />
-
-                <Row
-                  label="スマホ時間"
-                  value={
-                    log.phoneTime
-                      ? `${(log.phoneTime / 60).toFixed(1)}h`
-                      : "-"
-                  }
-                />
-
-                <Row
-                  label="就寝時間"
-                  value={log.sleepTime || "-"}
-                />
-
-                <Row
-                  label="満足度"
-                  value={log.satisfaction || "-"}
-                />
+                <Row label="勉強時間" value={log.studyTime ? `${(log.studyTime / 60).toFixed(1)}h` : "-"} />
+                <Row label="スマホ時間" value={log.phoneTime ? `${(log.phoneTime / 60).toFixed(1)}h` : "-"} />
+                <Row label="就寝時間" value={log.sleepTime || "-"} />
+                <Row label="満足度" value={log.satisfaction || "-"} />
               </div>
             )}
           </div>
         );
       })}
+
     </div>
   );
 }
