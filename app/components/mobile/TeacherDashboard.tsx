@@ -62,7 +62,7 @@ export default function MobileTeacherDashboard({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-
+      
       {/* ================= 未提出（1回だけ） ================= */}
       <div style={cardStyle}>
         <h3>未提出者</h3>

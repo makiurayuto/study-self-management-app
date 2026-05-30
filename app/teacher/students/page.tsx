@@ -132,6 +132,11 @@ export default function TeacherPage() {
   const formatDate = (d: Date) =>
   `${d.getMonth() + 1}/${d.getDate()}`;
 
+  const formatDateDisplay = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  };
+
   const { start, end } = getWeekRange(weekOffset);
 
   const filteredLogs = logs.filter((l) => {
@@ -348,7 +353,9 @@ export default function TeacherPage() {
                     })
                     .map((log, i) => (
                       <tr key={i}>
-                        <td style={tdStyle}>{log.date}</td>
+                        <td style={tdStyle}>
+                          {formatDateDisplay(log.date)}
+                        </td>
                         <td style={tdStyle}>
                           {log.studyTime
                             ? `${(log.studyTime / 60).toFixed(1)}h`
