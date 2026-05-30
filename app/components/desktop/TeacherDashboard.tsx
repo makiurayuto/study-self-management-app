@@ -45,6 +45,7 @@ export default function TeacherDashboard({
     <>
       {/* ログ一覧 */}
       <div style={cardStyle}>
+        <h3 style={sectionTitleStyle}>📅 日付ナビ</h3>
         <h2>{currentDateLabel}の記録</h2>
 
         <div
@@ -67,60 +68,11 @@ export default function TeacherDashboard({
             次日 →
           </Button>
         </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-            }}
-          >
-            <thead>
-              <tr>
-                <th style={thStyle}>名前</th>
-                <th style={thStyle}>勉強時間</th>
-                <th style={thStyle}>スマホ時間</th>
-                <th style={thStyle}>就寝時間</th>
-                <th style={thStyle}>満足度</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {visibleLogs.map((log) => (
-                <tr key={log.uid + log.date}>
-                  <td style={tdStyle}>
-                    {studentMap[log.uid] || "不明"}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.studyTime
-                      ? `${(log.studyTime / 60).toFixed(1)}h`
-                      : ""}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.phoneTime
-                      ? `${(log.phoneTime / 60).toFixed(1)}h`
-                      : ""}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.sleepTime || ""}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {log.satisfaction || ""}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {/* 未提出者 */}
       <div style={cardStyle}>
-        <h2>未提出者</h2>
+        <h3 style={sectionTitleStyle}>🚨 未提出者</h3>
 
         {missingStudents.length === 0 ? (
           <p style={{ color: "green" }}>
@@ -138,6 +90,63 @@ export default function TeacherDashboard({
             ))}
           </ul>
         )}
+      </div>
+      <div style={cardStyle}>
+        <h3 style={sectionTitleStyle}>✅ 提出済み</h3>
+        <div
+            style={{
+              opacity: loading ? 0.4 : 1,
+              pointerEvents: loading ? "none" : "auto",
+              transition: "0.2s",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={thStyle}>名前</th>
+                  <th style={thStyle}>勉強時間</th>
+                  <th style={thStyle}>スマホ時間</th>
+                  <th style={thStyle}>就寝時間</th>
+                  <th style={thStyle}>満足度</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {visibleLogs.map((log) => (
+                  <tr key={log.uid + log.date}>
+                    <td style={tdStyle}>
+                      {studentMap[log.uid] || "不明"}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {log.studyTime
+                        ? `${(log.studyTime / 60).toFixed(1)}h`
+                        : ""}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {log.phoneTime
+                        ? `${(log.phoneTime / 60).toFixed(1)}h`
+                        : ""}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {log.sleepTime || ""}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {log.satisfaction || ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        </div>
       </div>
     </>
   );
@@ -161,4 +170,9 @@ const thStyle = {
 const tdStyle = {
   border: "1px solid #ccc",
   padding: 12,
+};
+const sectionTitleStyle = {
+  fontSize: 18,
+  fontWeight: 700,
+  marginBottom: 8,
 };
