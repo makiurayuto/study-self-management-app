@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import DateNavigator from "@/app/components/shared/DateNavigator";
+import SectionTitle from "@/app/components/shared/SectionTitle";
+import Card from "@/app/components/shared/Card";
+import Row from "@/app/components/shared/Row";
 
 type Log = {
   uid: string;
@@ -20,6 +24,11 @@ type Props = {
   logs: Log[];
   missingStudents: Student[];
   studentMap: Record<string, string>;
+
+  currentDateLabel: string;
+  onPrevDay: () => void;
+  onNextDay: () => void;
+  onYesterday: () => void;
 };
 
 type Item =
@@ -38,6 +47,12 @@ export default function MobileTeacherDashboard({
   logs,
   missingStudents,
   studentMap,
+
+  currentDateLabel,
+
+  onPrevDay,
+  onNextDay,
+  onYesterday,
 }: Props) {
 
   const submittedLogs = logs;
@@ -62,10 +77,24 @@ export default function MobileTeacherDashboard({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      
+
+      <Card>
+        <SectionTitle>
+          📅 日付ナビ
+        </SectionTitle>
+        <DateNavigator
+          currentDateLabel={currentDateLabel}
+          onPrevDay={onPrevDay}
+          onNextDay={onNextDay}
+          onYesterday={onYesterday}
+        />
+      </Card>
       {/* ================= 未提出（1回だけ） ================= */}
-      <div style={cardStyle}>
-        <h3>未提出者</h3>
+
+      <Card>
+        <SectionTitle>
+          🚨 未提出者
+        </SectionTitle>
 
         {missing.length === 0 ? (
           <p style={{ color: "green" }}>
@@ -81,53 +110,41 @@ export default function MobileTeacherDashboard({
             </div>
           ))
         )}
-      </div>
-
+      </Card>
       {/* ================= 提出済み ================= */}
-      {logs.map((log) => {
-        const isOpen = openUid === log.uid;
 
-        return (
-          <div key={log.uid + log.date} style={cardStyle}>
-            <div style={headerStyle} onClick={() => toggle(log.uid)}>
-              <strong>✅ {studentMap[log.uid] || "不明"}</strong>
-              <span>{isOpen ? "▲" : "▼"}</span>
-            </div>
+      <Card>
+        <SectionTitle>
+          ✅ 提出済み
+        </SectionTitle>
 
-            {isOpen && (
-              <div style={contentStyle}>
-                <Row label="勉強時間" value={log.studyTime ? `${(log.studyTime / 60).toFixed(1)}h` : "-"} />
-                <Row label="スマホ時間" value={log.phoneTime ? `${(log.phoneTime / 60).toFixed(1)}h` : "-"} />
-                <Row label="就寝時間" value={log.sleepTime || "-"} />
-                <Row label="満足度" value={log.satisfaction || "-"} />
+        {logs.map((log) => {
+            const isOpen = openUid === log.uid;
+
+            return (
+              <div key={log.uid + log.date} style={cardStyle}>
+                <div style={headerStyle} onClick={() => toggle(log.uid)}>
+                  <strong>{studentMap[log.uid] || "不明"}</strong>
+                  <span>{isOpen ? "▲" : "▼"}</span>
+                </div>
+
+                {isOpen && (
+                  <div style={contentStyle}>
+                    <Row label="勉強時間" value={log.studyTime ? `${(log.studyTime / 60).toFixed(1)}h` : "-"} />
+                    <Row label="スマホ時間" value={log.phoneTime ? `${(log.phoneTime / 60).toFixed(1)}h` : "-"} />
+                    <Row label="就寝時間" value={log.sleepTime || "-"} />
+                    <Row label="満足度" value={log.satisfaction || "-"} />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
+      </Card>
 
     </div>
   );
 }
 
-// =========================
-// Row
-// =========================
-
-function Row({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div style={rowStyle}>
-      <span style={{ color: "#666" }}>{label}</span>
-      <span>{value}</span>
-    </div>
-  );
-}
 
 // =========================
 // styles
@@ -165,10 +182,4 @@ const contentStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: 8,
-};
-
-const rowStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  fontSize: 14,
 };

@@ -12,8 +12,16 @@ import {
   where,
 } from "firebase/firestore";
 
-import DesktopTeacherDashboard from "@/app/components/desktop/TeacherDashboard";
-import MobileTeacherDashboard from "@/app/components/mobile/TeacherDashboard";
+import {
+  buildTeacherSummary,
+  createStudentMap,
+  getMissingStudents,
+} from "@/app/lib/log";
+
+import DesktopTeacherDashboard from "@/app/components/features/teacher/desktop/TeacherDashboard";
+import MobileTeacherDashboard from "@/app/components/features/teacher/mobile/TeacherDashboard";
+import { formatDateForDisplay } from "@/app/lib/date";
+
 
 // =========================
 // 型
@@ -142,23 +150,43 @@ export default function TeacherPage() {
   const visibleStudents = students;
   const allStudents = [...students, ...hiddenStudents];
 
-  const studentMap = useMemo(() => {
-    return Object.fromEntries(allStudents.map((s) => [s.uid, s.name]));
-  }, [allStudents]);
+  const studentMap = useMemo(
+    () => createStudentMap(allStudents),
+    [allStudents]
+  );
 
-  const submittedUids = useMemo(() => {
-    return new Set(logs.map((l) => l.uid));
-  }, [logs]);
+  const missingStudents = useMemo(
+    () => getMissingStudents(visibleStudents, logs),
+    [visibleStudents, logs]
+  );
 
-  const missingStudents = useMemo(() => {
-    return visibleStudents.filter((s) => !submittedUids.has(s.uid));
-  }, [visibleStudents, submittedUids]);
+  const summary = useMemo(
+    () => buildTeacherSummary(visibleStudents, logs),
+    [visibleStudents, logs]
+  );
 
   const visibleLogs = useMemo(() => {
     return logs.filter((log) =>
       visibleStudents.some((s) => s.uid === log.uid)
     );
   }, [logs, visibleStudents]);
+
+  const currentDateLabel = formatDateForDisplay(currentDate);
+
+  const changeDay = (diff: number) => {
+    const d = new Date(currentDate);
+    d.setDate(d.getDate() + diff);
+    setCurrentDate(d);
+  };
+
+  const onPrevDay = () => changeDay(-1);
+  const onNextDay = () => changeDay(1);
+
+  const onYesterday = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    setCurrentDate(d);
+  };
 
   // =========================
   // モバイル判定
@@ -282,29 +310,22 @@ export default function TeacherPage() {
           logs={visibleLogs}
           missingStudents={missingStudents}
           studentMap={studentMap}
+
+          currentDateLabel={currentDateLabel}
+          onPrevDay={onPrevDay}
+          onNextDay={onNextDay}
+          onYesterday={onYesterday}
         />
       ) : (
         <DesktopTeacherDashboard
           currentDateLabel={formatDateForDisplay(currentDate)}
-          visibleLogs={visibleLogs}
-          missingStudents={missingStudents}
-          studentMap={studentMap}
+          visibleLogs={summary.submittedLogs}
+          missingStudents={summary.missingStudents}
+          studentMap={summary.studentMap}
           loading={loading}
-          onPrevDay={() => {
-            const d = new Date(currentDate);
-            d.setDate(d.getDate() - 1);
-            setCurrentDate(d);
-          }}
-          onNextDay={() => {
-            const d = new Date(currentDate);
-            d.setDate(d.getDate() + 1);
-            setCurrentDate(d);
-          }}
-          onYesterday={() => {
-            const d = new Date();
-            d.setDate(d.getDate() - 1);
-            setCurrentDate(d);
-          }}
+          onPrevDay={onPrevDay}
+          onNextDay={onNextDay}
+          onYesterday={onYesterday}
         />
       )}
     </div>

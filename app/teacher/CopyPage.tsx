@@ -12,6 +12,11 @@ import {
   where,
 } from "firebase/firestore";
 
+import {
+  formatDateForQuery,
+  formatDateForDisplay,
+} from "@/app/lib/date";
+
 
 // =========================
 // 型
@@ -114,21 +119,6 @@ export default function TeacherPage() {
       setLoading(false);
     }
   }, []);
-
-  const formatDateForQuery = (date: Date) => {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
-  const formatDateForDisplay = (date: Date) => {
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-
-    return `${mm}/${dd}`;
-  };
 
   const getYesterday = () => {
   const d = new Date();

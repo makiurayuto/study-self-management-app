@@ -1,6 +1,9 @@
 "use client";
 
 import Button from "@/app/components/shared/Button";
+import DateNavigator from "@/app/components/shared/DateNavigator";
+import SectionTitle from "@/app/components/shared/SectionTitle";
+import Card from "@/app/components/shared/Card";
 
 type Student = {
   uid: string;
@@ -44,35 +47,24 @@ export default function TeacherDashboard({
   return (
     <>
       {/* ログ一覧 */}
-      <div style={cardStyle}>
-        <h3 style={sectionTitleStyle}>📅 日付ナビ</h3>
-        <h2>{currentDateLabel}の記録</h2>
+      <Card>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            marginTop: 16,
-            marginBottom: 16,
-          }}
-        >
-          <Button variant="secondary" onClick={onPrevDay}>
-            ← 前日
-          </Button>
-
-          <Button variant="secondary" onClick={onYesterday}>
-            昨日
-          </Button>
-
-          <Button variant="secondary" onClick={onNextDay}>
-            次日 →
-          </Button>
-        </div>
-      </div>
+        <SectionTitle>
+          📅 日付ナビ
+        </SectionTitle>
+        <DateNavigator
+          currentDateLabel={currentDateLabel}
+          onPrevDay={onPrevDay}
+          onNextDay={onNextDay}
+          onYesterday={onYesterday}
+        />
+      </Card>
 
       {/* 未提出者 */}
-      <div style={cardStyle}>
-        <h3 style={sectionTitleStyle}>🚨 未提出者</h3>
+      <Card>
+        <SectionTitle>
+          🚨 未提出者
+        </SectionTitle>
 
         {missingStudents.length === 0 ? (
           <p style={{ color: "green" }}>
@@ -90,9 +82,12 @@ export default function TeacherDashboard({
             ))}
           </ul>
         )}
-      </div>
-      <div style={cardStyle}>
-        <h3 style={sectionTitleStyle}>✅ 提出済み</h3>
+      </Card>
+
+      <Card>
+        <SectionTitle>
+          ✅ 提出済み
+        </SectionTitle>
         <div
             style={{
               opacity: loading ? 0.4 : 1,
@@ -147,7 +142,7 @@ export default function TeacherDashboard({
               </tbody>
             </table>
         </div>
-      </div>
+      </Card>
     </>
   );
 }

@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import Button from "@/app/components/shared/Button";
 
+import { getWeekRange } from "@/app/lib/date";
+
 
 type Student = {
   uid: string;
@@ -98,23 +100,6 @@ export default function TeacherPage() {
     setLogs(logList);
 
     setLoading(false);
-  };
-
-  const getWeekRange = (offset: number) => {
-    const today = new Date();
-    const day = today.getDay();
-
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-    monday.setDate(monday.getDate() + offset * 7);
-
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    return {
-      start: monday,
-      end: sunday,
-    };
   };
 
   const handleChangeMode = (mode: "students" | "hidden") => {
