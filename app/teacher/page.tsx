@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { db } from "@/firebase";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/shared/Button";
@@ -12,15 +12,13 @@ import {
   where,
 } from "firebase/firestore";
 
-import {
-  buildTeacherSummary,
-  createStudentMap,
-  getMissingStudents,
-} from "@/app/lib/log";
+import { useTeacherData }
+from "@/app/components/features/teacher/hooks/useTeacherData";
 
 import DesktopTeacherDashboard from "@/app/components/features/teacher/desktop/TeacherDashboard";
 import MobileTeacherDashboard from "@/app/components/features/teacher/mobile/TeacherDashboard";
 import { formatDateForDisplay } from "@/app/lib/date";
+import { formatDateForQuery } from "@/app/lib/date";
 
 
 // =========================
@@ -53,10 +51,6 @@ const getIsMobile = () =>
 // =========================
 
 export default function TeacherPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
@@ -69,107 +63,14 @@ export default function TeacherPage() {
   const router = useRouter();
   const { user, authLoading, logout } = useAuth();
 
-  // =========================
-  // データ取得
-  // =========================
-
-  const fetchData = useCallback(async (targetDate: string) => {
-    setLoading(true);
-
-    try {
-      const userSnap = await getDocs(
-        query(collection(db, "users"), where("role", "==", "student"))
-      );
-
-      const studentList: Student[] = [];
-      const hiddenList: Student[] = [];
-
-      userSnap.forEach((d) => {
-        const data = d.data();
-
-        const student = {
-          uid: d.id,
-          name: data.name || "名前なし",
-        };
-
-        if (data.isHidden) hiddenList.push(student);
-        else studentList.push(student);
-      });
-
-      setStudents(studentList);
-      setHiddenStudents(hiddenList);
-
-      const logSnap = await getDocs(
-        query(collection(db, "weeklyLogs"), where("date", "==", targetDate))
-      );
-
-      const logList: Log[] = [];
-
-      logSnap.forEach((d) => {
-        const data = d.data();
-
-        logList.push({
-          uid: data.uid,
-          date: data.date,
-          studyTime: data.studyTime ?? null,
-          phoneTime: data.phoneTime ?? null,
-          sleepTime: data.sleepTime ?? "",
-          satisfaction: data.satisfaction ?? "",
-        });
-      });
-
-      setLogs(logList);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // =========================
-  // 日付処理
-  // =========================
-
-  const formatDateForQuery = (date: Date) => {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
-  const formatDateForDisplay = (date: Date) => {
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${mm}/${dd}`;
-  };
-
-  // =========================
-  // データ整形
-  // =========================
-
-  const visibleStudents = students;
-  const allStudents = [...students, ...hiddenStudents];
-
-  const studentMap = useMemo(
-    () => createStudentMap(allStudents),
-    [allStudents]
-  );
-
-  const missingStudents = useMemo(
-    () => getMissingStudents(visibleStudents, logs),
-    [visibleStudents, logs]
-  );
-
-  const summary = useMemo(
-    () => buildTeacherSummary(visibleStudents, logs),
-    [visibleStudents, logs]
-  );
-
-  const visibleLogs = useMemo(() => {
-    return logs.filter((log) =>
-      visibleStudents.some((s) => s.uid === log.uid)
-    );
-  }, [logs, visibleStudents]);
+  const {
+    logs,
+    loading,
+    studentMap,
+    missingStudents,
+    visibleLogs,
+  } = useTeacherData(formatDateForQuery(currentDate));
+  
 
   const currentDateLabel = formatDateForDisplay(currentDate);
 
@@ -201,21 +102,6 @@ export default function TeacherPage() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // =========================
-  // 認証 + データ取得
-  // =========================
-
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user || user.role !== "teacher") {
-      router.push("/");
-      return;
-    }
-
-    const date = formatDateForQuery(currentDate);
-    fetchData(date);
-  }, [user, authLoading, currentDate, fetchData]);
 
   // =========================
   // logout
@@ -266,9 +152,9 @@ export default function TeacherPage() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() =>
-              fetchData(formatDateForQuery(currentDate))
-            }
+            onClick={() => {
+              setCurrentDate(new Date(currentDate));
+            }}
           >
             更新
           </Button>
@@ -301,7 +187,7 @@ export default function TeacherPage() {
           生徒一覧
         </Button>
 
-        <p style={{ marginTop: 12 }}>生徒数：{students.length}人</p>
+        <p>生徒数：{studentMap ? Object.keys(studentMap).length : 0}人</p>
       </div>
 
       {/* UI切替 */}
@@ -319,9 +205,9 @@ export default function TeacherPage() {
       ) : (
         <DesktopTeacherDashboard
           currentDateLabel={formatDateForDisplay(currentDate)}
-          visibleLogs={summary.submittedLogs}
-          missingStudents={summary.missingStudents}
-          studentMap={summary.studentMap}
+          visibleLogs={visibleLogs}
+          missingStudents={missingStudents}
+          studentMap={studentMap}
           loading={loading}
           onPrevDay={onPrevDay}
           onNextDay={onNextDay}

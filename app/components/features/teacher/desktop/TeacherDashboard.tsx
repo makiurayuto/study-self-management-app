@@ -147,14 +147,6 @@ export default function TeacherDashboard({
   );
 }
 
-const cardStyle = {
-  background: "#fff",
-  border: "1px solid #ddd",
-  borderRadius: 12,
-  padding: 20,
-  marginBottom: 24,
-};
-
 const thStyle = {
   border: "1px solid #ccc",
   padding: 12,

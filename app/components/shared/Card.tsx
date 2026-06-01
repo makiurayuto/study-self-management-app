@@ -12,6 +12,7 @@ export default function Card({
         border: "1px solid #ddd",
         borderRadius: 12,
         padding: 20,
+        marginBottom: 12,
       }}
     >
       {children}
