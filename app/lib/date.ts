@@ -26,3 +26,39 @@ export const getWeekRange = (weekOffset: number) => {
 
   return { start, end };
 };
+
+  // =====================
+  // 週生成
+  // =====================
+export function getWeekDates(offset = 0) {
+    const today = new Date();
+    const day = today.getDay();
+
+    const monday = new Date(today);
+    monday.setDate(
+        today.getDate() - (day === 0 ? 6 : day - 1)
+    );
+
+    monday.setDate(monday.getDate() + offset * 7);
+
+    const week = [];
+
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+
+        const iso = `${yyyy}-${mm}-${dd}`;
+
+        week.push({
+        date: iso,
+        dayName: ["日", "月", "火", "水", "木", "金", "土"][d.getDay()],
+        displayDate: `${d.getMonth() + 1}/${d.getDate()}`,
+        });
+    }
+
+    return week;
+};
