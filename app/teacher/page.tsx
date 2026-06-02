@@ -118,15 +118,14 @@ export default function TeacherPage() {
 
   return (
     <div
-      style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: 20,
-        fontFamily: "sans-serif",
-      }}
-    >
+  style={{
+    width: "100%",
+    padding: "20px 24px",
+    boxSizing: "border-box",
+  }}
+>
       {/* ヘッダー */}
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 12 }}>
         {/* タイトル：中央 */}
         <h1
           style={{
@@ -187,7 +186,7 @@ export default function TeacherPage() {
           生徒一覧
         </Button>
 
-        <p>生徒数：{studentMap ? Object.keys(studentMap).length : 0}人</p>
+        <p style={{ marginTop: 12 }}>生徒数：{studentMap ? Object.keys(studentMap).length : 0}人</p>
       </div>
 
       {/* UI切替 */}
