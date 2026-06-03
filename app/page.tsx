@@ -269,6 +269,13 @@ export default function Home() {
       fetchLogs(user.uid);
     }
   }, [user]);
+  
+  //ログイン時に登録内容ロード
+  useEffect(() => {
+    if (user?.uid) {
+      loadData(user.uid, date);
+    }
+  }, [user]);
 
   // =====================
   // 週生成（そのまま）
