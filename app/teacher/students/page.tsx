@@ -13,6 +13,10 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import Button from "@/app/components/shared/Button";
 import { getWeekDates, formatDateForDisplay } from "@/app/lib/date";
 import { useTeacherStudents } from "@/app/teacher/students/hooks/useTeacherStudents";
+import Sidebar from "@/app/teacher/students/components/Sidebar";
+import StudentDetail from "@/app/teacher/students/components/StudentDetail";
+import WeekHeader from "@/app/teacher/students/components/WeekHeader";
+import LogTable from "@/app/teacher/students/components/LogTable";
 
 type Student = {
   uid: string;
@@ -31,6 +35,9 @@ type Log = {
 export default function TeacherPage() {
   const { user, authLoading } = useAuth();
   const router = useRouter();
+
+console.log("StudentDetail file:", StudentDetail);
+
 
   // 👇選択中の生徒
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
@@ -125,209 +132,38 @@ export default function TeacherPage() {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
 
-      {/* ================= 左：生徒一覧 ================= */}
-      <div
-        style={{
-          width: "30%",
-          borderRight: "1px solid #ddd",
-          overflowY: "auto",
-        }}
-      >
-        <h2 style={{ padding: 16 }}>👤 生徒一覧</h2>
-
-        {/* モード切替 */}
-        <div style={{ padding: "0 16px", display: "flex", gap: 8 }}>
-          <button
-            onClick={() => handleChangeMode("students")}
-            style={{
-              flex: 1,
-              padding: 8,
-              background: viewMode === "students" ? "#dbeafe" : "#f3f4f6",
-            }}
-          >
-            👤 生徒
-          </button>
-
-          <button
-            onClick={() => handleChangeMode("hidden")}
-            style={{
-              flex: 1,
-              padding: 8,
-              background: viewMode === "hidden" ? "#fee2e2" : "#f3f4f6",
-            }}
-          >
-            🚫 非表示
-          </button>
-        </div>
-
-        <hr />
-
-        {/* 生徒一覧 */}
-        {viewMode === "students" &&
-          students.map((s) => (
-            <div
-              key={s.uid}
-              onClick={() => setSelectedUid(s.uid)}
-              style={{
-                padding: "12px 16px",
-                cursor: "pointer",
-                borderBottom: "1px solid #e5e7eb",
-                background: selectedUid === s.uid ? "#f0f9ff" : "white",
-              }}
-            >
-              {s.name}
-            </div>
-          ))}
-
-        {/* 非表示リスト */}
-        {viewMode === "hidden" &&
-          hiddenStudents.map((s) => (
-            <div
-              key={s.uid}
-              onClick={() => setSelectedUid(s.uid)}
-              style={{
-                padding: "12px 16px",
-                cursor: "pointer",
-                borderBottom: "1px solid #e5e7eb",
-                background: "white",
-                display: "flex",
-                gap: 20,
-              }}
-            >
-              <span>{s.name}</span>
-
-              <div style={{ marginLeft: "auto" }}>
-                <Button
-                  variant="secondary"
-                  onClick={async () => {
-                    await updateDoc(doc(db, "users", s.uid), {
-                      isHidden: false,
-                    });
-
-                    fetchData();
-                  }}
-                >
-                  再表示
-                </Button>
-              </div>
-            </div>
-          ))}
-      </div>
+      <Sidebar
+        students={students}
+        hiddenStudents={hiddenStudents}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        selectedUid={selectedUid}
+        setSelectedUid={setSelectedUid}
+        fetchData={fetchData}
+      />
 
       {/* ================= 右：詳細 ================= */}
       <div style={{ width: "70%", padding: 20 }}>
 
-        {/* 未選択 */}
-        {!selectedUid && (
-          <p>👈 生徒を選択してください</p>
-        )}
+       <StudentDetail
+          selectedUid={selectedUid}
+          studentMap={studentMap}
+          weekOffset={weekOffset}
+          setWeekOffset={setWeekOffset}
+          getWeekLabel={getWeekLabel}
+          formatDateForDisplay={formatDateForDisplay}
+          week={week}
+          filteredLogs={filteredLogs}
+          setHidden={async (uid) => {
+            await updateDoc(doc(db, "users", uid), {
+              isHidden: true,
+            });
 
-        {/* 生徒選択中（生徒モード） */}
-        {selectedUid && (
-          <>
-          <div style={{ marginBottom: 20 }}>
-            <h2 style={{ fontSize: 20 }}>
-              📊{" "}
-              <span style={{ color: "#2563eb", fontWeight: 700 }}>
-                {studentMap[selectedUid] ?? "不明な生徒"}
-              </span>
-              <span style={{ color: "#666" }}> の学習ログ</span>
-            </h2>
-          </div>
-
-          <hr style={{ margin: "12px 0", borderColor: "#e5e7eb" }} />
-            
-            <div style={{ marginBottom: 12 }}>
-              <h2 style={{ marginBottom: 4 }}>
-                 {getWeekLabel(weekOffset)}
-              </h2>
-
-              <div style={{ color: "#666", fontSize: 14 }}>
-                {formatDateForDisplay(week[0].date)} 〜 {formatDateForDisplay(week[6].date)}
-              </div>
-            </div>
-
-
-            <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
-              <Button variant="secondary" size="md" onClick={() => setWeekOffset((p) => p - 1)}>
-                ← 前の週
-              </Button>
-
-              <Button variant="secondary" size="md" onClick={() => setWeekOffset(0)}>
-                今週
-              </Button>
-
-              <Button variant="secondary" size="md" onClick={() => setWeekOffset((p) => p + 1)}>
-                次の週 →
-              </Button>
-            </div>
-
-            <div style={{ overflowX: "auto", marginTop: 20 }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th style={thStyle}>日付</th>
-                    <th style={thStyle}>勉強</th>
-                    <th style={thStyle}>スマホ</th>
-                    <th style={thStyle}>睡眠</th>
-                    <th style={thStyle}>満足度</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredLogs.map((log, i) => (
-                    <tr key={i}>
-                      <td style={tdStyle}>
-                        {formatDateDisplay(log.date)}
-                      </td>
-                      <td style={tdStyle}>
-                        {log.studyTime
-                          ? `${(log.studyTime / 60).toFixed(1)}h`
-                          : ""}
-                      </td>
-
-                      <td style={tdStyle}>
-                        {log.phoneTime
-                          ? `${(log.phoneTime / 60).toFixed(1)}h`
-                          : ""}
-                      </td>
-
-                      <td style={tdStyle}>{log.sleepTime}</td>
-                      <td style={tdStyle}>{log.satisfaction}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div style={{ height: 24 }} />
-
-            {selectedUid && viewMode === "students" && (
-              <div style={{ display: "flex", gap: 8 }}>
-                <Button
-                  variant="secondary"
-                  colorVariant ="danger"
-                  onClick={async () => {
-                    await updateDoc(doc(db, "users", selectedUid), {
-                      isHidden: true,
-                    });
-
-                    setSelectedUid(null);
-                    setViewMode("hidden");
-                    fetchData();
-                  }}
-                >
-                  非表示にする
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+            setSelectedUid(null);
+            setViewMode("hidden");
+            fetchData();
+          }}
+        />
 
       </div>
     </div>
