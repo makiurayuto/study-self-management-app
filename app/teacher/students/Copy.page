@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import Button from "@/app/components/shared/Button";
 import { getWeekDates, formatDateForDisplay } from "@/app/lib/date";
-import { useTeacherStudents } from "@/app/teacher/students/hooks/useTeacherStudents";
+
 
 type Student = {
   uid: string;
@@ -32,20 +32,73 @@ export default function TeacherPage() {
   const { user, authLoading } = useAuth();
   const router = useRouter();
 
+  const [students, setStudents] = useState<Student[]>([]);
+  const [logs, setLogs] = useState<Log[]>([]);
+
   // 👇選択中の生徒
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [viewMode, setViewMode] =
     useState<"students" | "hidden">("students");
-
-  const {
-    students,
-    hiddenStudents,
-    logs,
-    loading,
-    fetchData,
-  } = useTeacherStudents(user, authLoading);
+  const [loading, setLoading] = useState(true);
 
   const [weekOffset, setWeekOffset] = useState(0);
+
+  const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
+
+  // =========================
+  // データ取得
+  // =========================
+  const fetchData = async () => {
+    setLoading(true);
+
+    const userSnap = await getDocs(collection(db, "users"));
+    const logSnap = await getDocs(collection(db, "weeklyLogs"));
+
+    const studentList: Student[] = [];
+    const hiddenList: Student[] = [];
+
+    userSnap.forEach((d) => {
+      const data = d.data();
+
+      if (data.role === "student") {
+        const student = {
+          uid: d.id,
+          name: data.name || "名前なし",
+        };
+
+        // 👇ここが超重要
+        if (data.isHidden) {
+          hiddenList.push(student);
+        } else {
+          studentList.push(student);
+        }
+      }
+    });
+
+    setStudents(studentList);
+    setHiddenStudents(hiddenList);
+
+    const logList: Log[] = [];
+
+    logSnap.forEach((d) => {
+      const data = d.data();
+
+      logList.push({
+        uid: data.uid ?? "",
+        date: data.date ?? "",
+        studyTime: data.studyTime ?? null,
+        phoneTime: data.phoneTime ?? null,
+        sleepTime: data.sleepTime ?? "",
+        satisfaction: data.satisfaction ?? "",
+      });
+    });
+
+    logList.sort((a, b) => b.date.localeCompare(a.date));
+
+    setLogs(logList);
+
+    setLoading(false);
+  };
 
   const handleChangeMode = (mode: "students" | "hidden") => {
     setViewMode(mode);
