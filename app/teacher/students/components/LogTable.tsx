@@ -1,4 +1,5 @@
 "use client";
+import { formatDateForDisplay } from "@/app/lib/date";
 
 type Log = {
   uid: string;
@@ -11,12 +12,10 @@ type Log = {
 
 type Props = {
   filteredLogs: Log[];
-  formatDateDisplay: (date: string) => string;
 };
 
 export default function LogTable({
   filteredLogs,
-  formatDateDisplay,
 }: Props) {
   return (
     <div style={{ overflowX: "auto", marginTop: 20 }}>
@@ -34,7 +33,7 @@ export default function LogTable({
         <tbody>
           {filteredLogs.map((log, i) => (
             <tr key={i}>
-              <td style={tdStyle}>{formatDateDisplay(log.date)}</td>
+              <td style={tdStyle}>{formatDateForDisplay(log.date)}</td>
 
               <td style={tdStyle}>
                 {log.studyTime ? (log.studyTime / 60).toFixed(1) + "h" : ""}

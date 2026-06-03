@@ -4,7 +4,6 @@ import Button from "@/app/components/shared/Button";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase";
 
-
 type Student = {
   uid: string;
   name: string;
@@ -13,14 +12,20 @@ type Student = {
 type Props = {
   hiddenStudents: Student[];
   setSelectedUid: (uid: string | null) => void;
-  fetchData: () => void;
 };
 
 export default function HiddenList({
   hiddenStudents,
   setSelectedUid,
-  fetchData,
 }: Props) {
+  const handleUnhide = async (uid: string) => {
+    await updateDoc(doc(db, "users", uid), {
+      isHidden: false,
+    });
+
+    // 👉 ここは親に任せる（後でuseEffect or fetchData）
+  };
+
   return (
     <>
       {hiddenStudents.map((s) => (
@@ -41,11 +46,7 @@ export default function HiddenList({
             <Button
               variant="secondary"
               onClick={async () => {
-                await updateDoc(doc(db, "users", s.uid), {
-                    isHidden: false,
-                });
-
-                fetchData();
+                await handleUnhide(s.uid);
               }}
             >
               再表示
