@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
 import { db } from "@/firebase";
 import {
@@ -12,8 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import Button from "@/app/components/shared/Button";
-
-import { getWeekRange } from "@/app/lib/date";
+import { getWeekDates } from "@/app/lib/date";
 
 
 type Student = {
@@ -122,11 +120,21 @@ export default function TeacherPage() {
     return `${d.getMonth() + 1}/${d.getDate()}`;
   };
 
-  const { start, end } = getWeekRange(weekOffset);
+  const week = getWeekDates(weekOffset);
+
+  const start = week[0].date;
+  const end = week[6].date;
+
+  const normalize = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
   const filteredLogs = logs.filter((l) => {
-    const d = new Date(l.date);
-    return d >= start && d <= end;
+    const logDate = l.date.split("T")[0]; // ←強制正規化
+
+    return (
+      l.uid === selectedUid &&
+      week.some((w) => w.date === logDate)
+    );
   });
 
   const studentMap = useMemo(() => {
@@ -164,8 +172,6 @@ export default function TeacherPage() {
     (s) => s.uid === selectedUid
   );
 
-  console.log("selectedUid:", selectedUid);
-  console.log("studentMap:", studentMap);
   // =========================
   // UI
   // =========================
@@ -290,7 +296,7 @@ export default function TeacherPage() {
               </h2>
 
               <div style={{ color: "#666", fontSize: 14 }}>
-                {formatDate(start)} 〜 {formatDate(end)}
+                {week[0].date} 〜 {week[6].date}
               </div>
             </div>
 
@@ -327,35 +333,27 @@ export default function TeacherPage() {
                 </thead>
 
                 <tbody>
-                  {logs
-                    .filter((l) => {
-                      const d = new Date(l.date);
-                      return (
-                        l.uid === selectedUid &&
-                        d >= start &&
-                        d <= end
-                      );
-                    })
-                    .map((log, i) => (
-                      <tr key={i}>
-                        <td style={tdStyle}>
-                          {formatDateDisplay(log.date)}
-                        </td>
-                        <td style={tdStyle}>
-                          {log.studyTime
-                            ? `${(log.studyTime / 60).toFixed(1)}h`
-                            : ""}
-                        </td>
+                  {filteredLogs.map((log, i) => (
+                    <tr key={i}>
+                      <td style={tdStyle}>
+                        {formatDateDisplay(log.date)}
+                      </td>
+                      <td style={tdStyle}>
+                        {log.studyTime
+                          ? `${(log.studyTime / 60).toFixed(1)}h`
+                          : ""}
+                      </td>
 
-                        <td style={tdStyle}>
-                          {log.phoneTime
-                            ? `${(log.phoneTime / 60).toFixed(1)}h`
-                            : ""}
-                        </td>
-                        <td style={tdStyle}>{log.sleepTime}</td>
-                        <td style={tdStyle}>{log.satisfaction}</td>
-                      </tr>
-                    ))}
+                      <td style={tdStyle}>
+                        {log.phoneTime
+                          ? `${(log.phoneTime / 60).toFixed(1)}h`
+                          : ""}
+                      </td>
+
+                      <td style={tdStyle}>{log.sleepTime}</td>
+                      <td style={tdStyle}>{log.satisfaction}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
