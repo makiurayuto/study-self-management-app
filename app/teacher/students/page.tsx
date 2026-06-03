@@ -1,22 +1,12 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { db } from "@/firebase";
-import {
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
-import Button from "@/app/components/shared/Button";
 import { getWeekDates, formatDateForDisplay } from "@/app/lib/date";
-import { useTeacherStudents } from "@/app/teacher/students/hooks/useTeacherStudents";
 import Sidebar from "@/app/teacher/students/components/Sidebar";
 import StudentDetail from "@/app/teacher/students/components/StudentDetail";
-import WeekHeader from "@/app/teacher/students/components/WeekHeader";
-import LogTable from "@/app/teacher/students/components/LogTable";
+import { useTeacherGuard } from "@/app/teacher/students/hooks/useTeacherGuard";
+import { useTeacherData } from "@/app/teacher/students/hooks/useTeacherData";
 
 type Student = {
   uid: string;
@@ -36,28 +26,33 @@ export default function TeacherPage() {
   const { user, authLoading } = useAuth();
   const router = useRouter();
 
-console.log("StudentDetail file:", StudentDetail);
-
-
-  // 👇選択中の生徒
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [viewMode, setViewMode] =
     useState<"students" | "hidden">("students");
 
+  const [weekOffset, setWeekOffset] = useState(0);
+
   const {
     students,
     hiddenStudents,
-    logs,
+    studentMap,
+    week,
+    filteredLogs,
     loading,
     fetchData,
-  } = useTeacherStudents(user, authLoading);
+    hideStudent,
+  } = useTeacherData({
+    user,
+    authLoading,
+    selectedUid,
+    weekOffset,
+  });
 
-  const [weekOffset, setWeekOffset] = useState(0);
-
-  const handleChangeMode = (mode: "students" | "hidden") => {
-    setViewMode(mode);
-    setSelectedUid(null);
-  };
+  useTeacherGuard({
+    user,
+    authLoading,
+    fetchData,
+  });
 
   const getWeekLabel = (offset: number) => {
     if (offset === 0) return "今週";
@@ -66,65 +61,22 @@ console.log("StudentDetail file:", StudentDetail);
     return `${offset > 0 ? "+" : ""}${offset}週`;
   };
 
-  const formatDate = (d: Date) =>
-  `${d.getMonth() + 1}/${d.getDate()}`;
-
-  const formatDateDisplay = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return `${d.getMonth() + 1}/${d.getDate()}`;
-  };
-
-  const week = getWeekDates(weekOffset);
-
-  const start = week[0].date;
-  const end = week[6].date;
-
-  const normalize = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-  const filteredLogs = logs.filter((l) => {
-    const logDate = l.date.split("T")[0]; // ←強制正規化
-
-    return (
-      l.uid === selectedUid &&
-      week.some((w) => w.date === logDate)
-    );
-  });
-
-  const studentMap = useMemo(() => {
-    return Object.fromEntries(
-      [...students, ...hiddenStudents].map((s) => [s.uid, s.name])
-    );
-  }, [students, hiddenStudents]);
-
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
-      router.push("/");
-      return;
-    }
-
-    if (!user || user.role !== "teacher") {
-      router.push("/");
-      return;
-    }
-
-    fetchData();
-  }, [user, authLoading]);
-
   useEffect(() => {
     console.log(selectedUid);
     console.log(studentMap);
   }, [selectedUid, studentMap]);
 
-  if (authLoading || loading) {
-    return <div style={{ padding: 20 }}>読み込み中...</div>;
+  if (authLoading) {
+    return <div>認証確認中...</div>;
   }
 
-  const isHiddenStudent = hiddenStudents.some(
-    (s) => s.uid === selectedUid
-  );
+  if (!user || user.role !== "teacher") {
+    return null;
+  }
+
+  if (loading) {
+    return <div>データ読み込み中...</div>;
+  }
 
   // =========================
   // UI
@@ -154,15 +106,7 @@ console.log("StudentDetail file:", StudentDetail);
           formatDateForDisplay={formatDateForDisplay}
           week={week}
           filteredLogs={filteredLogs}
-          setHidden={async (uid) => {
-            await updateDoc(doc(db, "users", uid), {
-              isHidden: true,
-            });
-
-            setSelectedUid(null);
-            setViewMode("hidden");
-            fetchData();
-          }}
+          setHidden={hideStudent}
         />
 
       </div>

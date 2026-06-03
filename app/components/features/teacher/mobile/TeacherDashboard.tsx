@@ -106,7 +106,7 @@ export default function MobileTeacherDashboard({
               key={s.uid}
               style={{ color: "#ef4444", padding: "4px 0" }}
             >
-              ・{s.name}
+              ・ {s.name}
             </div>
           ))
         )}
