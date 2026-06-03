@@ -8,9 +8,11 @@ export const formatDateForQuery = (date: Date) => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
-export const formatDateForDisplay = (date: Date) => {
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
+export const formatDateForDisplay = (date: Date | string) => {
+  const d = typeof date === "string" ? new Date(date) : date;
+
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
 
   return `${mm}/${dd}`;
 };

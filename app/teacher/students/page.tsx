@@ -11,7 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import Button from "@/app/components/shared/Button";
-import { getWeekDates } from "@/app/lib/date";
+import { getWeekDates, formatDateForDisplay } from "@/app/lib/date";
 
 
 type Student = {
@@ -296,7 +296,7 @@ export default function TeacherPage() {
               </h2>
 
               <div style={{ color: "#666", fontSize: 14 }}>
-                {week[0].date} 〜 {week[6].date}
+                {formatDateForDisplay(week[0].date)} 〜 {formatDateForDisplay(week[6].date)}
               </div>
             </div>
 
