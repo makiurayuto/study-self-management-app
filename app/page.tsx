@@ -205,8 +205,16 @@ export default function Home() {
     if (snap.exists()) {
       const data = snap.data();
 
-      setStudyTime(data.studyTime?.toString() ?? "");
-      setPhoneTime(data.phoneTime?.toString() ?? "");
+      setStudyTime(
+        data.studyTime != null
+          ? minutesToTime(data.studyTime)
+          : ""
+      );
+      setPhoneTime(
+        data.phoneTime != null
+          ? minutesToTime(data.phoneTime)
+          : ""
+      );
       setSleepTime(data.sleepTime ?? "");
       setSatisfaction(data.satisfaction ?? "");
     } else {
@@ -230,8 +238,16 @@ export default function Home() {
 
     if (snap.exists()) {
       const data = snap.data();
-      setStudyTime(data.studyTime?.toString() ?? "");
-      setPhoneTime(data.phoneTime?.toString() ?? "");
+      setStudyTime(
+        data.studyTime != null
+          ? minutesToTime(data.studyTime)
+          : ""
+      );
+      setPhoneTime(
+        data.phoneTime != null
+          ? minutesToTime(data.phoneTime)
+          : ""
+      );
       setSleepTime(data.sleepTime ?? "");
       setSatisfaction(data.satisfaction ?? "");
     } else {
