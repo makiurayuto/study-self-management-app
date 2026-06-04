@@ -97,6 +97,7 @@ export default function StudentDetail({
       <div style={{ height: 24 }} />
         <Button
           variant="secondary"
+          colorVariant="success"
           onClick={() => setShowCsvModal(true)}
         >
           CSV出力
@@ -161,12 +162,14 @@ export default function StudentDetail({
             >
               <Button
                 variant="secondary"
+                colorVariant="success"
                 onClick={() => setShowCsvModal(false)}
               >
                 キャンセル
               </Button>
 
               <Button
+                colorVariant="success"
                 onClick={() => {
                   exportCsv(fromDate, toDate);
                   setShowCsvModal(false);

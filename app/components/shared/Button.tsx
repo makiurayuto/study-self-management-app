@@ -13,8 +13,8 @@ const colors = {
     },
 
     success: {
-      primary: "#22c55e",
-      secondary: "#22c55e",
+      primary: "#16a34a",
+      secondary: "#16a34a",
     },
   };
 type Props = {

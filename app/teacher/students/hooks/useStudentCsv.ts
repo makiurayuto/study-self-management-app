@@ -87,7 +87,7 @@ export function useStudentCsv({
       // =====================
       // ファイル名（期間付き）
       // =====================
-      const fileName = `${studentName}_${fromDate}_to_${toDate}.csv`;
+      const fileName = `${studentName}_study_logs_${fromDate}_to_${toDate}.csv`;
 
       const a = document.createElement("a");
       a.href = url;
