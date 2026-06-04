@@ -43,7 +43,7 @@ export function useTeacherData({
   // ========================
   // week logs
   // ========================
-  const { week, filteredLogs, start, end } =
+  const { week, filteredLogs } =
     useTeacherWeekLogs({
       logs,
       selectedUid,
@@ -77,8 +77,6 @@ export function useTeacherData({
     studentMap,
     week,
     filteredLogs,
-    start,
-    end,
 
     // state
     loading: isLoading,

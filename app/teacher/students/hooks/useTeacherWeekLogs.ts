@@ -1,57 +1,36 @@
-import { useMemo } from "react";
 import { getWeekDates } from "@/app/lib/date";
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
-
-type Props = {
-  logs: Log[];
-  selectedUid: string | null;
-  weekOffset: number;
-};
 
 export function useTeacherWeekLogs({
   logs,
   selectedUid,
   weekOffset,
-}: Props) {
-  // 週生成
-  const week = useMemo(() => {
-    return getWeekDates(weekOffset);
-  }, [weekOffset]);
+}: {
+  logs: any[];
+  selectedUid: string | null;
+  weekOffset: number;
+}) {
+  const week = getWeekDates(weekOffset);
 
-  // 日付範囲（必要なら残す）
-  const start = week[0].date;
-  const end = week[6].date;
+  const normalizeDate = (d: string) => d.split("T")[0];
 
-  // 正規化（今は未使用でもOK、将来用）
-  const normalize = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const weeklyLogs = logs.filter((l) => {
+    return (
+      l.uid === selectedUid &&
+      week.some((w) => w.date === normalizeDate(l.date))
+    );
+  });
 
-  // フィルタ済みログ
-  const filteredLogs = useMemo(() => {
-    if (!selectedUid) return [];
-
-    return logs.filter((l) => {
-      const logDate = l.date.split("T")[0];
-
-      return (
-        l.uid === selectedUid &&
-        week.some((w) => w.date === logDate)
-      );
-    });
-  }, [logs, selectedUid, week]);
+  const dedupedLogs = Array.from(
+    new Map(
+      weeklyLogs.map((log) => {
+        const key = normalizeDate(log.date);
+        return [key, log];
+      })
+    ).values()
+  );
 
   return {
     week,
-    filteredLogs,
-    start,
-    end,
+    filteredLogs: dedupedLogs,
   };
 }

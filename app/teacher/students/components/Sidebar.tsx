@@ -15,10 +15,10 @@ type Props = {
   students: Student[];
   hiddenStudents: Student[];
   viewMode: "students" | "hidden";
-  setViewMode: (mode: "students" | "hidden") => void;
+  setViewMode: React.Dispatch<React.SetStateAction<"students" | "hidden">>;
   selectedUid: string | null;
-  setSelectedUid: (uid: string | null) => void;
-  fetchData: () => void;
+  setSelectedUid: React.Dispatch<React.SetStateAction<string | null>>;
+  fetchData: () => Promise<void>;
 };
 
 export default function Sidebar({
@@ -28,7 +28,6 @@ export default function Sidebar({
   setViewMode,
   selectedUid,
   setSelectedUid,
-  fetchData,
 }: Props) {
   return (
     <div
@@ -81,7 +80,6 @@ export default function Sidebar({
         <HiddenList
           hiddenStudents={hiddenStudents}
           setSelectedUid={setSelectedUid}
-          fetchData={fetchData}
         />
       )}
     </div>

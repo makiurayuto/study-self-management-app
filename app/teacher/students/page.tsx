@@ -38,6 +38,7 @@ export default function TeacherPage() {
     studentMap,
     week,
     filteredLogs,
+    logs,
     loading,
     fetchData,
     hideStudent,
@@ -102,10 +103,9 @@ export default function TeacherPage() {
           studentMap={studentMap}
           weekOffset={weekOffset}
           setWeekOffset={setWeekOffset}
-          getWeekLabel={getWeekLabel}
-          formatDateForDisplay={formatDateForDisplay}
           week={week}
           filteredLogs={filteredLogs}
+          logs={logs}
           setHidden={hideStudent}
         />
 
