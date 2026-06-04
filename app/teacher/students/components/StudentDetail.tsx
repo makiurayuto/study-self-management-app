@@ -6,6 +6,7 @@ import Button from "@/app/components/shared/Button";
 import { downloadCsv } from "@/app/lib/csv/exportCsv";
 import { createStudentCsv } from "@/app/lib/csv/createStudentCsv";
 import { useState } from "react";
+import { useStudentCsv } from "../hooks/useStudentCsv";
 
 type Props = {
   selectedUid: string | null;
@@ -37,28 +38,30 @@ export default function StudentDetail({
   logs,
   setHidden,
 }: Props) {
-  const getThisWeekRange = () => {
+
+  const [showCsvModal, setShowCsvModal] = useState(false);
+
+  const getThisWeekStart = () => {
     const now = new Date();
-    const day = now.getDay();
+    const day = now.getDay(); // 0=日
 
     const monday = new Date(now);
     monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
 
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    const format = (d: Date) => d.toISOString().split("T")[0];
-
-    return {
-      from: format(monday),
-      to: format(sunday),
-    };
+    return monday.toISOString().split("T")[0];
   };
+  const [fromDate, setFromDate] = useState(getThisWeekStart());
+  
+  const getToday = () => {
+    return new Date().toISOString().split("T")[0];
+  };
+  const [toDate, setToDate] = useState(getToday());
 
-  const [showCsvModal, setShowCsvModal] = useState(false);
-
-  const [fromDate, setFromDate] = useState(getThisWeekRange().from);
-  const [toDate, setToDate] = useState(getThisWeekRange().to);
+  const { exportCsv } = useStudentCsv({
+    logs,
+    selectedUid,
+    studentMap,
+  });
 
   const isInvalidRange =
   fromDate && toDate && new Date(fromDate) > new Date(toDate);
@@ -128,7 +131,7 @@ export default function StudentDetail({
               minWidth: 320,
             }}
           >
-            <h3>CSV出力</h3>
+            <h3>期間を入力してください</h3>
 
             <div style={{ marginTop: 16 }}>
               <label>開始日</label>
@@ -165,42 +168,7 @@ export default function StudentDetail({
 
               <Button
                 onClick={() => {
-                  if (!fromDate || !toDate) {
-                    alert("期間を選択してください");
-                    return;
-                  }
-
-                  if (new Date(fromDate) > new Date(toDate)) {
-                    alert("開始日は終了日より前にしてください");
-                    return;
-                  }
-
-                  const csvLogs = logs.filter((log: Log) => {
-                    const logDate = new Date(log.date);
-
-                    return (
-                      log.uid === selectedUid &&
-                      logDate >= new Date(fromDate) &&
-                      logDate <= new Date(toDate)
-                    );
-                  });
-
-                  const rows = [
-                    ["日付", "勉強時間", "スマホ", "睡眠", "満足度"],
-                    ...csvLogs.map((log: Log) => [
-                      log.date.split("T")[0],
-                      String(log.studyTime ?? ""),
-                      String(log.phoneTime ?? ""),
-                      log.sleepTime ?? "",
-                      log.satisfaction ?? "",
-                    ]),
-                  ];
-
-                  downloadCsv(
-                    `${studentMap[selectedUid]}_study_logs.csv`,
-                    rows
-                  );
-
+                  exportCsv(fromDate, toDate);
                   setShowCsvModal(false);
                 }}
               >
