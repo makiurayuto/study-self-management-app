@@ -409,8 +409,8 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div style={{ padding: 20 }}>
-        <h2> ログインしてください</h2>
+      <div style={{ padding: 20}}>
+        <h2 style={{ marginBottom: 12, marginLeft: 12 }}> ログインしてください</h2>
         <Button variant="primary" size="md" onClick={login}>Googleでログイン</Button>
       </div>
     );
@@ -790,7 +790,7 @@ export default function Home() {
       {/* 表 */}
       {user && (
         <div>
-          <h2>1週間記録</h2>
+          <h2 style={{ marginBottom: 4, marginLeft: 28 }}>1週間記録</h2>
 
           <div
             style={{
