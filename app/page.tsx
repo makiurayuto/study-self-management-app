@@ -410,7 +410,7 @@ export default function Home() {
   if (!user) {
     return (
       <div style={{ padding: 20 }}>
-        <h2>ログインしてください</h2>
+        <h2> ログインしてください</h2>
         <Button variant="primary" size="md" onClick={login}>Googleでログイン</Button>
       </div>
     );
@@ -525,6 +525,7 @@ export default function Home() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
+              padding: "0 32px",
             }}
           >
             {/* 左：ユーザー名 */}
