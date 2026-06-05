@@ -3,10 +3,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
+
+export type StudentStatus = "active" | "hidden" | "graduated";
 
 export type Student = {
   uid: string;
   name: string;
+
+  role: "student";
+
+  status: StudentStatus;
+
+  schoolId: string | null;
+
+  hiddenAt?: Timestamp | null;
+  graduatedAt?: Timestamp | null;
 };
 
 export type Log = {
@@ -38,12 +50,16 @@ export function useTeacherData(targetDate: string) {
       userSnap.forEach((d) => {
         const data = d.data();
 
-        const student = {
+        const student: Student = {
           uid: d.id,
           name: data.name || "名前なし",
+          role: "student",
+
+          status: data.status ?? "active",
+          schoolId: data.schoolId ?? null,
         };
 
-        if (data.isHidden) hiddenList.push(student);
+        if (student.status === "hidden") hiddenList.push(student);
         else studentList.push(student);
       });
 

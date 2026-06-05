@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
-
-type Student = {
-  uid: string;
-  name: string;
-};
+import type { Student } from "@/app/types/student";
 
 type Log = {
   uid: string;
@@ -21,6 +17,7 @@ type Log = {
 export function useTeacherStudents(user: any, authLoading: boolean) {
   const [students, setStudents] = useState<Student[]>([]);
   const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
+  const [graduatedStudents, setGraduatedStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,21 +29,34 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
 
     const studentList: Student[] = [];
     const hiddenList: Student[] = [];
+    const graduatedList: Student[] = [];
 
     userSnap.forEach((d) => {
       const data = d.data();
 
       if (data.role !== "student") return;
 
-      const student = {
+      const student: Student = {
         uid: d.id,
         name: data.name || "名前なし",
+
+        role: data.role ?? "student",
+
+        status: data.status ?? "active",
+        schoolId: data.schoolId ?? null,
+
+        hiddenAt: data.hiddenAt ?? null,
+        graduatedAt: data.graduatedAt ?? null,
       };
 
-      if (data.isHidden) {
-        hiddenList.push(student);
-      } else {
+      const status = data.status ?? "active";
+
+      if (status === "active") {
         studentList.push(student);
+      } else if (status === "hidden") {
+        hiddenList.push(student);
+      } else if (status === "graduated") {
+        graduatedList.push(student);
       }
     });
 
@@ -82,6 +92,7 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
   return {
     students,
     hiddenStudents,
+    graduatedStudents,
     logs,
     loading,
     fetchData,

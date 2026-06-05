@@ -1,25 +1,26 @@
 import { db } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
-export function useTeacherActions(fetchData: () => Promise<void>) {
+export function useTeacherActions(fetchData: () => void) {
+  // 非表示
   const hideStudent = async (uid: string) => {
     await updateDoc(doc(db, "users", uid), {
-      isHidden: true,
+      status: "hidden",
+      hiddenAt: serverTimestamp(),
     });
 
-    await fetchData();
+    fetchData();
   };
 
+  // 再表示
   const unhideStudent = async (uid: string) => {
     await updateDoc(doc(db, "users", uid), {
-      isHidden: false,
+      status: "active",
+      hiddenAt: null,
     });
 
-    await fetchData();
+    fetchData();
   };
 
-  return {
-    hideStudent,
-    unhideStudent,
-  };
+  return { hideStudent, unhideStudent };
 }

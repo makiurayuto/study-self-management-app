@@ -101,8 +101,6 @@ export default function Home() {
       await setDoc(doc(db, "users", user.uid), {
         name: trimmedName,
         role: "student",
-        
-        isHidden: false, // 一時的に残す
 
         status: "active",
         schoolId: null,
