@@ -5,10 +5,13 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useTeacherStudents } from "../students/hooks/useTeacherStudents";
 import { useStudentActions } from "@/app/teacher/management/hooks/useStudentActions";
 import Button from "@/app/components/shared/Button";
+import StudentMenu from "./components/StudentMenu";
+import { useRouter } from "next/navigation"
 
 type Tab = "active" | "hidden" | "graduated";
 
 export default function ManagementPage() {
+  const router = useRouter();
   const { user, authLoading } = useAuth();
 
   const {
@@ -24,6 +27,7 @@ export default function ManagementPage() {
   const [tab, setTab] = useState<Tab>("active");
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [openedMenuId, setOpenedMenuId] = useState<string | null>(null);
 
   // =========================
   // 現在表示データ
@@ -139,7 +143,7 @@ export default function ManagementPage() {
             transition: "all 0.15s ease",
             }}
         >
-            生徒
+            生徒 ({students.length})
         </button>
 
         <button
@@ -161,7 +165,7 @@ export default function ManagementPage() {
             transition: "all 0.15s ease",
             }}
         >
-            非表示
+            非表示 ({hiddenStudents.length})
         </button>
 
         <button
@@ -183,17 +187,17 @@ export default function ManagementPage() {
             transition: "all 0.15s ease",
             }}
         >
-            退塾生徒
+            退塾生徒 ({graduatedStudents.length})
         </button>
       </div>
 
       <div style={{ marginLeft: "auto" }}>
           {!bulkMode ? (
-            <Button onClick={() => setBulkMode(true)}>
+            <Button variant="secondary" onClick={() => setBulkMode(true)}>
               一括操作
             </Button>
           ) : (
-            <Button onClick={cancelBulkMode}>
+            <Button variant="secondary" onClick={cancelBulkMode}>
               キャンセル
             </Button>
           )}
@@ -212,8 +216,8 @@ export default function ManagementPage() {
           }}
         >
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-            <Button onClick={selectAll}>全選択</Button>
-            <Button onClick={clearSelection}>全解除</Button>
+            <Button variant="secondary" onClick={selectAll}>全選択</Button>
+            <Button variant="secondary" onClick={clearSelection}>全解除</Button>
           </div>
 
           <div style={{ marginBottom: 12, fontWeight: "bold" }}>
@@ -224,15 +228,17 @@ export default function ManagementPage() {
             {tab === "active" && (
                 <>
                 <Button
+                    variant="secondary" 
                     onClick={handleBulkHide}
                 >
                     非表示
                 </Button>
 
                 <Button
+                    variant="secondary" 
                     onClick={handleBulkGraduate}
                 >
-                    卒業
+                    退塾
                 </Button>
                 </>
             )}
@@ -240,12 +246,14 @@ export default function ManagementPage() {
             {tab === "hidden" && (
                 <>
                 <Button
+                    variant="secondary" 
                     onClick={handleBulkRestore}
                 >
                     復帰
                 </Button>
 
                 <Button
+                    variant="secondary" 
                     onClick={handleBulkGraduate}
                 >
                     卒業
@@ -255,6 +263,7 @@ export default function ManagementPage() {
 
             {tab === "graduated" && (
                 <Button
+                variant="secondary" 
                 onClick={handleBulkRestore}
                 >
                 復帰
@@ -280,33 +289,70 @@ export default function ManagementPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                backgroundColor: selectedIds.includes(student.uid)
-                    ? "#f0f9ff"
-                    : "transparent",
-                cursor: "pointer",
+                backgroundColor:
+                    openedMenuId === student.uid ||
+                    selectedIds.includes(student.uid)
+                        ? "#f0f9ff"
+                        : "transparent",
+
+                boxShadow:
+                    openedMenuId === student.uid ||
+                    selectedIds.includes(student.uid)
+                        ? "inset 4px 0 0 #3b82f6"
+                        : "none",
+                cursor: bulkMode ? "pointer" : "default",
+                transition: "all 0.15s ease",
                 }}
                 onClick={() => bulkMode && toggleSelect(student.uid)}
             >
+                {/* 左：チェック＋名前 */}
+                <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                }}
+                >
                 {bulkMode && (
-                <input
+                    <input
                     type="checkbox"
                     checked={selectedIds.includes(student.uid)}
                     onChange={() => toggleSelect(student.uid)}
-                    onClick={(e) => e.stopPropagation()} // ←チェックと行クリックの競合防止
-                />
+                    onClick={(e) => e.stopPropagation()}
+                    />
                 )}
 
                 <span
-                onClick={(e) => {
-                    e.stopPropagation(); // 行クリックと二重発火防止
-                    if (bulkMode) toggleSelect(student.uid);
-                }}
-                style={{
-                    userSelect: "none",
-                }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (bulkMode) toggleSelect(student.uid);
+                    }}
+                    style={{
+                        userSelect: "none",
+                        cursor: bulkMode ? "pointer" : "default",
+                    }}
                 >
-                {student.name}
+                    {student.name}
                 </span>
+                </div>
+
+                {/* 右：3点メニュー（ここだけ変更） */}
+                <div style={{ marginLeft: "auto" }}>
+                <StudentMenu
+                uid={student.uid}
+                status={student.status}
+                onDetail={(uid) =>
+                    router.push(`/teacher/students/${uid}`)
+                }
+                onRename={(uid) => console.log("rename", uid)}
+                onHide={(uid) => changeStatus(uid, "hidden")}
+                onGraduate={(uid) => changeStatus(uid, "graduated")}
+                onRestore={(uid) => changeStatus(uid, "active")}
+                onOpenChange={(open) =>
+                    setOpenedMenuId(open ? student.uid : null)
+                }
+                />
+                </div>
             </div>
             ))
         )}

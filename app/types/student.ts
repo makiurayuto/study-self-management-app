@@ -9,7 +9,7 @@ export type Student = {
   role: "student" | "teacher";
 
   // ←ここが重要：まだ移行途中なので optional
-  status?: StudentStatus;
+  status: StudentStatus;
 
   schoolId?: string | null;
 
