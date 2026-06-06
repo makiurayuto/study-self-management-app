@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useTeacherStudents } from "../students/hooks/useTeacherStudents";
 
@@ -13,81 +13,137 @@ export default function ManagementPage() {
     students,
     hiddenStudents,
     graduatedStudents,
-    loading: studentsLoading,
   } = useTeacherStudents(user, authLoading);
 
   const [tab, setTab] = useState<Tab>("active");
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const currentStudents =
-    tab === "active"
-      ? students
-      : tab === "hidden"
-      ? hiddenStudents
-      : graduatedStudents;
+  // =========================
+  // 現在表示データ
+  // =========================
+  const currentStudents = useMemo(() => {
+    switch (tab) {
+      case "active":
+        return students;
+      case "hidden":
+        return hiddenStudents;
+      case "graduated":
+        return graduatedStudents;
+      default:
+        return [];
+    }
+  }, [tab, students, hiddenStudents, graduatedStudents]);
+
+  // =========================
+  // bulk操作系
+  // =========================
+  const toggleSelect = (uid: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(uid)
+        ? prev.filter((id) => id !== uid)
+        : [...prev, uid]
+    );
+  };
+
+  const selectAll = () => {
+    setSelectedIds(currentStudents.map((s) => s.uid));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const cancelBulkMode = () => {
+    setBulkMode(false);
+    setSelectedIds([]);
+  };
 
   if (authLoading) {
     return <div style={{ padding: 24 }}>読み込み中...</div>;
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 1000,
-        margin: "0 auto",
-        padding: 24,
-      }}
-    >
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
       <h1>生徒管理</h1>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginBottom: 24,
-        }}
-      >
-        <button
-          onClick={() => setTab("active")}
-          style={{
-            padding: "8px 16px",
-            fontWeight: tab === "active" ? "bold" : "normal",
-          }}
-        >
+      {/* ===================== */}
+      {/* タブ */}
+      {/* ===================== */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+        <button onClick={() => setTab("active")}>
           現役 ({students.length})
         </button>
 
-        <button
-          onClick={() => setTab("hidden")}
-          style={{
-            padding: "8px 16px",
-            fontWeight: tab === "hidden" ? "bold" : "normal",
-          }}
-        >
+        <button onClick={() => setTab("hidden")}>
           テスト ({hiddenStudents.length})
         </button>
 
-        <button
-          onClick={() => setTab("graduated")}
-          style={{
-            padding: "8px 16px",
-            fontWeight: tab === "graduated" ? "bold" : "normal",
-          }}
-        >
+        <button onClick={() => setTab("graduated")}>
           卒業 ({graduatedStudents.length})
         </button>
+
       </div>
 
-      <div
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          overflow: "hidden",
-        }}
-      >
-        {currentStudents.length === 0 ? (
-          <div style={{ padding: 16 }}>
-            生徒がいません
+      <div style={{ marginLeft: "auto" }}>
+          {!bulkMode ? (
+            <button onClick={() => setBulkMode(true)}>
+              一括操作
+            </button>
+          ) : (
+            <button onClick={cancelBulkMode}>
+              キャンセル
+            </button>
+          )}
+      </div>
+
+      {/* ===================== */}
+      {/* bulk操作バー */}
+      {/* ===================== */}
+      {bulkMode && (
+        <div
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 16,
+          }}
+        >
+          <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+            <button onClick={selectAll}>全選択</button>
+            <button onClick={clearSelection}>全解除</button>
           </div>
+
+          <div style={{ marginBottom: 12, fontWeight: "bold" }}>
+            {selectedIds.length}件選択中
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            {tab === "active" && (
+              <>
+                <button>非表示</button>
+                <button>卒業</button>
+              </>
+            )}
+
+            {tab === "hidden" && (
+              <>
+                <button>復帰</button>
+                <button>卒業</button>
+              </>
+            )}
+
+            {tab === "graduated" && <button>復帰</button>}
+          </div>
+        </div>
+      )}
+
+      {/* ===================== */}
+      {/* 一覧 */}
+      {/* ===================== */}
+      <div style={{ border: "1px solid #ddd", borderRadius: 8 }}>
+        {currentStudents.length === 0 ? (
+          <div style={{ padding: 16 }}>生徒がいません</div>
         ) : (
           currentStudents.map((student) => (
             <div
@@ -95,9 +151,20 @@ export default function ManagementPage() {
               style={{
                 padding: 16,
                 borderBottom: "1px solid #eee",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
               }}
             >
-              {student.name}
+              {bulkMode && (
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(student.uid)}
+                  onChange={() => toggleSelect(student.uid)}
+                />
+              )}
+
+              <span>{student.name}</span>
             </div>
           ))
         )}
