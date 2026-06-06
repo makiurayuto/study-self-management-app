@@ -79,6 +79,7 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
 
     setStudents(studentList);
     setHiddenStudents(hiddenList);
+    setGraduatedStudents(graduatedList);
     setLogs(logList);
 
     setLoading(false);

@@ -45,7 +45,7 @@ export default function Button({
     cursor: disabled ? "not-allowed" : "pointer",
     transition: "all 0.15s ease",
     userSelect: "none",
-    transform: "translateY(0)",
+    transform: disabled ? "none" : "translateY(0)",
     opacity: disabled ? 0.5 : 1,
     display: "inline-flex",
     alignItems: "center",

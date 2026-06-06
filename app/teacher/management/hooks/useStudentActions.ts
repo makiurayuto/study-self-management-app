@@ -4,24 +4,26 @@ import {
 } from "@/app/lib/studentService";
 
 export function useStudentActions(fetchData: () => void) {
-  const changeStatus = async (
+    const changeStatus = async (
     uid: string,
-    status: "active" | "hidden" | "graduated"
-  ) => {
+    status: StudentStatus
+    ) => {
     await updateStudentStatus(uid, status);
     fetchData();
-  };
+    };
 
-  const bulkChange = async (
+    type StudentStatus = "active" | "hidden" | "graduated";
+
+    const bulkChange = async (
     uids: string[],
-    status: "active" | "hidden" | "graduated"
-  ) => {
+    status: StudentStatus
+    ) => {
     await bulkUpdateStatus(uids, status);
     fetchData();
-  };
+    };
 
-  return {
-    changeStatus,
-    bulkChange,
-  };
+    return {
+        changeStatus,
+        bulkChange,
+    };
 }
