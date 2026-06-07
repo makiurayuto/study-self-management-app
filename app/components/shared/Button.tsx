@@ -16,12 +16,16 @@ const colors = {
       primary: "#16a34a",
       secondary: "#16a34a",
     },
+    gray: {
+      primary: "#6b7280",
+      secondary: "#6b7280",
+    },
   };
 type Props = {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "primary" | "secondary" | "glass";
-  colorVariant?: "default" | "danger" | "success";
+  colorVariant?: "default" | "danger" | "success" | "gray";
   disabled?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg";

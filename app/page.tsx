@@ -540,13 +540,10 @@ export default function Home() {
 
             {/* 右：縦並びボタン */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <Button variant="secondary" onClick={logout} size="sm">
-                ログアウト
-              </Button>
-
-              {/*
+              
               <Button
                 variant="secondary"
+                colorVariant="gray"
                 size="sm"
                 onClick={() => {
                   setNewName(user?.name || "");
@@ -623,7 +620,6 @@ export default function Home() {
                   </div>
                 </div>
               )}
-              */}
 
             </div>
           </div>
@@ -795,8 +791,15 @@ export default function Home() {
       {/* 表 */}
       {user && (
         <div>
-          <h2 style={{ marginBottom: 4, marginLeft: 28 }}>1週間記録</h2>
-
+          <div
+            style={{
+              marginBottom: 4,
+              marginLeft: 28,
+              fontWeight: "bold",
+            }}
+          >
+              1週間記録
+          </div>
           <div
             style={{
               overflowX: "hidden",
@@ -870,7 +873,17 @@ export default function Home() {
       )}
 
       <div
-      style={{ paddingBottom: 40 }}>
+        style={{
+          display: "flex", 
+          flexDirection: "column",
+          gap: 6,
+          marginTop: 40,
+          marginBottom: 20,
+        }}
+      >
+        <Button variant="secondary" colorVariant="gray" onClick={logout} size="sm">
+          ログアウト
+        </Button>
 
       </div>
     </div>

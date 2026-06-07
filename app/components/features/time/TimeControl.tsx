@@ -68,6 +68,16 @@ export default function TimeControl({ label, value, setValue }: Props) {
           <Button variant="secondary" size="md" onClick={() => setValue(addMinutes(value, -15))}>
             -15m
           </Button>
+
+            <Button
+              variant="secondary"
+              colorVariant="gray"
+              size="sm"
+              className="ml-2"
+              onClick={() => setValue("00:00")}
+            >
+              リセット
+            </Button>
         </div>
       </div>
     </div>
