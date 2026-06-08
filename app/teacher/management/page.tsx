@@ -31,6 +31,11 @@ export default function ManagementPage() {
   console.log("openedMenuId =", openedMenuId);
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
+  const [graduateTarget, setGraduateTarget] = useState<string | null>(null);
+  const [showBulkGraduateModal, setShowBulkGraduateModal] =
+    useState(false);
+
+  
   // =========================
   // 現在表示データ
   // =========================
@@ -81,12 +86,12 @@ export default function ManagementPage() {
     };
 
     const handleBulkGraduate = async () => {
-    await Promise.all(
-        selectedIds.map((uid) => changeStatus(uid, "graduated"))
-    );
+        await Promise.all(
+            selectedIds.map((uid) => changeStatus(uid, "graduated"))
+        );
 
-    setBulkMode(false);
-    setSelectedIds([]);
+        setBulkMode(false);
+        setSelectedIds([]);
     };
 
     const handleBulkRestore = async () => {
@@ -119,7 +124,16 @@ export default function ManagementPage() {
         }}
         onClick={() => setOpenedMenuId(null)}
     >
-      <h1>生徒管理</h1>
+        <h1
+            style={{
+                textAlign: "center",
+                marginBottom: 16,
+                fontSize: "28px", // ← 追加
+                fontWeight: "bold",
+            }}
+            >
+            生徒管理画面
+        </h1>
 
       {/* ===================== */}
       {/* タブ */}
@@ -201,13 +215,16 @@ export default function ManagementPage() {
         </button>
       </div>
 
-      <div style={{ marginLeft: "auto" }}>
+      <div style={{ marginLeft: "auto", marginBottom: 12 }}>
           {!bulkMode ? (
             <Button variant="secondary" onClick={() => setBulkMode(true)}>
               一括操作
             </Button>
           ) : (
-            <Button variant="secondary" onClick={cancelBulkMode}>
+            <Button
+                variant="secondary"
+                colorVariant="gray"
+                onClick={cancelBulkMode}>
               キャンセル
             </Button>
           )}
@@ -246,7 +263,11 @@ export default function ManagementPage() {
 
                 <Button
                     variant="secondary" 
-                    onClick={handleBulkGraduate}
+                    colorVariant="danger"
+                    onClick={() => {
+                        console.log("bulk graduate click");
+                        setShowBulkGraduateModal(true);
+                    }}
                 >
                     退塾
                 </Button>
@@ -264,9 +285,13 @@ export default function ManagementPage() {
 
                 <Button
                     variant="secondary" 
-                    onClick={handleBulkGraduate}
+                    colorVariant="danger"
+                    onClick={() => {
+                        console.log("bulk graduate click");
+                        setShowBulkGraduateModal(true);
+                    }}
                 >
-                    卒業
+                    退塾
                 </Button>
                 </>
             )}
@@ -368,9 +393,9 @@ export default function ManagementPage() {
                             }, 0);
                         }}
                         onHide={(uid) => changeStatus(uid, "hidden")}
-                        onGraduate={(uid) => changeStatus(uid, "graduated")}
+                        onGraduate={(uid) => setGraduateTarget(uid)}
                         onRestore={(uid) => changeStatus(uid, "active")}
-                    />
+                        />
                 </div>
             </div>
             ))
@@ -386,39 +411,217 @@ export default function ManagementPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 }}
-                onClick={() => setRenameTarget(null)}
             >
                 <div
-                style={{
-                    background: "white",
-                    padding: 20,
-                    borderRadius: 12,
-                    width: 320,
-                }}
-                onClick={(e) => e.stopPropagation()}
+                    style={{
+                        background: "white",
+                        padding: 20,
+                        borderRadius: 12,
+                        width: 320,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
                 >
-                <h3>名前変更</h3>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                    >
+                    <h2 style={{ margin: 0, fontWeight: 700}}>名前変更</h2>
+
+                    <button
+                        onClick={() => setRenameTarget(null)}
+                        style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        fontSize: 20,
+                        lineHeight: 1,
+                        }}
+                    >
+                        ✕
+                    </button>
+                </div>
 
                 <input
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    style={{ width: "100%", padding: 8, marginTop: 10 }}
+                    style={{
+                        width: "100%",
+                        padding: 10,
+                        marginTop: 10,
+
+                        border: "1px solid #d1d5db",
+                        borderRadius: 8,
+                        outline: "none",
+                    }}
+                    onFocus={(e) => {
+                        e.currentTarget.style.border = "1px solid #111827";
+                    }}
+                    onBlur={(e) => {
+                        e.currentTarget.style.border = "1px solid #d1d5db";
+                    }}
                 />
 
-                <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 15 }}>
 
-                    <button onClick={() => setRenameTarget(null)}>
+                    <Button variant="secondary" onClick={() => setRenameTarget(null)}>
                         キャンセル
-                    </button>
+                    </Button>
 
-                    <button onClick={handleRename}>
+                    <Button variant="secondary" onClick={handleRename}>
                         保存
-                    </button>
+                    </Button>
 
                 </div>
                 </div>
             </div>
-          )}
+        )}
+
+        {showBulkGraduateModal && (
+            <div
+                style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1000,
+                }}
+            >
+                <div
+                style={{
+                    background: "#fff",
+                    padding: 24,
+                    borderRadius: 12,
+                    width: 360,
+                }}
+                >
+                <h2 style={{ marginTop: 0, marginBottom: 12 , fontWeight: 700}}>
+                    退塾確認
+                </h2>
+
+                <p style={{ marginBottom: 12 }}>
+                    選択した {selectedIds.length} 名を退塾にしますか？
+                </p>
+
+                <p
+                    style={{
+                    fontSize: 13,
+                    color: "#6b7280",
+                    }}
+                >
+                    退塾した生徒は退塾タブへ移動します、<br />
+                    一定期間後に自動で削除されます。
+                </p>
+
+                <div
+                    style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 10,
+                    marginTop: 20,
+                    }}
+                >
+                    <Button
+                        variant="secondary"
+                        colorVariant="gray"
+                        onClick={() =>
+                            setShowBulkGraduateModal(false)
+                        }
+                    >
+                    キャンセル
+                    </Button>
+
+                    <Button
+                    variant="secondary" 
+                    colorVariant="danger"
+                    onClick={async () => {
+                        await handleBulkGraduate();
+                        setShowBulkGraduateModal(false);
+                    }}
+                    >
+                    退塾する
+                    </Button>
+                </div>
+                </div>
+            </div>
+        )}
+
+        {graduateTarget && (
+        <div
+            style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            }}
+        >
+            <div
+            style={{
+                background: "#fff",
+                padding: 24,
+                borderRadius: 12,
+                width: 360,
+            }}
+            >
+            <h2 style={{ marginTop: 0, marginBottom: 12 , fontWeight: 700 }}>
+                退塾確認
+            </h2>
+
+            <p style={{ marginBottom: 12 }}>
+                この生徒を退塾にしますか？
+            </p>
+
+            <p
+                style={{
+                fontSize: 13,
+                color: "#6b7280",
+                }}
+            >
+                退塾した生徒は退塾タブへ移動し、<br />
+                一定期間後に自動で削除されます。
+            </p>
+
+            <div
+                style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 20,
+                }}
+            >
+                <Button
+                    variant="secondary"
+                    colorVariant="gray"
+                    onClick={() => setGraduateTarget(null)}
+                >
+                キャンセル
+                </Button>
+
+                <Button
+                    variant="secondary" 
+                    colorVariant="danger"
+                    onClick={async () => {
+                        await changeStatus(
+                        graduateTarget,
+                        "graduated"
+                        );
+
+                        setGraduateTarget(null);
+                    }}
+                >
+                退塾する
+                </Button>
+            </div>
+            </div>
+        </div>
+        )}
     </div>
     
   );

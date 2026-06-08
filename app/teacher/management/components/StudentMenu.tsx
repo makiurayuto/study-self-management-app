@@ -64,9 +64,12 @@ export default function StudentMenu({
             zIndex: 10,
           }}
         >
+          {/*
+          生徒詳細画面(url)に飛ぶ機能
           <MenuItem onClick={() => onDetail(uid)}>
             詳細
           </MenuItem>
+          */}
 
           <MenuItem onClick={() => onRename(uid)}>
             名前変更
@@ -78,7 +81,7 @@ export default function StudentMenu({
                 非表示
               </MenuItem>
               <MenuItem onClick={() => onGraduate(uid)}>
-                卒業
+                退塾
               </MenuItem>
             </>
           )}
@@ -89,7 +92,7 @@ export default function StudentMenu({
                 復帰
               </MenuItem>
               <MenuItem onClick={() => onGraduate(uid)}>
-                卒業
+                退塾
               </MenuItem>
             </>
           )}
