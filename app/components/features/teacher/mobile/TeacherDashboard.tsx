@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import DateNavigator from "@/app/components/shared/DateNavigator";
 import SectionTitle from "@/app/components/shared/SectionTitle";
 import Card from "@/app/components/shared/Card";

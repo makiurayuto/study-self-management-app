@@ -22,13 +22,15 @@ export default function ManagementPage() {
     fetchData,
   } = useTeacherStudents(user, authLoading);
 
-  const { changeStatus, bulkChange } = useStudentActions(fetchData);
+  const { updateName, changeStatus, bulkChange } = useStudentActions(fetchData);
 
   const [tab, setTab] = useState<Tab>("active");
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [openedMenuId, setOpenedMenuId] = useState<string | null>(null);
-
+  console.log("openedMenuId =", openedMenuId);
+  const [renameTarget, setRenameTarget] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
   // =========================
   // 現在表示データ
   // =========================
@@ -88,17 +90,24 @@ export default function ManagementPage() {
     };
 
     const handleBulkRestore = async () => {
-    await Promise.all(
-        selectedIds.map((uid) => changeStatus(uid, "active"))
-    );
+        await Promise.all(
+            selectedIds.map((uid) => changeStatus(uid, "active"))
+        );
 
-    setBulkMode(false);
-    setSelectedIds([]);
+        setBulkMode(false);
+        setSelectedIds([]);
     };
 
-  if (authLoading) {
-    return <div style={{ padding: 24 }}>読み込み中...</div>;
-  }
+    const handleRename = async () => {
+        if (!renameTarget) return;
+
+        await updateName(renameTarget, newName);
+
+        setRenameTarget(null);
+        setNewName("");
+
+        await fetchData();
+    };
 
   return (
     <div
@@ -108,6 +117,7 @@ export default function ManagementPage() {
             margin: "0 auto",
             padding: 24,
         }}
+        onClick={() => setOpenedMenuId(null)}
     >
       <h1>生徒管理</h1>
 
@@ -338,25 +348,78 @@ export default function ManagementPage() {
 
                 {/* 右：3点メニュー（ここだけ変更） */}
                 <div style={{ marginLeft: "auto" }}>
-                <StudentMenu
-                uid={student.uid}
-                status={student.status}
-                onDetail={(uid) =>
-                    router.push(`/teacher/students/${uid}`)
-                }
-                onRename={(uid) => console.log("rename", uid)}
-                onHide={(uid) => changeStatus(uid, "hidden")}
-                onGraduate={(uid) => changeStatus(uid, "graduated")}
-                onRestore={(uid) => changeStatus(uid, "active")}
-                onOpenChange={(open) =>
-                    setOpenedMenuId(open ? student.uid : null)
-                }
-                />
+                    <StudentMenu
+                        uid={student.uid}
+                        status={student.status}
+                        openedMenuId={openedMenuId}
+                        onOpenChange={setOpenedMenuId}
+                        onDetail={(uid) =>
+                            router.push(`/teacher/students/${uid}`)
+                        }
+                        onRename={(uid) => {
+                            const target = [...students, ...hiddenStudents, ...graduatedStudents]
+                            .find((s) => s.uid === uid);
+
+                            setOpenedMenuId(null);
+
+                            setTimeout(() => {
+                            setRenameTarget(uid);
+                            setNewName(target?.name ?? "");
+                            }, 0);
+                        }}
+                        onHide={(uid) => changeStatus(uid, "hidden")}
+                        onGraduate={(uid) => changeStatus(uid, "graduated")}
+                        onRestore={(uid) => changeStatus(uid, "active")}
+                    />
                 </div>
             </div>
             ))
         )}
         </div>
+        {renameTarget && (
+            <div
+                style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                }}
+                onClick={() => setRenameTarget(null)}
+            >
+                <div
+                style={{
+                    background: "white",
+                    padding: 20,
+                    borderRadius: 12,
+                    width: 320,
+                }}
+                onClick={(e) => e.stopPropagation()}
+                >
+                <h3>名前変更</h3>
+
+                <input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    style={{ width: "100%", padding: 8, marginTop: 10 }}
+                />
+
+                <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+
+                    <button onClick={() => setRenameTarget(null)}>
+                        キャンセル
+                    </button>
+
+                    <button onClick={handleRename}>
+                        保存
+                    </button>
+
+                </div>
+                </div>
+            </div>
+          )}
     </div>
+    
   );
 }

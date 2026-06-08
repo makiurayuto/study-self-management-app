@@ -1,29 +1,40 @@
 import {
   updateStudentStatus,
   bulkUpdateStatus,
+  updateStudentName,
 } from "@/app/lib/studentService";
 
+type StudentStatus = "active" | "hidden" | "graduated";
+
 export function useStudentActions(fetchData: () => void) {
-    const changeStatus = async (
+
+  const changeStatus = async (
     uid: string,
     status: StudentStatus
-    ) => {
+  ) => {
     await updateStudentStatus(uid, status);
     fetchData();
-    };
+  };
 
-    type StudentStatus = "active" | "hidden" | "graduated";
-
-    const bulkChange = async (
+  const bulkChange = async (
     uids: string[],
     status: StudentStatus
-    ) => {
+  ) => {
     await bulkUpdateStatus(uids, status);
     fetchData();
-    };
+  };
 
-    return {
-        changeStatus,
-        bulkChange,
-    };
+  const updateName = async (
+    uid: string,
+    name: string
+  ) => {
+    await updateStudentName(uid, name);
+    fetchData();
+  };
+
+  return {
+    changeStatus,
+    bulkChange,
+    updateName,
+  };
 }

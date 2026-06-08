@@ -1,54 +1,42 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
 type Props = {
   uid: string;
-  status: "active" | "hidden" | "graduated";
+  status: string;
+
+  openedMenuId: string | null;
+
+  onOpenChange: (uid: string | null) => void;
 
   onDetail: (uid: string) => void;
   onRename: (uid: string) => void;
   onHide: (uid: string) => void;
   onGraduate: (uid: string) => void;
   onRestore: (uid: string) => void;
-
-  onOpenChange?: (open: boolean) => void;
 };
 
 export default function StudentMenu({
   uid,
   status,
+  openedMenuId,
+  onOpenChange,
   onDetail,
   onRename,
   onHide,
   onGraduate,
   onRestore,
-  onOpenChange,
 }: Props) {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-        if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        onOpenChange?.(false);
-        }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const isOpen = openedMenuId === uid;
 
   return (
-    <div style={{ position: "relative" }} ref={menuRef}>
-      {/* ⋯ボタン */}
+    <div style={{ position: "relative" }}>
+      
+      {/* 3点ボタン */}
       <button
-        onClick={() => {
-            const next = !open;
-            setOpen(next);
-            onOpenChange?.(next);
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenChange(isOpen ? null : uid);
         }}
         style={{
           background: "transparent",
@@ -61,8 +49,8 @@ export default function StudentMenu({
         ⋯
       </button>
 
-      {/* ドロップダウン */}
-      {open && (
+      {/* メニュー */}
+      {isOpen && (
         <div
           style={{
             position: "absolute",
@@ -76,43 +64,41 @@ export default function StudentMenu({
             zIndex: 10,
           }}
         >
-            <MenuItem onClick={() => onDetail(uid)}>
+          <MenuItem onClick={() => onDetail(uid)}>
             詳細
-            </MenuItem>
+          </MenuItem>
 
-            <MenuItem onClick={() => onRename(uid)}>
+          <MenuItem onClick={() => onRename(uid)}>
             名前変更
-            </MenuItem>
+          </MenuItem>
 
-            {status === "active" && (
+          {status === "active" && (
             <>
-                <MenuItem onClick={() => onHide(uid)}>
+              <MenuItem onClick={() => onHide(uid)}>
                 非表示
-                </MenuItem>
-
-                <MenuItem onClick={() => onGraduate(uid)}>
+              </MenuItem>
+              <MenuItem onClick={() => onGraduate(uid)}>
                 卒業
-                </MenuItem>
+              </MenuItem>
             </>
-            )}
+          )}
 
-            {status === "hidden" && (
+          {status === "hidden" && (
             <>
-                <MenuItem onClick={() => onRestore(uid)}>
+              <MenuItem onClick={() => onRestore(uid)}>
                 復帰
-                </MenuItem>
-
-                <MenuItem onClick={() => onGraduate(uid)}>
+              </MenuItem>
+              <MenuItem onClick={() => onGraduate(uid)}>
                 卒業
-                </MenuItem>
+              </MenuItem>
             </>
-            )}
+          )}
 
-            {status === "graduated" && (
+          {status === "graduated" && (
             <MenuItem onClick={() => onRestore(uid)}>
-                復帰
+              復帰
             </MenuItem>
-            )}
+          )}
         </div>
       )}
     </div>
@@ -129,6 +115,7 @@ function MenuItem({
   return (
     <div
       onClick={() => {
+        console.log("Menu clicked");
         onClick();
       }}
       style={{
@@ -136,12 +123,6 @@ function MenuItem({
         cursor: "pointer",
         fontSize: 13,
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background = "#f3f4f6")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.background = "transparent")
-      }
     >
       {children}
     </div>

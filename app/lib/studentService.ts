@@ -5,17 +5,29 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
+
 export type StudentStatus =
   | "active"
   | "hidden"
   | "graduated";
+
+export const updateStudentName = async (
+  uid: string,
+  name: string
+) => {
+  const ref = doc(db, "users", uid)
+
+  await updateDoc(ref, {
+    name,
+  });
+};
 
 // 単体更新
 export const updateStudentStatus = async (
   uid: string,
   status: StudentStatus
 ) => {
-  const ref = doc(db, "users", uid);
+  const ref = doc(db, "users", uid)
 
   if (status === "hidden") {
     return updateDoc(ref, {
