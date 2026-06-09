@@ -114,6 +114,12 @@ export default function ManagementPage() {
         await fetchData();
     };
 
+    const enableBulkMode = () => {
+        setBulkMode(true);
+        setOpenedMenuId(null);
+        setSelectedIds([]);
+    };
+
   return (
     <div
         style={{
@@ -149,7 +155,10 @@ export default function ManagementPage() {
         }}
         >
         <button
-            onClick={() => setTab("active")}
+            onClick={() => {
+                setTab("active");
+                cancelBulkMode();
+            }}
             style={{
             flex: 1,
             padding: "12px 14px",
@@ -171,7 +180,10 @@ export default function ManagementPage() {
         </button>
 
         <button
-            onClick={() => setTab("hidden")}
+            onClick={() => {
+                setTab("hidden");
+                cancelBulkMode();
+            }}
             style={{
             flex: 1,
             padding: "12px 14px",
@@ -193,7 +205,10 @@ export default function ManagementPage() {
         </button>
 
         <button
-            onClick={() => setTab("graduated")}
+            onClick={() => {
+                setTab("graduated");
+                cancelBulkMode();
+            }}
             style={{
             flex: 1,
             padding: "12px 14px",
@@ -217,7 +232,7 @@ export default function ManagementPage() {
 
       <div style={{ marginLeft: "auto", marginBottom: 12 }}>
           {!bulkMode ? (
-            <Button variant="secondary" onClick={() => setBulkMode(true)}>
+            <Button variant="secondary" onClick={enableBulkMode}>
               一括操作
             </Button>
           ) : (
@@ -244,7 +259,7 @@ export default function ManagementPage() {
         >
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <Button variant="secondary" onClick={selectAll}>全選択</Button>
-            <Button variant="secondary" onClick={clearSelection}>全解除</Button>
+            <Button variant="secondary" onClick={clearSelection}>リセット</Button>
           </div>
 
           <div style={{ marginBottom: 12, fontWeight: "bold" }}>
@@ -377,7 +392,11 @@ export default function ManagementPage() {
                         uid={student.uid}
                         status={student.status}
                         openedMenuId={openedMenuId}
-                        onOpenChange={setOpenedMenuId}
+                        onOpenChange={(id) => {
+                            setOpenedMenuId(id);
+                            setBulkMode(false); 
+                            setSelectedIds([]);
+                        }}
                         onDetail={(uid) =>
                             router.push(`/teacher/students/${uid}`)
                         }

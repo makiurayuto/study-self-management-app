@@ -178,15 +178,31 @@ export default function TeacherPage() {
           marginBottom: 12,
         }}
       >
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => router.push("/teacher/students")}
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            marginBottom: 12,
+          }}
         >
-          生徒一覧
-        </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => router.push("/teacher/students")}
+          >
+            生徒一覧
+          </Button>
 
-        <p style={{ marginTop: 12 }}>生徒数：{studentMap ? Object.keys(studentMap).length : 0}人</p>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => router.push("/teacher/management")}
+          >
+            生徒管理
+          </Button>
+        </div>
+
+        <p style={{ marginTop: 18 , marginLeft: 12 }}>生徒数：{studentMap ? Object.keys(studentMap).length : 0}人</p>
       </div>
 
       {/* UI切替 */}
