@@ -382,7 +382,26 @@ export default function ManagementPage() {
                         cursor: bulkMode ? "pointer" : "default",
                     }}
                 >
-                    {student.name}
+                    <div>
+                        <div>{student.name}</div>
+
+                        {student.status === "graduated" &&
+                            student.graduatedAt && (
+                            <div
+                                style={{
+                                fontSize: 12,
+                                color: "#6b7280",
+                                marginTop: 4,
+                                }}
+                            >
+                                削除予定：
+                                {new Date(
+                                student.graduatedAt.toDate().getTime() +
+                                    30 * 24 * 60 * 60 * 1000
+                                ).toLocaleDateString("ja-JP")}
+                            </div>
+                        )}
+                    </div>
                 </span>
                 </div>
 

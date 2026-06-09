@@ -76,6 +76,13 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
     });
 
     logList.sort((a, b) => b.date.localeCompare(a.date));
+    
+    graduatedList.sort((a, b) => {
+      const aTime = a.graduatedAt?.toMillis() ?? 0;
+      const bTime = b.graduatedAt?.toMillis() ?? 0;
+
+      return bTime - aTime;
+    });
 
     setStudents(studentList);
     setHiddenStudents(hiddenList);

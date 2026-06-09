@@ -99,7 +99,9 @@ export function useTeacherData(targetDate: string) {
   // 派生データ（ここが重要）
   // =========================
 
-  const visibleStudents = students;
+  const visibleStudents = useMemo(() => {
+    return students.filter((s) => s.status === "active");
+  }, [students]);
 
   const allStudents = useMemo(
     () => [...students, ...hiddenStudents],
@@ -108,7 +110,7 @@ export function useTeacherData(targetDate: string) {
 
   const studentMap = useMemo(() => {
     return Object.fromEntries(
-        students.map((s) => [s.uid, s.name]) // ← hidden除外済み
+        students.map((s) => [s.uid, s.name]) 
     );
   }, [students]);
 
@@ -117,9 +119,9 @@ export function useTeacherData(targetDate: string) {
   }, [logs]);
 
   const missingStudents = useMemo(() => {
-    return visibleStudents.filter(
-      (s) => !submittedUids.has(s.uid)
-    );
+    return visibleStudents
+      .filter((s) => s.status === "active")
+      .filter((s) => !submittedUids.has(s.uid));
   }, [visibleStudents, submittedUids]);
 
   const visibleLogs = useMemo(() => {

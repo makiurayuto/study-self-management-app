@@ -172,7 +172,8 @@ export default function TeacherPage() {
       <div
         style={{
           background: "#fff",
-          border: "1px solid #ddd",
+          border: "none",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
           borderRadius: 12,
           padding: 20,
           marginBottom: 12,
@@ -201,8 +202,15 @@ export default function TeacherPage() {
             生徒管理
           </Button>
         </div>
-
-        <p style={{ marginTop: 18 , marginLeft: 12 }}>生徒数：{studentMap ? Object.keys(studentMap).length : 0}人</p>
+          {/*
+        <p 
+          style={{ 
+            marginTop: 18 , 
+            marginLeft: 12 
+          }}>
+            生徒数：{activeStudents.length}人
+        </p>
+        */}
       </div>
 
       {/* UI切替 */}
