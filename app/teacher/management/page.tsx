@@ -547,13 +547,26 @@ export default function ManagementPage() {
                             setNewName(target?.name ?? "");
                             }, 0);
                         }}
-                        onHide={(uid) => changeStatus(uid, "hidden")}
-                        onGraduate={(uid) => setGraduateTarget(uid)}
-                        onRestore={(uid) => changeStatus(uid, "active")}
-                        onDelete={(uid) =>
-                            handleDeleteStudent(uid)
-                        }
-                        />
+                        onHide={async (uid) => {
+                            await changeStatus(uid, "hidden");
+                            setOpenedMenuId(null);
+                        }}
+
+                        onGraduate={(uid) => {
+                            setGraduateTarget(uid);
+                            setOpenedMenuId(null);
+                        }}
+
+                        onRestore={async (uid) => {
+                            await changeStatus(uid, "active");
+                            setOpenedMenuId(null);
+                        }}
+
+                        onDelete={async (uid) => {
+                            await handleDeleteStudent(uid);
+                            setOpenedMenuId(null);
+                        }}
+                    />
                 </div>
             </div>
             ))

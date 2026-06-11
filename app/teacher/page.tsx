@@ -146,6 +146,7 @@ export default function TeacherPage() {
             justifyContent: "flex-end",
             alignItems: "center",
             gap: 8,
+            paddingRight: 20,
           }}
         >
           <Button
@@ -169,22 +170,14 @@ export default function TeacherPage() {
       </div>
 
       {/* 生徒一覧 */}
-      <div
-        style={{
-          background: "#fff",
-          border: "none",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-          borderRadius: 12,
-          padding: 20,
-          marginBottom: 12,
-        }}
-      >
+      
         <div
           style={{
             display: "flex",
             justifyContent: "center",
             gap: 30,
             width: "100%",
+            marginBottom: 24,
           }}
         >
           <Button
@@ -203,7 +196,7 @@ export default function TeacherPage() {
             生徒管理画面
           </Button>
         </div>
-      </div>
+      
 
       {/* UI切替 */}
       {isMobile ? (
