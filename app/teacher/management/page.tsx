@@ -7,6 +7,15 @@ import { useStudentActions } from "@/app/teacher/management/hooks/useStudentActi
 import Button from "@/app/components/shared/Button";
 import StudentMenu from "./components/StudentMenu";
 import { useRouter } from "next/navigation"
+import { db } from "@/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 type Tab = "active" | "hidden" | "graduated";
 
@@ -118,6 +127,31 @@ export default function ManagementPage() {
         setBulkMode(true);
         setOpenedMenuId(null);
         setSelectedIds([]);
+    };
+
+    const handleDeleteStudent = async (
+        uid: string
+    ) => {
+        const ok = window.confirm(
+            "本当に削除しますか？\n学習ログも全て削除されます。"
+        );
+
+        if (!ok) return;
+
+        const logsQuery = query(
+            collection(db, "weeklogs"),
+            where("uid", "==", uid)
+        );
+
+        const logsSnap = await getDocs(logsQuery);
+
+        for (const logDoc of logsSnap.docs) {
+            await deleteDoc(logDoc.ref);
+        }
+
+        await deleteDoc(doc(db, "users", uid));
+
+        await fetchData();
     };
 
   return (
@@ -394,11 +428,8 @@ export default function ManagementPage() {
                                 marginTop: 4,
                                 }}
                             >
-                                削除予定：
-                                {new Date(
-                                student.graduatedAt.toDate().getTime() +
-                                    30 * 24 * 60 * 60 * 1000
-                                ).toLocaleDateString("ja-JP")}
+                                退塾日：
+                                {student.graduatedAt.toDate().toLocaleDateString("ja-JP")}
                             </div>
                         )}
                     </div>
@@ -433,6 +464,9 @@ export default function ManagementPage() {
                         onHide={(uid) => changeStatus(uid, "hidden")}
                         onGraduate={(uid) => setGraduateTarget(uid)}
                         onRestore={(uid) => changeStatus(uid, "active")}
+                        onDelete={(uid) =>
+                            handleDeleteStudent(uid)
+                        }
                         />
                 </div>
             </div>
@@ -551,8 +585,8 @@ export default function ManagementPage() {
                     color: "#6b7280",
                     }}
                 >
-                    退塾した生徒は退塾タブへ移動します、<br />
-                    一定期間後に自動で削除されます。
+                    退塾した生徒は退塾タブへ移動します。<br />
+                    完全に削除したい場合は、退塾タブから削除できます。
                 </p>
 
                 <div
@@ -622,8 +656,8 @@ export default function ManagementPage() {
                 color: "#6b7280",
                 }}
             >
-                退塾した生徒は退塾タブへ移動し、<br />
-                一定期間後に自動で削除されます。
+                退塾した生徒は退塾タブへ移動します。<br />
+                完全に削除したい場合は、退塾タブから削除できます。
             </p>
 
             <div

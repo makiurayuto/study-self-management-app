@@ -13,6 +13,8 @@ type Props = {
   onHide: (uid: string) => void;
   onGraduate: (uid: string) => void;
   onRestore: (uid: string) => void;
+
+  onDelete: (uid: string) => void;
 };
 
 export default function StudentMenu({
@@ -25,6 +27,8 @@ export default function StudentMenu({
   onHide,
   onGraduate,
   onRestore,
+
+  onDelete,
 }: Props) {
 
   const isOpen = openedMenuId === uid;
@@ -98,9 +102,15 @@ export default function StudentMenu({
           )}
 
           {status === "graduated" && (
-            <MenuItem onClick={() => onRestore(uid)}>
-              復帰
-            </MenuItem>
+            <>
+              <MenuItem onClick={() => onRestore(uid)}>
+                復帰
+              </MenuItem>
+
+              <MenuItem onClick={() => onDelete(uid)}>
+                完全削除
+              </MenuItem>
+            </>
           )}
         </div>
       )}

@@ -29,8 +29,6 @@ type Props = {
 
   loading: boolean;
 
-  activeStudents: Student[];
-
   onPrevDay: () => void;
   onNextDay: () => void;
   onYesterday: () => void;

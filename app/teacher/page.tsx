@@ -202,15 +202,6 @@ export default function TeacherPage() {
             生徒管理
           </Button>
         </div>
-          {/*
-        <p 
-          style={{ 
-            marginTop: 18 , 
-            marginLeft: 12 
-          }}>
-            生徒数：{activeStudents.length}人
-        </p>
-        */}
       </div>
 
       {/* UI切替 */}
