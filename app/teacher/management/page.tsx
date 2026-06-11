@@ -156,18 +156,22 @@ export default function ManagementPage() {
     };
 
     const deleteStudentByUid = async (uid: string) => {
+        const cleanUid = uid.trim();
+
         const logsQuery = query(
             collection(db, "weeklogs"),
-            where("uid", "==", uid)
+            where("uid", "==", cleanUid)
         );
 
         const logsSnap = await getDocs(logsQuery);
 
-        for (const logDoc of logsSnap.docs) {
-            await deleteDoc(logDoc.ref);
-        }
+        console.log("logs to delete:", logsSnap.docs.length);
 
-        await deleteDoc(doc(db, "users", uid));
+        await Promise.all(
+            logsSnap.docs.map((d) => deleteDoc(d.ref))
+        );
+
+        await deleteDoc(doc(db, "users", cleanUid));
     };
 
     const handleBulkDelete = async () => {
