@@ -5,6 +5,7 @@ import { updateDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase";
 import StudentList from "./StudentList";
 import HiddenList from "./HiddenList";
+import { useRouter } from "next/navigation";
 
 type Student = {
   uid: string;
@@ -29,6 +30,9 @@ export default function Sidebar({
   selectedUid,
   setSelectedUid,
 }: Props) {
+
+  const router = useRouter();
+
   return (
     <div
       style={{
@@ -37,9 +41,13 @@ export default function Sidebar({
         overflowY: "auto",
       }}
     >
-      <h2 style={{ padding: 16 }}>👤 生徒一覧</h2>
+      <h2 style={{ textAlign: "center", padding: 16, fontWeight: 700, }}>👤 生徒一覧</h2>
 
-      {/* モード切替 */}
+      <hr style={{ border: "none", borderTop: "1px solid #e5e7eb" }} />
+
+
+      {/*
+      {/* モード切替 
       <div style={{ padding: "0 16px", display: "flex", gap: 8 }}>
         <button
           onClick={() => setViewMode("students")}
@@ -66,7 +74,7 @@ export default function Sidebar({
 
       <hr />
 
-      {/* 生徒一覧 */}
+      {/* 生徒一覧 
       {viewMode === "students" && (
         <StudentList
           students={students}
@@ -75,13 +83,20 @@ export default function Sidebar({
         />
       )}
 
-      {/* 非表示一覧 */}
+      {/* 非表示一覧 
       {viewMode === "hidden" && (
         <HiddenList
           hiddenStudents={hiddenStudents}
           setSelectedUid={setSelectedUid}
         />
       )}
+      */}
+
+        <StudentList
+          students={students}
+          selectedUid={selectedUid}
+          setSelectedUid={setSelectedUid}
+        />
     </div>
   );
 }

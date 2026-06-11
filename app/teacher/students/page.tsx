@@ -7,6 +7,7 @@ import Sidebar from "@/app/teacher/students/components/Sidebar";
 import StudentDetail from "@/app/teacher/students/components/StudentDetail";
 import { useTeacherGuard } from "@/app/teacher/students/hooks/useTeacherGuard";
 import { useTeacherData } from "@/app/teacher/students/hooks/useTeacherData";
+import Button from "@/app/components/shared/Button";
 
 type Student = {
   uid: string;
@@ -83,32 +84,71 @@ export default function TeacherPage() {
   // UI
   // =========================
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div style={{ marginBottom: 16, padding: "20px 24px",}}>
+      {/* 👇ここにタイトル */}
+      <h1
+          style={{
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: "28px",
+            fontWeight: "bold",
+          }}
+        >
+        生徒詳細一覧
+      </h1>
 
-      <Sidebar
-        students={students}
-        hiddenStudents={hiddenStudents}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        selectedUid={selectedUid}
-        setSelectedUid={setSelectedUid}
-        fetchData={fetchData}
-      />
+      <div
+          style={{
+              display: "flex",
+              gap: 30,
+              justifyContent: "center",
+              marginBottom: 16,
+          }}
+      >
+          <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => router.push("/teacher")}
+          >
+              ダッシュボード
+          </Button>
 
-      {/* ================= 右：詳細 ================= */}
-      <div style={{ width: "70%", padding: 20 }}>
+          <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => router.push("/teacher/management")}
+          >
+              生徒管理画面
+          </Button>
+      </div>
+      <hr style={{ marginTop: 20, border: "none", borderTop: "1px solid #e5e7eb" }} />
 
-       <StudentDetail
+      <div style={{ display: "flex", height: "100vh" }}>
+        <Sidebar
+          students={students}
+          hiddenStudents={hiddenStudents}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
           selectedUid={selectedUid}
-          studentMap={studentMap}
-          weekOffset={weekOffset}
-          setWeekOffset={setWeekOffset}
-          week={week}
-          filteredLogs={filteredLogs}
-          logs={logs}
-          setHidden={hideStudent}
+          setSelectedUid={setSelectedUid}
+          fetchData={fetchData}
         />
 
+        {/* ================= 右：詳細 ================= */}
+        <div style={{ width: "70%", padding: 20 }}>
+
+        <StudentDetail
+            selectedUid={selectedUid}
+            studentMap={studentMap}
+            weekOffset={weekOffset}
+            setWeekOffset={setWeekOffset}
+            week={week}
+            filteredLogs={filteredLogs}
+            logs={logs}
+            setHidden={hideStudent}
+          />
+
+        </div>
       </div>
     </div>
   );

@@ -43,6 +43,7 @@ export default function ManagementPage() {
   const [graduateTarget, setGraduateTarget] = useState<string | null>(null);
   const [showBulkGraduateModal, setShowBulkGraduateModal] =
     useState(false);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   
   // =========================
@@ -154,26 +155,83 @@ export default function ManagementPage() {
         await fetchData();
     };
 
+    const deleteStudentByUid = async (uid: string) => {
+        const logsQuery = query(
+            collection(db, "weeklogs"),
+            where("uid", "==", uid)
+        );
+
+        const logsSnap = await getDocs(logsQuery);
+
+        for (const logDoc of logsSnap.docs) {
+            await deleteDoc(logDoc.ref);
+        }
+
+        await deleteDoc(doc(db, "users", uid));
+    };
+
+    const handleBulkDelete = async () => {
+        const ok = window.confirm(
+            `本当に${selectedIds.length}人を完全削除しますか？\nこの操作は戻せません。`
+        );
+
+        if (!ok) return;
+
+        await Promise.all(
+            selectedIds.map((uid) => deleteStudentByUid(uid))
+        );
+
+        setSelectedIds([]);
+        setBulkMode(false);
+        setShowBulkDeleteModal(false);
+
+        await fetchData();
+    };
+
   return (
     <div
         style={{
             width: "100%",
             maxWidth: 1400,
             margin: "0 auto",
-            padding: 24,
+            padding: "20px 24px",
         }}
-        onClick={() => setOpenedMenuId(null)}
     >
         <h1
-            style={{
-                textAlign: "center",
-                marginBottom: 16,
-                fontSize: "28px", // ← 追加
-                fontWeight: "bold",
-            }}
-            >
+          style={{
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: "28px", 
+            fontWeight: "bold",
+          }}
+        >
             生徒管理画面
         </h1>
+
+        <div
+            style={{
+                display: "flex",
+                gap: 30,
+                justifyContent: "center",
+                marginBottom: 16,
+            }}
+        >
+            <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => router.push("/teacher")}
+            >
+                ダッシュボード
+            </Button>
+
+            <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => router.push("/teacher/students")}
+            >
+                生徒詳細一覧
+            </Button>
+        </div>
 
       {/* ===================== */}
       {/* タブ */}
@@ -346,12 +404,22 @@ export default function ManagementPage() {
             )}
 
             {tab === "graduated" && (
+                <>
                 <Button
                 variant="secondary" 
                 onClick={handleBulkRestore}
                 >
                 復帰
                 </Button>
+
+                <Button
+                    variant="secondary"
+                    colorVariant="danger"
+                    onClick={handleBulkDelete}
+                >
+                    完全削除
+                </Button>
+                </>   
             )}
             </div>
         </div>
@@ -693,6 +761,36 @@ export default function ManagementPage() {
             </div>
             </div>
         </div>
+        )}
+
+        {showBulkDeleteModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)" }}>
+                <div style={{ background: "#fff", padding: 24, width: 360, margin: "auto", marginTop: 100 }}>
+                
+                <h2>完全削除</h2>
+
+                <p>
+                    {selectedIds.length}人を完全削除しますか？
+                </p>
+
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                    <Button
+                    variant="secondary"
+                    onClick={() => setShowBulkDeleteModal(false)}
+                    >
+                    キャンセル
+                    </Button>
+
+                    <Button
+                    variant="secondary"
+                    colorVariant="danger"
+                    onClick={handleBulkDelete}
+                    >
+                    削除する
+                    </Button>
+                </div>
+                </div>
+            </div>
         )}
     </div>
     

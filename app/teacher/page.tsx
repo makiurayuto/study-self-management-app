@@ -182,8 +182,9 @@ export default function TeacherPage() {
         <div
           style={{
             display: "flex",
-            gap: 12,
-            marginBottom: 12,
+            justifyContent: "center",
+            gap: 30,
+            width: "100%",
           }}
         >
           <Button
@@ -191,7 +192,7 @@ export default function TeacherPage() {
             size="lg"
             onClick={() => router.push("/teacher/students")}
           >
-            生徒一覧
+            生徒詳細一覧
           </Button>
 
           <Button
@@ -199,7 +200,7 @@ export default function TeacherPage() {
             size="lg"
             onClick={() => router.push("/teacher/management")}
           >
-            生徒管理
+            生徒管理画面
           </Button>
         </div>
       </div>

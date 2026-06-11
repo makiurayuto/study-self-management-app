@@ -67,7 +67,7 @@ export default function StudentDetail({
   fromDate && toDate && new Date(fromDate) > new Date(toDate);
 
   if (!selectedUid) {
-    return <p>👈 生徒を選択してください</p>;
+    return <p style={{ marginTop: 45 }}>👈 生徒を選択してください</p>;
   }
 
   return (
@@ -101,16 +101,6 @@ export default function StudentDetail({
           onClick={() => setShowCsvModal(true)}
         >
           CSV出力
-        </Button>
-
-      <div style={{ height: 24 }} />
-
-        <Button
-          variant="secondary"
-          colorVariant="danger"
-          onClick={() => setHidden(selectedUid)}
-        >
-          非表示にする
         </Button>
 
       {showCsvModal && (
