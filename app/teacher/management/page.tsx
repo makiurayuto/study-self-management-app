@@ -140,7 +140,7 @@ export default function ManagementPage() {
         if (!ok) return;
 
         const logsQuery = query(
-            collection(db, "weeklogs"),
+            collection(db, "weeklyLogs"),
             where("uid", "==", uid)
         );
 
@@ -158,14 +158,27 @@ export default function ManagementPage() {
     const deleteStudentByUid = async (uid: string) => {
         const cleanUid = uid.trim();
 
+        const allLogs = await getDocs(collection(db, "weeklyLogs"));
+
+        console.log("total logs:", allLogs.size);
+
+        allLogs.docs.slice(0, 5).forEach((d) => {
+            console.log(d.id, d.data().uid);
+        });
+
         const logsQuery = query(
-            collection(db, "weeklogs"),
+            collection(db, "weeklyLogs"),
             where("uid", "==", cleanUid)
         );
 
         const logsSnap = await getDocs(logsQuery);
 
-        console.log("logs to delete:", logsSnap.docs.length);
+            console.log(
+        "Deleting user:",
+        cleanUid,
+        "logs:",
+        logsSnap.docs.length
+    );
 
         await Promise.all(
             logsSnap.docs.map((d) => deleteDoc(d.ref))
@@ -175,6 +188,7 @@ export default function ManagementPage() {
     };
 
     const handleBulkDelete = async () => {
+         console.log("bulk delete start");
         const ok = window.confirm(
             `本当に${selectedIds.length}人を完全削除しますか？\nこの操作は戻せません。`
         );
