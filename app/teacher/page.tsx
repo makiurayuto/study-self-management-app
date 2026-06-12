@@ -1,22 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/firebase";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/shared/Button";
 import { useAuth } from "@/app/contexts/AuthContext";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
 
-import { useTeacherData }
+/*import { useTeacherData }
 from "@/app/components/features/teacher/hooks/useTeacherData";
-
 import DesktopTeacherDashboard from "@/app/components/features/teacher/desktop/TeacherDashboard";
 import MobileTeacherDashboard from "@/app/components/features/teacher/mobile/TeacherDashboard";
+*/
+import { useTeacherData }
+from "@/features/teacher/dashboard/hooks/useTeacherData";
+import DesktopTeacherDashboard
+from "@/features/teacher/dashboard/components/DesktopTeacherDashboard";
+import MobileTeacherDashboard
+from "@/features/teacher/dashboard/components/MobileTeacherDashboard";
+
 import { formatDateForDisplay } from "@/app/lib/date";
 import { formatDateForQuery } from "@/app/lib/date";
 
