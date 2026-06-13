@@ -1,16 +1,8 @@
 "use client";
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {
-  visibleLogs: Log[];
+  visibleLogs: StudentDailyLog[];
   studentMap: Record<string, string>;
   loading: boolean;
 };

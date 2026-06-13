@@ -4,12 +4,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
-
-
-export type StudentStatus =
-  | "active"
-  | "hidden"
-  | "graduated";
+import type { StudentStatus } from "@/types/student";
 
 export const updateStudentName = async (
   uid: string,

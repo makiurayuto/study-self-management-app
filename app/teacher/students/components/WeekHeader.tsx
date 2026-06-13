@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/app/components/shared/Button";
-import { formatDateForDisplay } from "@/app/lib/date";
+import { formatDateForDisplay } from "@/lib/date";
 
 type Props = {
   weekOffset: number;

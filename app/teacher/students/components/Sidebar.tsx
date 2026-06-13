@@ -6,11 +6,7 @@ import { db } from "@/firebase";
 import StudentList from "./StudentList";
 import HiddenList from "./HiddenList";
 import { useRouter } from "next/navigation";
-
-type Student = {
-  uid: string;
-  name: string;
-};
+import type { Student } from "@/types/student";
 
 type Props = {
   students: Student[];

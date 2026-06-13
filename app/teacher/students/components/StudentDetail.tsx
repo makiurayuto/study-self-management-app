@@ -3,10 +3,9 @@
 import WeekHeader from "./WeekHeader";
 import LogTable from "./LogTable";
 import Button from "@/app/components/shared/Button";
-import { downloadCsv } from "@/app/lib/csv/exportCsv";
-import { createStudentCsv } from "@/app/lib/csv/createStudentCsv";
 import { useState } from "react";
 import { useStudentCsv } from "../hooks/useStudentCsv";
+import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {
   selectedUid: string | null;
@@ -17,15 +16,6 @@ type Props = {
   filteredLogs: any[];
   logs: any[];
   setHidden: (uid: string) => Promise<void>;
-};
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
 };
 
 export default function StudentDetail({

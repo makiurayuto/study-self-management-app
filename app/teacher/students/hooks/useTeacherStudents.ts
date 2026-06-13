@@ -3,22 +3,15 @@
 import { useEffect, useState } from "react";
 import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
-import type { Student } from "@/app/types/student";
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { Student } from "@/types/student";
+import { toStudentDailyLog } from "@/lib/mappers/studentLogMapper";
+import type { StudentDailyLog } from "@/types/student-log";
 
 export function useTeacherStudents(user: any, authLoading: boolean) {
   const [students, setStudents] = useState<Student[]>([]);
   const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
   const [graduatedStudents, setGraduatedStudents] = useState<Student[]>([]);
-  const [logs, setLogs] = useState<Log[]>([]);
+  const [logs, setLogs] = useState<StudentDailyLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -60,19 +53,12 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
       }
     });
 
-    const logList: Log[] = [];
+    const logList: StudentDailyLog[] = [];
 
     logSnap.forEach((d) => {
       const data = d.data();
 
-      logList.push({
-        uid: data.uid ?? "",
-        date: data.date ?? "",
-        studyTime: data.studyTime ?? null,
-        phoneTime: data.phoneTime ?? null,
-        sleepTime: data.sleepTime ?? "",
-        satisfaction: data.satisfaction ?? "",
-      });
+      logList.push(toStudentDailyLog(data));
     });
 
     logList.sort((a, b) => b.date.localeCompare(a.date));

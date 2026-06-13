@@ -1,14 +1,7 @@
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { StudentDailyLog } from "@/types/student-log";
 
 type Params = {
-  logs: Log[];
+  logs: StudentDailyLog[];
   selectedUid: string;
   fromDate: string;
   toDate: string;

@@ -10,29 +10,10 @@ from "@/features/teacher/dashboard/hooks/useTeacherData";
 import DashboardContent from
 "@/features/teacher/dashboard/components/DashboardContent";
 
-import { formatDateForDisplay } from "@/app/lib/date";
-import { formatDateForQuery } from "@/app/lib/date";
+import { formatDateForDisplay } from "@/lib/date";
+import { formatDateForQuery } from "@/lib/date";
 
 import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
-
-
-// =========================
-// 型
-// =========================
-
-type Student = {
-  uid: string;
-  name: string;
-};
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
 
 // =========================
 // コンポーネント

@@ -1,27 +1,12 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { getWeekDates, formatDateForDisplay } from "@/app/lib/date";
 import Sidebar from "@/app/teacher/students/components/Sidebar";
 import StudentDetail from "@/app/teacher/students/components/StudentDetail";
 import { useTeacherGuard } from "@/app/teacher/students/hooks/useTeacherGuard";
 import { useTeacherData } from "@/app/teacher/students/hooks/useTeacherData";
 import Button from "@/app/components/shared/Button";
-
-type Student = {
-  uid: string;
-  name: string;
-};
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
 
 export default function TeacherPage() {
   const { user, authLoading } = useAuth();

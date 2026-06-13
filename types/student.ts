@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 export type StudentStatus = "active" | "hidden" | "graduated";
 
 export type Student = {
@@ -10,6 +11,6 @@ export type Student = {
 
   schoolId?: string | null;
 
-  hiddenAt?: any;      // ←一旦anyでもOK（移行中）
-  graduatedAt?: any;
+  hiddenAt?: Timestamp | null;
+  graduatedAt?: Timestamp | null;
 };

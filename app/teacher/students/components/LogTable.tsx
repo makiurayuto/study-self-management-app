@@ -1,17 +1,9 @@
 "use client";
-import { formatDateForDisplay } from "@/app/lib/date";
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import { formatDateForDisplay } from "@/lib/date";
+import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {
-  filteredLogs: Log[];
+  filteredLogs: StudentDailyLog[];
 };
 
 export default function LogTable({

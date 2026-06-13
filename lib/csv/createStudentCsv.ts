@@ -1,14 +1,7 @@
-import { formatDateForDisplay } from "@/app/lib/date";
+import { formatDateForDisplay } from "@/lib/date";
+import type { StudentDailyLog } from "@/types/student-log";
 
-type Log = {
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
-
-export function createStudentCsv(logs: Log[]) {
+export function createStudentCsv(logs: StudentDailyLog[]) {
   return [
     ["日付", "勉強時間(分)", "スマホ時間(分)", "睡眠時間", "満足度"],
     ...logs.map((log) => [

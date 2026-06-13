@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getWeekDates } from "@/app/lib/date";
+import { getWeekDates } from "@/lib/date";
 import { useTeacherStudents } from "./useTeacherStudents";
 import { useTeacherWeekLogs } from "./useTeacherWeekLogs";
 import { useTeacherActions } from "./useTeacherActions";

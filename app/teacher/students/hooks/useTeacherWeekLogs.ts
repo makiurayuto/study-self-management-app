@@ -1,4 +1,4 @@
-import { getWeekDates } from "@/app/lib/date";
+import { getWeekDates } from "@/lib/date";
 
 export function useTeacherWeekLogs({
   logs,

@@ -1,16 +1,8 @@
 import { useCallback } from "react";
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { StudentDailyLog } from "@/types/student-log";
 
 type Params = {
-  logs: Log[];
+  logs: StudentDailyLog[];
   selectedUid: string | null;
   studentMap: Record<string, string>;
 };

@@ -2,11 +2,7 @@
 
 import Card from "@/app/components/shared/Card";
 import SectionTitle from "@/app/components/shared/SectionTitle";
-
-type Student = {
-  uid: string;
-  name: string;
-};
+import type { Student } from "@/types/student";
 
 type Props = {
   students: Student[];

@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/app/components/shared/Button";
-import { addMinutes } from "@/app/lib/time";
+import { addMinutes } from "@/lib/time";
 
 type Props = {
   label: string;

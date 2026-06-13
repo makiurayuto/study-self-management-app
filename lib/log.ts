@@ -1,20 +1,9 @@
-export type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
-
-export type Student = {
-  uid: string;
-  name: string;
-};
+import type { StudentDailyLog } from "@/types/student-log";
+import type { Student } from "@/types/student";
 
 export const getMissingStudents = (
   students: Student[],
-  logs: Log[]
+  logs: StudentDailyLog[]
 ): Student[] => {
   const submitted = new Set(logs.map((l) => l.uid));
   return students.filter((s) => !submitted.has(s.uid));
@@ -27,7 +16,7 @@ export const createStudentMap = (students: Student[]) => {
 };
 
 export const filterLogsByDateRange = (
-  logs: Log[],
+  logs: StudentDailyLog[],
   start: Date,
   end: Date
 ) => {
@@ -49,7 +38,7 @@ export const formatHours = (min: number | null) => {
 
 export const buildTeacherSummary = (
   students: Student[],
-  logs: Log[]
+  logs: StudentDailyLog[]
 ) => {
   return {
     missingStudents: getMissingStudents(students, logs),

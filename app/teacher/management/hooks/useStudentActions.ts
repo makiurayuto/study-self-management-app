@@ -2,9 +2,8 @@ import {
   updateStudentStatus,
   bulkUpdateStatus,
   updateStudentName,
-} from "@/app/lib/studentService";
-
-type StudentStatus = "active" | "hidden" | "graduated";
+} from "@/lib/studentService";
+import type { StudentStatus } from "@/types/student";
 
 export function useStudentActions(fetchData: () => void) {
 

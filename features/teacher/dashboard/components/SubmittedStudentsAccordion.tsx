@@ -2,18 +2,10 @@
 
 import { useState } from "react";
 import Row from "@/app/components/shared/Row";
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {
-  logs: Log[];
+  logs: StudentDailyLog[];
   studentMap: Record<string, string>;
 };
 

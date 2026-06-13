@@ -4,36 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Timestamp } from "firebase/firestore";
-
-export type StudentStatus = "active" | "hidden" | "graduated";
-
-export type Student = {
-  uid: string;
-  name: string;
-
-  role: "student";
-
-  status: StudentStatus;
-
-  schoolId: string | null;
-
-  hiddenAt?: Timestamp | null;
-  graduatedAt?: Timestamp | null;
-};
-
-export type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { Student } from "@/types/student";
+import type { StudentDailyLog } from "@/types/student-log";
+import { toStudentDailyLog } from "@/lib/mappers/studentLogMapper";
 
 export function useTeacherData(targetDate: string) {
   const [students, setStudents] = useState<Student[]>([]);
   const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
-  const [logs, setLogs] = useState<Log[]>([]);
+  const [logs, setLogs] = useState<StudentDailyLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -70,19 +48,12 @@ export function useTeacherData(targetDate: string) {
         query(collection(db, "weeklyLogs"), where("date", "==", targetDate))
       );
 
-      const logList: Log[] = [];
+      const logList: StudentDailyLog[] = [];
 
       logSnap.forEach((d) => {
         const data = d.data();
 
-        logList.push({
-          uid: data.uid,
-          date: data.date,
-          studyTime: data.studyTime ?? null,
-          phoneTime: data.phoneTime ?? null,
-          sleepTime: data.sleepTime ?? "",
-          satisfaction: data.satisfaction ?? "",
-        });
+        logList.push(toStudentDailyLog(data));
       });
 
       setLogs(logList);

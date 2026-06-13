@@ -7,27 +7,15 @@ import DateSection from "@/features/teacher/dashboard/components/DateSection";
 import MissingStudents from "@/features/teacher/dashboard/components/MissingStudents";
 import SubmittedStudentsTable from "@/features/teacher/dashboard/components/SubmittedStudentsTable";
 import SubmittedStudentsAccordion from "@/features/teacher/dashboard/components/SubmittedStudentsAccordion";
-
-type Student = {
-  uid: string;
-  name: string;
-};
-
-type Log = {
-  uid: string;
-  date: string;
-  studyTime: number | null;
-  phoneTime: number | null;
-  sleepTime: string;
-  satisfaction: string;
-};
+import type { StudentDailyLog } from "@/types/student-log";
+import type { Student } from "@/types/student";
 
 type Props = {
   isMobile: boolean;
 
   currentDateLabel: string;
 
-  visibleLogs: Log[];
+  visibleLogs: StudentDailyLog[];
   missingStudents: Student[];
 
   studentMap: Record<string, string>;
