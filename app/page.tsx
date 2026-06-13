@@ -15,10 +15,10 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import TimeControl from "@/app/components/features/time/TimeControl";
+import TimeControl from "@/features/time/components/TimeControl";
 import { signInWithPopup } from "firebase/auth";
-import { useAuth } from "@/app/contexts/AuthContext";
-import SleepTimePicker from "@/app/components/features/sleep/SleepTimePicker";
+import { useAuth } from "@/lib/auth/AuthContext";
+import SleepTimePicker from "@/features/sleep/components/SleepTimePicker";
 
 export default function Home() {
   const router = useRouter();
