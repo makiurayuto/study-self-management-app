@@ -5,20 +5,15 @@ import { useRouter } from "next/navigation";
 import Button from "@/app/components/shared/Button";
 import { useAuth } from "@/app/contexts/AuthContext";
 
-/*import { useTeacherData }
-from "@/app/components/features/teacher/hooks/useTeacherData";
-import DesktopTeacherDashboard from "@/app/components/features/teacher/desktop/TeacherDashboard";
-import MobileTeacherDashboard from "@/app/components/features/teacher/mobile/TeacherDashboard";
-*/
 import { useTeacherData }
 from "@/features/teacher/dashboard/hooks/useTeacherData";
-import DesktopTeacherDashboard
-from "@/features/teacher/dashboard/components/DesktopTeacherDashboard";
-import MobileTeacherDashboard
-from "@/features/teacher/dashboard/components/MobileTeacherDashboard";
+import DashboardContent from
+"@/features/teacher/dashboard/components/DashboardContent";
 
 import { formatDateForDisplay } from "@/app/lib/date";
 import { formatDateForQuery } from "@/app/lib/date";
+
+import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
 
 
 // =========================
@@ -40,13 +35,6 @@ type Log = {
 };
 
 // =========================
-// utils
-// =========================
-
-const getIsMobile = () =>
-  typeof window !== "undefined" ? window.innerWidth < 768 : false;
-
-// =========================
 // コンポーネント
 // =========================
 
@@ -57,8 +45,6 @@ export default function TeacherPage() {
     d.setDate(d.getDate() - 1);
     return d;
   });
-
-  const [isMobile, setIsMobile] = useState<boolean>(getIsMobile());
 
   const router = useRouter();
   const { user, authLoading, logout } = useAuth();
@@ -89,19 +75,7 @@ export default function TeacherPage() {
     setCurrentDate(d);
   };
 
-  // =========================
-  // モバイル判定
-  // =========================
-
-  useEffect(() => {
-    const check = () => setIsMobile(getIsMobile());
-
-    check();
-    window.addEventListener("resize", check);
-
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // =========================
   // logout
@@ -199,29 +173,17 @@ export default function TeacherPage() {
       
 
       {/* UI切替 */}
-      {isMobile ? (
-        <MobileTeacherDashboard
-          logs={visibleLogs}
-          missingStudents={missingStudents}
-          studentMap={studentMap}
-
-          currentDateLabel={currentDateLabel}
-          onPrevDay={onPrevDay}
-          onNextDay={onNextDay}
-          onYesterday={onYesterday}
-        />
-      ) : (
-        <DesktopTeacherDashboard
-          currentDateLabel={formatDateForDisplay(currentDate)}
-          visibleLogs={visibleLogs}
-          missingStudents={missingStudents}
-          studentMap={studentMap}
-          loading={loading}
-          onPrevDay={onPrevDay}
-          onNextDay={onNextDay}
-          onYesterday={onYesterday}
-        />
-      )}
+      <DashboardContent
+        isMobile={isMobile}
+        currentDateLabel={currentDateLabel}
+        visibleLogs={visibleLogs}
+        missingStudents={missingStudents}
+        studentMap={studentMap}
+        loading={loading}
+        onPrevDay={onPrevDay}
+        onNextDay={onNextDay}
+        onYesterday={onYesterday}
+      />
     </div>
   );
 }

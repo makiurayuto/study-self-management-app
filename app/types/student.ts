@@ -1,5 +1,3 @@
-import { Timestamp } from "firebase/firestore";
-
 export type StudentStatus = "active" | "hidden" | "graduated";
 
 export type Student = {
@@ -8,11 +6,10 @@ export type Student = {
 
   role: "student" | "teacher";
 
-  // ←ここが重要：まだ移行途中なので optional
   status: StudentStatus;
 
   schoolId?: string | null;
 
-  hiddenAt?: Timestamp | null;
-  graduatedAt?: Timestamp | null;
+  hiddenAt?: any;      // ←一旦anyでもOK（移行中）
+  graduatedAt?: any;
 };
