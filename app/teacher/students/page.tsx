@@ -6,7 +6,7 @@ import Sidebar from "@/app/teacher/students/components/Sidebar";
 import StudentDetail from "@/app/teacher/students/components/StudentDetail";
 import { useTeacherGuard } from "@/app/teacher/students/hooks/useTeacherGuard";
 import { useTeacherData } from "@/app/teacher/students/hooks/useTeacherData";
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 
 export default function TeacherPage() {
   const { user, authLoading } = useAuth();

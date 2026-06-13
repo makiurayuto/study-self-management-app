@@ -1,7 +1,7 @@
 "use client";
 
-import Card from "@/app/components/shared/Card";
-import SectionTitle from "@/app/components/shared/SectionTitle";
+import Card from "@/components/shared/Card";
+import SectionTitle from "@/components/shared/SectionTitle";
 
 import DateSection from "@/features/teacher/dashboard/components/DateSection";
 import MissingStudents from "@/features/teacher/dashboard/components/MissingStudents";

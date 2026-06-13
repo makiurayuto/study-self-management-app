@@ -1,7 +1,7 @@
 "use client";
 
-import Card from "@/app/components/shared/Card";
-import SectionTitle from "@/app/components/shared/SectionTitle";
+import Card from "@/components/shared/Card";
+import SectionTitle from "@/components/shared/SectionTitle";
 import type { Student } from "@/types/student";
 
 type Props = {

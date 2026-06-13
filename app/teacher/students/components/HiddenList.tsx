@@ -1,13 +1,9 @@
 "use client";
 
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase";
-
-type Student = {
-  uid: string;
-  name: string;
-};
+import type { Student } from "@/types/student";
 
 type Props = {
   hiddenStudents: Student[];

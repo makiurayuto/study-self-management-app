@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useTeacherStudents } from "../students/hooks/useTeacherStudents";
 import { useStudentActions } from "@/app/teacher/management/hooks/useStudentActions";
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import StudentMenu from "./components/StudentMenu";
 import { useRouter } from "next/navigation"
 import { db } from "@/firebase";

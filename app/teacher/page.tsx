@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import { useAuth } from "@/app/contexts/AuthContext";
 
 import { useTeacherData }

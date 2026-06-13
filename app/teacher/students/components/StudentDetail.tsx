@@ -2,7 +2,7 @@
 
 import WeekHeader from "./WeekHeader";
 import LogTable from "./LogTable";
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import { useState } from "react";
 import { useStudentCsv } from "../hooks/useStudentCsv";
 import type { StudentDailyLog } from "@/types/student-log";

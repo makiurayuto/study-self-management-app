@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase";
 import StudentList from "./StudentList";

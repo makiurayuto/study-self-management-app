@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Row from "@/app/components/shared/Row";
+import Row from "@/components/shared/Row";
 import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {

@@ -1,8 +1,8 @@
 "use client";
 
-import Card from "@/app/components/shared/Card";
-import SectionTitle from "@/app/components/shared/SectionTitle";
-import DateNavigator from "@/app/components/shared/DateNavigator";
+import Card from "@/components/shared/Card";
+import SectionTitle from "@/components/shared/SectionTitle";
+import DateNavigator from "@/components/shared/DateNavigator";
 
 type Props = {
   currentDateLabel: string;

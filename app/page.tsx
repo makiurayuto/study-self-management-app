@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase";
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import {
   GoogleAuthProvider,

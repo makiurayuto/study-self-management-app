@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/app/components/shared/Button";
+import Button from "@/components/shared/Button";
 import { formatDateForDisplay } from "@/lib/date";
 
 type Props = {
