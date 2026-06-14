@@ -1,7 +1,8 @@
-"use client";
 
-import StudentsPage from "@/features/teacher/students/StudentsPage";
+"use client";
+import StudentDetailsPage from "@/features/teacher/students/StudentDetailsPage";
 
 export default function Page() {
-  return <StudentsPage />;
+  return <StudentDetailsPage />;
+
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import ManagementPage from "@/features/teacher/management/ManagementPage";

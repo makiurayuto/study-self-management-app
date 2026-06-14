@@ -5,7 +5,9 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { useTeacherStudents } from "../../../features/teacher/students/hooks/useTeacherStudents";
 import { useStudentActions } from "@/features/teacher/management/hooks/useStudentActions";
 import Button from "@/components/shared/Button";
-import StudentMenu from "../../../features/teacher/management/components/StudentMenu";
+
+import StudentMenu from "@/features/teacher/management/components/StudentMenu";
+
 import { useRouter } from "next/navigation"
 import { db } from "@/firebase";
 import {

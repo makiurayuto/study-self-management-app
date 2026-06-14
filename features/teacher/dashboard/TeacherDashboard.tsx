@@ -4,6 +4,7 @@ import { useState } from "react";
 import Button from "@/components/shared/Button";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useRouter } from "next/navigation";
+
 import { useTeacherData }
 from "@/features/teacher/dashboard/hooks/useTeacherData";
 import DashboardContent from
@@ -41,108 +42,51 @@ export default function TeacherDashboard() {
     missingStudents,
     visibleLogs,
   } = useTeacherData(formatDateForQuery(currentDate));
-  
 
   const currentDateLabel = formatDateForDisplay(currentDate);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
-
-  // =========================
-  // logout
-  // =========================
 
   const handleLogout = async () => {
     await logout();
     router.push("/");
   };
 
-  // =========================
-  // UI
-  // =========================
-
   return (
-    <div
-  style={{
-    width: "100%",
-    padding: "20px 24px",
-    boxSizing: "border-box",
-  }}
->
+    <div style={{ width: "100%", padding: "20px 24px", boxSizing: "border-box" }}>
       {/* ヘッダー */}
       <div style={{ marginBottom: 12 }}>
-        {/* タイトル：中央 */}
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: 16,
-            fontSize: "28px", // ← 追加
-            fontWeight: "bold",
-          }}
-        >
+        <h1 style={{ textAlign: "center", marginBottom: 16, fontSize: "28px", fontWeight: "bold" }}>
           👨‍🏫 先生ダッシュボード
         </h1>
 
-        {/* 右：ボタン群 */}
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: 8,
-            paddingRight: 20,
-          }}
-        >
+        <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", gap: 8, paddingRight: 20 }}>
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => {
-              setCurrentDate(new Date(currentDate));
-            }}
+            onClick={() => setCurrentDate(new Date(currentDate))}
           >
             更新
           </Button>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleLogout}
-          >
+          <Button variant="secondary" size="sm" onClick={handleLogout}>
             ログアウト
           </Button>
         </div>
       </div>
 
-      {/* 生徒一覧 */}
-      
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 30,
-            width: "100%",
-            marginBottom: 24,
-          }}
-        >
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => router.push("/teacher/students")}
-          >
-            生徒詳細一覧
-          </Button>
+      {/* ナビ */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 30, marginBottom: 24 }}>
+        <Button variant="primary" size="lg" onClick={() => router.push("/teacher/students")}>
+          生徒詳細一覧
+        </Button>
 
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => router.push("/teacher/management")}
-          >
-            生徒管理画面
-          </Button>
-        </div>
-      
+        <Button variant="primary" size="lg" onClick={() => router.push("/teacher/management")}>
+          生徒管理画面
+        </Button>
+      </div>
 
-      {/* UI切替 */}
+      {/* メイン */}
       <DashboardContent
         isMobile={isMobile}
         currentDateLabel={currentDateLabel}
