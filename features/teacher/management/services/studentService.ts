@@ -1,0 +1,46 @@
+import { db } from "@/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+
+const deleteLogsByUid = async (uid: string) => {
+  const logsQuery = query(
+    collection(db, "weeklyLogs"),
+    where("uid", "==", uid)
+  );
+
+  const logsSnap = await getDocs(logsQuery);
+
+  await Promise.all(
+    logsSnap.docs.map((logDoc) => deleteDoc(logDoc.ref))
+  );
+};
+
+const deleteUser = async (uid: string) => {
+  await deleteDoc(doc(db, "users", uid));
+};
+
+export const deleteStudent = async (uid: string) => {
+  const cleanUid = uid.trim();
+
+  await deleteLogsByUid(cleanUid);
+  await deleteUser(cleanUid);
+};
+
+export const bulkDeleteStudents = async (
+  uids: string[]
+) => {
+  await Promise.all(
+    uids.map((uid) => deleteStudent(uid))
+  );
+};
+
+export const studentService = {
+  deleteStudent,
+  bulkDeleteStudents,
+};

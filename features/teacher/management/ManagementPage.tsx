@@ -9,15 +9,7 @@ import Button from "@/components/shared/Button";
 import StudentMenu from "@/features/teacher/management/components/StudentMenu";
 
 import { useRouter } from "next/navigation"
-import { db } from "@/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { studentService } from "./services/studentService";
 
 type Tab = "active" | "hidden" | "graduated";
 
@@ -81,8 +73,7 @@ export default function ManagementPage() {
 
   const clearSelection = () => {
     setSelectedIds([]);
-  };
-
+  }
   const cancelBulkMode = () => {
     setBulkMode(false);
     setSelectedIds([]);
@@ -132,61 +123,16 @@ export default function ManagementPage() {
         setSelectedIds([]);
     };
 
-    const handleDeleteStudent = async (
-        uid: string
-    ) => {
+    const handleDeleteStudent = async (uid: string) => {
         const ok = window.confirm(
             "本当に削除しますか？\n学習ログも全て削除されます。"
         );
 
         if (!ok) return;
 
-        const logsQuery = query(
-            collection(db, "weeklyLogs"),
-            where("uid", "==", uid)
-        );
-
-        const logsSnap = await getDocs(logsQuery);
-
-        for (const logDoc of logsSnap.docs) {
-            await deleteDoc(logDoc.ref);
-        }
-
-        await deleteDoc(doc(db, "users", uid));
+        await studentService.deleteStudent(uid);
 
         await fetchData();
-    };
-
-    const deleteStudentByUid = async (uid: string) => {
-        const cleanUid = uid.trim();
-
-        const allLogs = await getDocs(collection(db, "weeklyLogs"));
-
-        console.log("total logs:", allLogs.size);
-
-        allLogs.docs.slice(0, 5).forEach((d) => {
-            console.log(d.id, d.data().uid);
-        });
-
-        const logsQuery = query(
-            collection(db, "weeklyLogs"),
-            where("uid", "==", cleanUid)
-        );
-
-        const logsSnap = await getDocs(logsQuery);
-
-            console.log(
-        "Deleting user:",
-        cleanUid,
-        "logs:",
-        logsSnap.docs.length
-    );
-
-        await Promise.all(
-            logsSnap.docs.map((d) => deleteDoc(d.ref))
-        );
-
-        await deleteDoc(doc(db, "users", cleanUid));
     };
 
     const handleBulkDelete = async () => {
@@ -197,10 +143,9 @@ export default function ManagementPage() {
 
         if (!ok) return;
 
-        await Promise.all(
-            selectedIds.map((uid) => deleteStudentByUid(uid))
+        await studentService.bulkDeleteStudents(
+            selectedIds
         );
-
         setSelectedIds([]);
         setBulkMode(false);
         setShowBulkDeleteModal(false);
@@ -625,7 +570,7 @@ export default function ManagementPage() {
                         padding: 10,
                         marginTop: 10,
 
-                        border: "1px solid #d1d5db",
+                        border: "1px solid #d1d5",
                         borderRadius: 8,
                         outline: "none",
                     }}
@@ -633,7 +578,7 @@ export default function ManagementPage() {
                         e.currentTarget.style.border = "1px solid #111827";
                     }}
                     onBlur={(e) => {
-                        e.currentTarget.style.border = "1px solid #d1d5db";
+                        e.currentTarget.style.border = "1px solid #d1d5";
                     }}
                 />
 
