@@ -10,7 +10,7 @@ export const updateStudentName = async (
   uid: string,
   name: string
 ) => {
-  const ref = doc(db, "users", uid)
+  const ref = doc(db, "students", uid)
 
   await updateDoc(ref, {
     name,
@@ -22,7 +22,7 @@ export const updateStudentStatus = async (
   uid: string,
   status: StudentStatus
 ) => {
-  const ref = doc(db, "users", uid)
+  const ref = doc(db, "students", uid)
 
   if (status === "hidden") {
     return updateDoc(ref, {
