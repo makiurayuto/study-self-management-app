@@ -17,23 +17,21 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
   const fetchData = async () => {
     setLoading(true);
 
-    const userSnap = await getDocs(collection(db, "users"));
+    const studentSnap = await getDocs(collection(db, "students"));
     const logSnap = await getDocs(collection(db, "weeklyLogs"));
 
     const studentList: Student[] = [];
     const hiddenList: Student[] = [];
     const graduatedList: Student[] = [];
 
-    userSnap.forEach((d) => {
+    studentSnap.forEach((d) => {
       const data = d.data();
-
-      if (data.role !== "student") return;
 
       const student: Student = {
         uid: d.id,
         name: data.name || "名前なし",
 
-        role: data.role ?? "student",
+        role: "student",
 
         status: data.status ?? "active",
         schoolId: data.schoolId ?? null,
