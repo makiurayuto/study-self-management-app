@@ -9,7 +9,7 @@ import { signOut } from "firebase/auth";
 type AppUser = {
   uid: string;
   name?: string;
-  role?: "student" | "teacher";
+  role?: "student" | "teacher" | "admin";
 };
 
 type AuthContextType = {
