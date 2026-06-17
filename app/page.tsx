@@ -20,10 +20,11 @@ import { signInWithPopup } from "firebase/auth";
 import { useAuth } from "@/lib/auth/AuthContext";
 import SleepTimePicker from "@/features/sleep/components/SleepTimePicker";
 import { createStudentProfile } from "@/lib/user/createStudentProfile";
+import { updateStudentName } from "@/lib/user/updateStudentName";
 
 export default function Home() {
   const router = useRouter();
-  const { user, authLoading, updateUserName  } = useAuth();
+  const { user, authLoading } = useAuth();
   console.log("user:", user);
 
   const [tempName, setTempName] = useState("");
@@ -376,7 +377,10 @@ export default function Home() {
   const handleUpdateName = async () => {
     if (!user) return;
 
-    await updateUserName(user.uid, newName);
+    await updateStudentName(
+      user.uid,
+      newName
+    );
 
     setShowNameEdit(false);
   };

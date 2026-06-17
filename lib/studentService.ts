@@ -5,16 +5,15 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import type { StudentStatus } from "@/types/student";
+import { updateStudentName as updateStudentNameSync } 
+from "@/lib/user/updateStudentName";
+
 
 export const updateStudentName = async (
   uid: string,
   name: string
 ) => {
-  const ref = doc(db, "students", uid)
-
-  await updateDoc(ref, {
-    name,
-  });
+  await updateStudentNameSync(uid, name);
 };
 
 // 単体更新
