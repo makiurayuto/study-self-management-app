@@ -18,14 +18,14 @@ export function useTeacherData(targetDate: string) {
     setLoading(true);
 
     try {
-      const userSnap = await getDocs(
-        query(collection(db, "users"), where("role", "==", "student"))
+      const studentSnap = await getDocs(
+        collection(db, "students")
       );
 
       const studentList: Student[] = [];
       const hiddenList: Student[] = [];
 
-      userSnap.forEach((d) => {
+      studentSnap.forEach((d) => {
         const data = d.data();
 
         const student: Student = {

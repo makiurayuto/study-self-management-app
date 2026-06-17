@@ -15,8 +15,9 @@ export default function HiddenList({
   setSelectedUid,
 }: Props) {
   const handleUnhide = async (uid: string) => {
-    await updateDoc(doc(db, "users", uid), {
-      isHidden: false,
+    await updateDoc(doc(db, "students", uid), {
+      status: "active",
+      hiddenAt: null,
     });
 
     // 👉 ここは親に任せる（後でuseEffect or fetchData）

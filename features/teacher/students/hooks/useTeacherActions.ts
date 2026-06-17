@@ -4,7 +4,7 @@ import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 export function useTeacherActions(fetchData: () => void) {
   // 非表示
   const hideStudent = async (uid: string) => {
-    await updateDoc(doc(db, "users", uid), {
+    await updateDoc(doc(db, "students", uid), {
       status: "hidden",
       hiddenAt: serverTimestamp(),
     });
@@ -14,7 +14,7 @@ export function useTeacherActions(fetchData: () => void) {
 
   // 再表示
   const unhideStudent = async (uid: string) => {
-    await updateDoc(doc(db, "users", uid), {
+    await updateDoc(doc(db, "students", uid), {
       status: "active",
       hiddenAt: null,
     });
