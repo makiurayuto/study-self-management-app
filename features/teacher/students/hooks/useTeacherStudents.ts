@@ -31,8 +31,6 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
         uid: d.id,
         name: data.name || "名前なし",
 
-        role: "student",
-
         status: data.status ?? "active",
         schoolId: data.schoolId ?? null,
 

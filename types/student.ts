@@ -5,8 +5,6 @@ export type Student = {
   uid: string;
   name: string;
 
-  role: "student" | "teacher";
-
   status: StudentStatus;
 
   schoolId?: string | null;

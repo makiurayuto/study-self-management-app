@@ -31,7 +31,6 @@ export function useTeacherData(targetDate: string) {
         const student: Student = {
           uid: d.id,
           name: data.name || "名前なし",
-          role: "student",
 
           status: data.status ?? "active",
           schoolId: data.schoolId ?? null,
