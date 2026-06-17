@@ -19,6 +19,7 @@ import TimeControl from "@/features/time/components/TimeControl";
 import { signInWithPopup } from "firebase/auth";
 import { useAuth } from "@/lib/auth/AuthContext";
 import SleepTimePicker from "@/features/sleep/components/SleepTimePicker";
+import { createStudentProfile } from "@/lib/user/createStudentProfile";
 
 export default function Home() {
   const router = useRouter();
@@ -87,6 +88,7 @@ export default function Home() {
     setLogs([]);
   };
 
+  /*
   const registerName = async () => {
     if (!user?.uid) return;
 
@@ -114,6 +116,31 @@ export default function Home() {
 
       // AuthContextを使ってるなら一番簡単なのはリロード or 再ログイン状態反映
       router.refresh(); // ← Next.jsで一番現実的
+
+    } catch (e) {
+      console.error(e);
+      alert("登録に失敗しました");
+    }
+  };*/
+
+  const registerName = async () => {
+    if (!user?.uid) return;
+
+    const trimmedName = tempName.trim();
+
+    if (!trimmedName) {
+      alert("名前を入力してください");
+      return;
+    }
+
+    try {
+
+      await createStudentProfile(
+        user.uid,
+        trimmedName
+      );
+
+      window.location.reload();
 
     } catch (e) {
       console.error(e);
