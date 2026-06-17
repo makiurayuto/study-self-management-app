@@ -88,41 +88,6 @@ export default function Home() {
     setLogs([]);
   };
 
-  /*
-  const registerName = async () => {
-    if (!user?.uid) return;
-
-    const trimmedName = tempName.trim();
-
-    if (!trimmedName) {
-      alert("名前を入力してください");
-      return;
-    }
-
-    try {
-      await setDoc(doc(db, "users", user.uid), {
-        name: trimmedName,
-        role: "student",
-
-        status: "active",
-        schoolId: null,
-
-        hiddenAt: null,
-        graduatedAt: null,
-      });
-      window.location.reload();
-
-      const snap = await getDoc(doc(db, "users", user.uid));
-
-      // AuthContextを使ってるなら一番簡単なのはリロード or 再ログイン状態反映
-      router.refresh(); // ← Next.jsで一番現実的
-
-    } catch (e) {
-      console.error(e);
-      alert("登録に失敗しました");
-    }
-  };*/
-
   const registerName = async () => {
     if (!user?.uid) return;
 
