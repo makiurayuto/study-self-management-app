@@ -4,9 +4,12 @@ import { useState } from "react";
 import Button from "@/components/shared/Button";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { createStudentProfile } from "@/lib/user/createStudentProfile";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const { user } = useAuth();
+
+  const router = useRouter();
 
   const [tempName, setTempName] = useState("");
 
@@ -25,11 +28,10 @@ export default function RegisterPage() {
         user.uid,
         trimmedName
       );
-
-      window.location.reload();
+      router.push("/student");
 
     } catch (e) {
-      console.error(e);
+      console.error("register error:", e);
       alert("登録に失敗しました");
     }
   };
@@ -37,7 +39,7 @@ export default function RegisterPage() {
 
   return (
     <div style={{ padding: 20 }}>
-
+        <h2>登録画面</h2>
         <div
         style={{
             marginBottom: 12,
@@ -61,7 +63,7 @@ export default function RegisterPage() {
         </div>
 
         <h2>名前を登録</h2>
-        
+
         <div style={{ marginBottom: 12, color: "#666", fontSize: 14 }}>
         ※本名で登録してください（ニックネーム不可）
         </div>

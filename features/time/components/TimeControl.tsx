@@ -73,7 +73,6 @@ export default function TimeControl({ label, value, setValue }: Props) {
               variant="secondary"
               colorVariant="gray"
               size="sm"
-              className="ml-2"
               onClick={() => setValue("00:00")}
             >
               リセット
