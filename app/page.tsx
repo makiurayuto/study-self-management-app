@@ -416,7 +416,7 @@ export default function Home() {
       </div>
     );
   }
-
+/* 
   if (!user?.name) {
     return (
       <div style={{ padding: 20 }}>
@@ -440,6 +440,7 @@ export default function Home() {
       </div>
     );
   }
+    */
   
 
   return (

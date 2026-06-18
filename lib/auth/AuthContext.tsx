@@ -8,6 +8,7 @@ import { signOut } from "firebase/auth";
 
 type AppUser = {
   uid: string;
+  email?: string;
   name?: string;
   role?: "student" | "teacher" | "admin";
 };
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: newName,
         };
     });
-    }; 
+  }; 
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -65,14 +66,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const unsubDoc = onSnapshot(ref, (snap) => {
             if (!snap.exists()) {
-            setUser({ uid: u.uid });
-            return;
+              setUser({
+                uid: u.uid,
+                email: u.email ?? "",
+              });
+              return;
             }
 
             const data = snap.data();
 
             setUser({
             uid: u.uid,
+            email: u.email ?? "",
             name: data.name,
             role: data.role,
             });
@@ -86,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsub();
-    }, []);
+  }, []);
 
   return (
     <AuthContext.Provider
