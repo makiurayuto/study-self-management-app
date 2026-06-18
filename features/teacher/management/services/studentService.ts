@@ -22,7 +22,10 @@ const deleteLogsByUid = async (uid: string) => {
 };
 
 const deleteUser = async (uid: string) => {
-  await deleteDoc(doc(db, "students", uid));
+  await Promise.all([
+    deleteDoc(doc(db, "students", uid)),
+    deleteDoc(doc(db, "users", uid)),
+  ]);
 };
 
 export const deleteStudent = async (uid: string) => {
