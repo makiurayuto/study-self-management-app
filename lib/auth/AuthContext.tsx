@@ -64,7 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const ref = doc(db, "users", u.uid);
 
-        const unsubDoc = onSnapshot(ref, (snap) => {
+        const unsubDoc = onSnapshot(
+          ref,
+          (snap) => {
             if (!snap.exists()) {
               setUser({
                 uid: u.uid,
@@ -76,12 +78,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = snap.data();
 
             setUser({
-            uid: u.uid,
-            email: u.email ?? "",
-            name: data.name,
-            role: data.role,
+              uid: u.uid,
+              email: u.email ?? "",
+              name: data.name,
+              role: data.role,
             });
-        });
+          },
+          (error) => {
+            console.error("AuthContext users読込失敗", error);
+          }
+        );
 
         return () => unsubDoc();
 

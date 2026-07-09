@@ -96,7 +96,7 @@ export default function StudentPage() {
 
     try {
       await setDoc(
-        doc(db, "weeklyLogs", `${user.uid}_${date}`),
+        doc(db, "weeklyLogs", user.uid, "logs", date),
         {
           uid: user.uid,
           date,
@@ -129,15 +129,16 @@ export default function StudentPage() {
   // logs取得
   // =====================
   const fetchLogs = async (uid: string) => {
-    const q = query(
-      collection(db, "weeklyLogs"),
-      where("uid", "==", uid)
-    );
-
-    const snapshot = await getDocs(q);
-
+    const snapshot = await getDocs(
+  collection(
+      db,
+      "weeklyLogs",
+      uid,
+      "logs"
+    )
+  );
     const data = snapshot.docs.map((d) => ({
-      id: d.id,
+      date: d.id,
       ...d.data(),
     }));
 
@@ -150,6 +151,8 @@ export default function StudentPage() {
   const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
 
+    console.log("変更日:", newDate);
+
     setDate(newDate);
 
     if (!user?.uid) return;
@@ -157,13 +160,19 @@ export default function StudentPage() {
     const ref = doc(
       db,
       "weeklyLogs",
-      `${user.uid}_${newDate}`
+      user.uid,
+      "logs",
+      newDate
     );
 
     const snap = await getDoc(ref);
 
+    console.log("データあり:", snap.exists());
+
     if (snap.exists()) {
       const data = snap.data();
+
+      console.log("取得データ:", data);
 
       setStudyTime(
         data.studyTime != null
@@ -178,6 +187,8 @@ export default function StudentPage() {
       setSleepTime(data.sleepTime ?? "");
       setSatisfaction(data.satisfaction ?? "");
     } else {
+      console.log("データなし → 初期化");
+
       setStudyTime("");
       setPhoneTime("");
       setSleepTime("");
@@ -192,7 +203,9 @@ export default function StudentPage() {
     const ref = doc(
       db,
       "weeklyLogs",
-      `${uid}_${d}`
+      uid,
+      "logs",
+      d
     );
     const snap = await getDoc(ref);
 
@@ -776,7 +789,6 @@ return (
           marginBottom: 80,
           paddingBottom: 20,
           paddingRight: 32,
-
         }}
       >
         <Button variant="secondary" colorVariant="gray" onClick={logout} size="sm">

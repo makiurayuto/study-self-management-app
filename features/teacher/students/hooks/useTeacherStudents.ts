@@ -18,7 +18,6 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
     setLoading(true);
 
     const studentSnap = await getDocs(collection(db, "students"));
-    const logSnap = await getDocs(collection(db, "weeklyLogs"));
 
     const studentList: Student[] = [];
     const hiddenList: Student[] = [];
@@ -51,11 +50,25 @@ export function useTeacherStudents(user: any, authLoading: boolean) {
 
     const logList: StudentDailyLog[] = [];
 
-    logSnap.forEach((d) => {
-      const data = d.data();
+    for (const student of studentList) {
 
-      logList.push(toStudentDailyLog(data));
-    });
+      const logSnap = await getDocs(
+        collection(
+          db,
+          "weeklyLogs",
+          student.uid,
+          "logs"
+        )
+      );
+
+      logSnap.forEach((d) => {
+        const data = d.data();
+
+        logList.push(
+          toStudentDailyLog(data)
+        );
+      });
+    }
 
     logList.sort((a, b) => b.date.localeCompare(a.date));
     

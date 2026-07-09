@@ -9,15 +9,20 @@ import {
 } from "firebase/firestore";
 
 const deleteLogsByUid = async (uid: string) => {
-  const logsQuery = query(
-    collection(db, "weeklyLogs"),
-    where("uid", "==", uid)
+
+  const logsSnap = await getDocs(
+    collection(
+      db,
+      "weeklyLogs",
+      uid,
+      "logs"
+    )
   );
 
-  const logsSnap = await getDocs(logsQuery);
-
   await Promise.all(
-    logsSnap.docs.map((logDoc) => deleteDoc(logDoc.ref))
+    logsSnap.docs.map((logDoc) =>
+      deleteDoc(logDoc.ref)
+    )
   );
 };
 

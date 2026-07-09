@@ -43,17 +43,32 @@ export function useTeacherData(targetDate: string) {
       setStudents(studentList);
       setHiddenStudents(hiddenList);
 
-      const logSnap = await getDocs(
-        query(collection(db, "weeklyLogs"), where("date", "==", targetDate))
-      );
-
       const logList: StudentDailyLog[] = [];
 
-      logSnap.forEach((d) => {
-        const data = d.data();
+      for (const student of studentList) {
 
-        logList.push(toStudentDailyLog(data));
-      });
+        const logSnap = await getDocs(
+          collection(
+            db,
+            "weeklyLogs",
+            student.uid,
+            "logs"
+          )
+        );
+
+        logSnap.forEach((d) => {
+
+          const data = d.data();
+
+
+          if (data.date === targetDate) {
+
+            logList.push(
+              toStudentDailyLog(data)
+            );
+          }
+        });
+      }
 
       setLogs(logList);
     } finally {

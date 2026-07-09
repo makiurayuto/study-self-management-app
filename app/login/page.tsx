@@ -8,37 +8,48 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 
+
 export default function LoginPage() {
 
   const router = useRouter();
 
+
   const login = async () => {
+
     const provider = new GoogleAuthProvider();
 
     provider.setCustomParameters({
       prompt: "select_account",
     });
 
-    try {
-      await signInWithPopup(auth, provider);
 
-      // ログイン成功後
-      router.push("/");
+    try {
+
+      await signInWithPopup(
+        auth,
+        provider
+      );
+
+      router.replace("/");
+
 
     } catch (e) {
+
       console.error(e);
       alert("ログインに失敗しました");
+
     }
+
   };
 
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding:20 }}>
 
       <h2
         style={{
-          marginBottom: 12,
-          marginLeft: 12,
+          marginBottom:12,
+          marginLeft:12,
         }}
       >
         ログインしてください

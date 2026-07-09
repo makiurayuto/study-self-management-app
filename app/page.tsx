@@ -16,21 +16,24 @@ export default function Home() {
 
 
     if (!user) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
+
 
     if (!user.name) {
-      router.push("/register");
+      router.replace("/register");
       return;
     }
+
 
     if (user.role === "teacher") {
-      router.push("/teacher");
+      router.replace("/teacher");
       return;
     }
 
-    router.push("/student");
+
+    router.replace("/student");
 
 
   }, [user, authLoading, router]);
