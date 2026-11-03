@@ -89,6 +89,7 @@ export default function RegisterPage() {
         <input
           value={tempName}
           autoFocus
+          maxLength={50}
           autoComplete="name"
           placeholder="例：山田 太郎"
           onChange={(e) => {

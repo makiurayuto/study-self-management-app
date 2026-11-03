@@ -1,11 +1,14 @@
 import { db } from "@/firebase";
 import {
   collection,
+  collectionGroup,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
+  query,
   setDoc,
+  where,
+  type QueryConstraint,
 } from "firebase/firestore";
 import type { StudentDailyLog } from "@/types/student-log";
 import { toStudentDailyLog } from "@/lib/mappers/studentLogMapper";
@@ -28,32 +31,27 @@ export const fetchStudentLogs = async (
   );
 };
 
-// 複数生徒の全ログ（読めなかった生徒の分はスキップ）
-export const fetchLogsForStudents = async (
-  uids: string[]
+// =====================
+// 先生用：全生徒のログを日付で横断取得（collectionGroup "logs"）
+// 生徒数・日数が増えても、必要な日付の分だけ読み込む
+// =====================
+const queryLogs = async (
+  ...constraints: QueryConstraint[]
 ): Promise<StudentDailyLog[]> => {
-  const results = await Promise.all(
-    uids.map((uid) =>
-      fetchStudentLogs(uid).catch((e) => {
-        console.error(`logs読込失敗 uid=${uid}`, e);
-        return [];
-      })
-    )
+  const snapshot = await getDocs(
+    query(collectionGroup(db, "logs"), ...constraints)
   );
-  return results.flat();
+
+  return snapshot.docs.map((d) => toStudentDailyLog(d.data()));
 };
 
-// 1日分のログ
-export const fetchStudentLog = async (
-  uid: string,
-  date: string
-): Promise<StudentDailyLog | null> => {
-  const snap = await getDoc(logDoc(uid, date));
+// 指定日の全生徒のログ
+export const fetchLogsByDate = (date: string) =>
+  queryLogs(where("date", "==", date));
 
-  if (!snap.exists()) return null;
-
-  return toStudentDailyLog({ uid, date, ...snap.data() });
-};
+// 期間内（from〜to を含む）の全生徒のログ
+export const fetchLogsInRange = (from: string, to: string) =>
+  queryLogs(where("date", ">=", from), where("date", "<=", to));
 
 export const saveStudentLog = async (log: StudentDailyLog) => {
   await setDoc(logDoc(log.uid, log.date), log);

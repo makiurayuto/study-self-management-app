@@ -62,6 +62,7 @@ function NameEditForm({
       <input
         value={name}
         autoFocus
+        maxLength={50}
         onChange={(e) => setName(e.target.value)}
         placeholder="新しい名前（本名）"
         aria-label="新しい名前"

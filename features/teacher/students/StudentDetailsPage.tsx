@@ -1,7 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { getWeekDates } from "@/lib/date";
 import Skeleton from "@/components/shared/Skeleton";
 import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
 import PageTitle from "@/features/teacher/components/PageTitle";
@@ -22,27 +21,15 @@ export default function StudentDetailsPage() {
     week,
     filteredLogs,
     logs,
+    weekCounts,
     loading,
+    logsLoading,
   } = useTeacherData({
     user,
     authLoading,
     selectedUid,
     weekOffset,
   });
-
-  // 今週の記録日数（一覧のバッジ用）
-  const weekCounts = useMemo(() => {
-    const thisWeek = new Set(getWeekDates(0).map((d) => d.date));
-    const counts: Record<string, number> = {};
-
-    for (const log of logs) {
-      if (thisWeek.has(log.date)) {
-        counts[log.uid] = (counts[log.uid] ?? 0) + 1;
-      }
-    }
-
-    return counts;
-  }, [logs]);
 
   const title = (
     <PageTitle title="生徒詳細" description="生徒ごとの1週間の記録とCSV出力" />
@@ -78,6 +65,7 @@ export default function StudentDetailsPage() {
       week={week}
       filteredLogs={filteredLogs}
       logs={logs}
+      logsLoading={logsLoading}
       onBack={isMobile ? () => setSelectedUid(null) : undefined}
     />
   );

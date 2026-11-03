@@ -4,20 +4,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Student } from "@/types/student";
 import type { StudentDailyLog } from "@/types/student-log";
 import { fetchStudents } from "@/lib/studentService";
-import { fetchLogsForStudents } from "@/lib/logService";
+import { fetchLogsByDate } from "@/lib/logService";
 
 // 非表示以外の生徒と、targetDate のログを取得
 const loadDashboardData = async (targetDate: string) => {
-  const allStudents = await fetchStudents();
-  const students = allStudents.filter((s) => s.status !== "hidden");
-
-  const allLogs = await fetchLogsForStudents(
-    students.map((s) => s.uid)
-  );
+  const [allStudents, logs] = await Promise.all([
+    fetchStudents(),
+    fetchLogsByDate(targetDate),
+  ]);
 
   return {
-    students,
-    logs: allLogs.filter((log) => log.date === targetDate),
+    students: allStudents.filter((s) => s.status !== "hidden"),
+    logs,
   };
 };
 

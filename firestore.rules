@@ -7,6 +7,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
     function isTeacher() {
       return isAuth()
         && get(
@@ -14,86 +18,87 @@ service cloud.firestore {
         ).data.role == "teacher";
     }
 
+    // 更新で変わったフィールドが keys の中だけか
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function isValidName(name) {
+      return name is string && name.size() > 0 && name.size() <= 50;
+    }
+
+    // =====================
+    // users（ログイン情報・ロール）
+    // role はクライアントから変更不可（先生の付与はコンソールで行う）
+    // =====================
     match /users/{uid} {
-      allow read: if isAuth()
-        && (
-          request.auth.uid == uid
-          || isTeacher()
-        );
+      allow read: if isOwner(uid) || isTeacher();
 
-      allow create: if isAuth()
-        && request.auth.uid == uid;
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(["name", "role", "schoolId"])
+        && request.resource.data.role == "student"
+        && isValidName(request.resource.data.name)
+        && request.resource.data.schoolId == null;
 
-      allow update: if isAuth()
-        && (
-          request.auth.uid == uid
-          || isTeacher()
-        );
+      allow update: if (isOwner(uid) || isTeacher())
+        && onlyChanges(["name"])
+        && isValidName(request.resource.data.name);
 
       allow delete: if isTeacher();
     }
 
+    // =====================
+    // students（生徒情報）
+    // status は先生だけが変更可能
+    // =====================
     match /students/{uid} {
-      allow read: if isAuth()
-        && (
-          request.auth.uid == uid
-          || isTeacher()
-        );
+      allow read: if isOwner(uid) || isTeacher();
 
-      allow create: if isAuth()
-        && request.auth.uid == uid;
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(["name", "status", "schoolId", "hiddenAt", "graduatedAt"])
+        && isValidName(request.resource.data.name)
+        && request.resource.data.status == "active"
+        && request.resource.data.schoolId == null
+        && request.resource.data.hiddenAt == null
+        && request.resource.data.graduatedAt == null;
 
-      allow update: if isAuth()
-        && (
-          request.auth.uid == uid
-          || isTeacher()
-        );
-
-      allow delete: if isTeacher();
-    }
-
-    // 旧構造（weeklyLogs/{logId}）
-    match /weeklyLogs/{logId} {
-      allow get, list: if isTeacher()
-        || (
-          isAuth()
-          && resource.data.uid == request.auth.uid
-        );
-
-      allow create: if isAuth()
-        && request.resource.data.uid == request.auth.uid;
+      allow update: if isOwner(uid)
+        && onlyChanges(["name"])
+        && isValidName(request.resource.data.name);
 
       allow update: if isTeacher()
-        || (
-          isAuth()
-          && resource.data.uid == request.auth.uid
-          && request.resource.data.uid == request.auth.uid
-        );
+        && onlyChanges(["name", "status", "hiddenAt", "graduatedAt"])
+        && request.resource.data.status in ["active", "hidden", "graduated"]
+        && isValidName(request.resource.data.name);
 
-      allow delete: if isTeacher()
-        || (
-          isAuth()
-          && resource.data.uid == request.auth.uid
-        );
+      allow delete: if isTeacher();
     }
 
-    // 新構造（weeklyLogs/{uid}/logs/{date}）
+    // =====================
+    // 学習ログ（weeklyLogs/{uid}/logs/{date}）
+    // =====================
     match /weeklyLogs/{uid}/logs/{date} {
-      allow read: if isAuth()
-        && (
-          request.auth.uid == uid
-          || isTeacher()
-        );
+      allow read: if isOwner(uid) || isTeacher();
 
-      allow create, update: if isAuth()
-        && request.auth.uid == uid
-        && request.resource.data.uid == uid;
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(["uid", "date", "studyTime", "phoneTime", "sleepTime", "satisfaction"])
+        && request.resource.data.uid == uid
+        && request.resource.data.date == date
+        && request.resource.data.studyTime is int
+        && request.resource.data.studyTime >= 0
+        && request.resource.data.studyTime < 1440
+        && request.resource.data.phoneTime is int
+        && request.resource.data.phoneTime >= 0
+        && request.resource.data.phoneTime < 1440
+        && request.resource.data.sleepTime is string
+        && request.resource.data.satisfaction in ["◎", "○", "△", "×"];
 
-      allow delete: if isAuth()
-        && (
-          request.auth.uid == uid
-          || isTeacher()
-        );
+      allow delete: if isOwner(uid) || isTeacher();
+    }
+
+    // 先生用：全生徒のログを日付で横断検索（collectionGroup）
+    match /{path=**}/logs/{date} {
+      allow read: if isTeacher();
     }
 
     match /schools/{schoolId} {

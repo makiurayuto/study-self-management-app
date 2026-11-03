@@ -5,6 +5,7 @@ import WeekHeader from "./WeekHeader";
 import LogTable from "./LogTable";
 import CsvExportModal from "./CsvExportModal";
 import Button from "@/components/shared/Button";
+import Skeleton from "@/components/shared/Skeleton";
 import { colors } from "@/components/shared/styles";
 import { useStudentCsv } from "../hooks/useStudentCsv";
 import type { WeekDate } from "@/lib/date";
@@ -18,6 +19,7 @@ type Props = {
   week: WeekDate[];
   filteredLogs: StudentDailyLog[];
   logs: StudentDailyLog[];
+  logsLoading?: boolean;
   onBack?: () => void;
 };
 
@@ -29,6 +31,7 @@ export default function StudentDetail({
   week,
   filteredLogs,
   logs,
+  logsLoading = false,
   onBack,
 }: Props) {
   const [showCsvModal, setShowCsvModal] = useState(false);
@@ -88,7 +91,11 @@ export default function StudentDetail({
         week={week}
       />
 
-      <LogTable week={week} filteredLogs={filteredLogs} />
+      {logsLoading ? (
+        <Skeleton height={320} radius={12} />
+      ) : (
+        <LogTable week={week} filteredLogs={filteredLogs} />
+      )}
 
       <CsvExportModal
         open={showCsvModal}
