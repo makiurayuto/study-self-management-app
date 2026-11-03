@@ -6,28 +6,24 @@ export async function createStudentProfile(
   uid: string,
   name: string
 ) {
+  console.log("create users start", uid);
 
-  // ログイン情報
-  await setDoc(
-    doc(db, "users", uid),
-    {
-      name,
-      role: "student",
-      schoolId: null,
-    }
-  );
+  await setDoc(doc(db, "users", uid), {
+    name,
+    role: "student",
+    schoolId: null,
+  });
 
+  console.log("create users done");
+  console.log("create students start", uid);
 
-  // 生徒情報
-  await setDoc(
-    doc(db, "students", uid),
-    {
-      name,
-      status: "active",
-      schoolId: null,
-      hiddenAt: null,
-      graduatedAt: null,
-    }
-  );
+  await setDoc(doc(db, "students", uid), {
+    name,
+    status: "active",
+    schoolId: null,
+    hiddenAt: null,
+    graduatedAt: null,
+  });
 
+  console.log("create students done");
 }
