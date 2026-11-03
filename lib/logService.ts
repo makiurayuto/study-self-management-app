@@ -28,11 +28,18 @@ export const fetchStudentLogs = async (
   );
 };
 
-// 複数生徒の全ログ
+// 複数生徒の全ログ（読めなかった生徒の分はスキップ）
 export const fetchLogsForStudents = async (
   uids: string[]
 ): Promise<StudentDailyLog[]> => {
-  const results = await Promise.all(uids.map(fetchStudentLogs));
+  const results = await Promise.all(
+    uids.map((uid) =>
+      fetchStudentLogs(uid).catch((e) => {
+        console.error(`logs読込失敗 uid=${uid}`, e);
+        return [];
+      })
+    )
+  );
   return results.flat();
 };
 

@@ -1,0 +1,103 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isTeacher() {
+      return isAuth()
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role == "teacher";
+    }
+
+    match /users/{uid} {
+      allow read: if isAuth()
+        && (
+          request.auth.uid == uid
+          || isTeacher()
+        );
+
+      allow create: if isAuth()
+        && request.auth.uid == uid;
+
+      allow update: if isAuth()
+        && (
+          request.auth.uid == uid
+          || isTeacher()
+        );
+
+      allow delete: if isTeacher();
+    }
+
+    match /students/{uid} {
+      allow read: if isAuth()
+        && (
+          request.auth.uid == uid
+          || isTeacher()
+        );
+
+      allow create: if isAuth()
+        && request.auth.uid == uid;
+
+      allow update: if isAuth()
+        && (
+          request.auth.uid == uid
+          || isTeacher()
+        );
+
+      allow delete: if isTeacher();
+    }
+
+    // 旧構造（weeklyLogs/{logId}）
+    match /weeklyLogs/{logId} {
+      allow get, list: if isTeacher()
+        || (
+          isAuth()
+          && resource.data.uid == request.auth.uid
+        );
+
+      allow create: if isAuth()
+        && request.resource.data.uid == request.auth.uid;
+
+      allow update: if isTeacher()
+        || (
+          isAuth()
+          && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+        );
+
+      allow delete: if isTeacher()
+        || (
+          isAuth()
+          && resource.data.uid == request.auth.uid
+        );
+    }
+
+    // 新構造（weeklyLogs/{uid}/logs/{date}）
+    match /weeklyLogs/{uid}/logs/{date} {
+      allow read: if isAuth()
+        && (
+          request.auth.uid == uid
+          || isTeacher()
+        );
+
+      allow create, update: if isAuth()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid;
+
+      allow delete: if isAuth()
+        && (
+          request.auth.uid == uid
+          || isTeacher()
+        );
+    }
+
+    match /schools/{schoolId} {
+      allow read, write: if isTeacher();
+    }
+  }
+}
