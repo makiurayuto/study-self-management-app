@@ -1,24 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Button from "@/components/shared/Button";
 
 type Props = {
   value: string;
-  onChange: (v: string) => void;
-  onClose: () => void; // ← 追加
+  onConfirm: (v: string) => void;
+  onCancel: () => void;
 };
 
 const ITEM_HEIGHT = 40;
+const VIEW_HEIGHT = 240;
+// 先頭・末尾の余白（1項目目と最終項目も中央に来るように）
+const PADDING = (VIEW_HEIGHT - ITEM_HEIGHT) / 2;
+const DEFAULT_TIME = "22:00";
 
 export default function SleepTimePicker({
   value,
-  onChange,
-  onClose,
+  onConfirm,
+  onCancel,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [tempValue, setTempValue] = useState(value || "22:00");
+  const [tempValue, setTempValue] = useState(value || DEFAULT_TIME);
 
+  // 15分刻み 00:00〜23:45
   const base = useMemo(() => {
     return Array.from({ length: 96 }).map((_, i) => {
       const h = String(Math.floor(i / 4)).padStart(2, "0");
@@ -27,116 +34,125 @@ export default function SleepTimePicker({
     });
   }, []);
 
+  // 無限スクロール風に3周分並べ、常に真ん中の周を表示する
   const list = useMemo(() => [...base, ...base, ...base], [base]);
+
+  const scrollToIndex = (index: number, smooth = false) => {
+    ref.current?.scrollTo({
+      top: (base.length + index) * ITEM_HEIGHT,
+      behavior: smooth ? "smooth" : "auto",
+    });
+  };
 
   // 初期位置
   useEffect(() => {
-    if (!ref.current) return;
-
-    const index = base.findIndex(t => t === (value || "22:00"));
-    const startIndex = index === -1 ? 0 : index;
+    const index = base.indexOf(value || DEFAULT_TIME);
 
     requestAnimationFrame(() => {
-      if (!ref.current) return;
-
-      ref.current.scrollTop =
-        (base.length + startIndex) * ITEM_HEIGHT;
+      scrollToIndex(index === -1 ? 0 : index);
     });
-  }, [base, value]);
+    // 開いたときだけ合わせる
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // スクロール（選ばない！移動だけ）
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  // スクロールが止まったら中央の項目を仮選択
   const handleScroll = () => {
-    if (!ref.current) return;
-
-    const el = ref.current;
-
-    // スクロール中は何もしない
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
     timeoutRef.current = setTimeout(() => {
-      const rawIndex = el.scrollTop / ITEM_HEIGHT;
-      const index = Math.round(rawIndex);
+      const el = ref.current;
+      if (!el) return;
 
       const baseLen = base.length;
+      const index = Math.round(el.scrollTop / ITEM_HEIGHT);
+      const normalizedIndex = ((index % baseLen) + baseLen) % baseLen;
 
-      const normalizedIndex =
-        ((index % baseLen) + baseLen) % baseLen;
+      // 真ん中の周へ戻す
+      el.scrollTop = (baseLen + normalizedIndex) * ITEM_HEIGHT;
 
-      const centerIndex = baseLen + normalizedIndex;
-
-      // ここでだけ補正する
-      el.scrollTop = centerIndex * ITEM_HEIGHT;
-
-      // 仮選択更新
       setTempValue(base[normalizedIndex]);
     }, 80);
-};
-
-  // タップで確定
-  const handleSelect = (t: string) => {
-    setTempValue(t);   // 表示用
-    onChange(t);       // 確定
-    onClose();         // 閉じる
   };
 
   return (
-    <div
-      style={{
-        position: "relative",
-        height: 240,
-        overflow: "hidden",
-        borderRadius: 16,
-        background: "var(--card)",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div
-        ref={ref}
-        onScroll={handleScroll}
         style={{
-          height: "100%",
-          overflowY: "scroll",
-          paddingTop: ITEM_HEIGHT * 2,
-          paddingBottom: ITEM_HEIGHT * 2,
+          position: "relative",
+          height: VIEW_HEIGHT,
+          overflow: "hidden",
+          borderRadius: 16,
+          background: "var(--bg)",
         }}
       >
-        {list.map((t, i) => {
-          const isActive = t === tempValue;
+        {/* 中央の選択帯 */}
+        <div
+          style={{
+            position: "absolute",
+            top: PADDING,
+            left: 12,
+            right: 12,
+            height: ITEM_HEIGHT,
+            borderRadius: 10,
+            background: "rgba(79,70,229,0.12)",
+            pointerEvents: "none",
+          }}
+        />
 
-          return (
-            <div
-              key={i}
-              onClick={() => handleSelect(t)}
-              style={{
-                height: ITEM_HEIGHT,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: isActive ? "bold" : "normal",
-                color: isActive ? "#4f46e5" : "var(--text)",
-              }}
-            >
-              {t}
-            </div>
-          );
-        })}
+        <div
+          ref={ref}
+          onScroll={handleScroll}
+          style={{
+            position: "relative",
+            height: "100%",
+            overflowY: "scroll",
+            scrollSnapType: "y mandatory",
+            paddingTop: PADDING,
+            paddingBottom: PADDING,
+            boxSizing: "border-box",
+          }}
+        >
+          {list.map((t, i) => {
+            const isActive = t === tempValue;
+
+            return (
+              <div
+                key={i}
+                onClick={() => {
+                  setTempValue(t);
+                  scrollToIndex(base.indexOf(t), true);
+                }}
+                style={{
+                  height: ITEM_HEIGHT,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  scrollSnapAlign: "center",
+                  cursor: "pointer",
+                  fontSize: isActive ? 20 : 16,
+                  fontWeight: isActive ? "bold" : "normal",
+                  color: isActive ? "#4f46e5" : "var(--text)",
+                  opacity: isActive ? 1 : 0.5,
+                  transition: "all 0.1s ease",
+                }}
+              >
+                {t}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* 中央ライン */}
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: 0,
-          right: 0,
-          height: ITEM_HEIGHT,
-          transform: "translateY(-50%)",
-          pointerEvents: "none",
-        }}
-      />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8 }}>
+        <Button variant="secondary" colorVariant="gray" onClick={onCancel}>
+          キャンセル
+        </Button>
+        <Button variant="primary" onClick={() => onConfirm(tempValue)}>
+          {tempValue} に決定
+        </Button>
+      </div>
     </div>
   );
 }

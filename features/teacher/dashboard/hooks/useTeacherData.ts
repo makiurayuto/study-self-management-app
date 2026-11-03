@@ -21,30 +21,49 @@ const loadDashboardData = async (targetDate: string) => {
   };
 };
 
+const byName = (a: { name: string }, b: { name: string }) =>
+  a.name.localeCompare(b.name, "ja");
+
 export function useTeacherData(targetDate: string) {
   const [students, setStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<StudentDailyLog[]>([]);
   // 最後に読み込みが完了した日付（targetDate と異なる間は読み込み中）
   const [loadedDate, setLoadedDate] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   const loading = loadedDate !== targetDate;
+  const initialLoading = loadedDate === null;
 
   const applyData = useCallback(
     (data: { students: Student[]; logs: StudentDailyLog[] }) => {
       setStudents(data.students);
       setLogs(data.logs);
       setLoadedDate(targetDate);
+      setError(false);
+    },
+    [targetDate]
+  );
+
+  const handleError = useCallback(
+    (e: unknown) => {
+      console.error("ダッシュボード読込失敗", e);
+      setError(true);
+      setLoadedDate(targetDate);
     },
     [targetDate]
   );
 
   const fetchData = useCallback(async () => {
-    applyData(await loadDashboardData(targetDate));
-  }, [targetDate, applyData]);
+    try {
+      applyData(await loadDashboardData(targetDate));
+    } catch (e) {
+      handleError(e);
+    }
+  }, [targetDate, applyData, handleError]);
 
   useEffect(() => {
-    loadDashboardData(targetDate).then(applyData);
-  }, [targetDate, applyData]);
+    loadDashboardData(targetDate).then(applyData).catch(handleError);
+  }, [targetDate, applyData, handleError]);
 
   // =========================
   // 派生データ
@@ -65,20 +84,29 @@ export function useTeacherData(targetDate: string) {
   }, [logs]);
 
   const missingStudents = useMemo(() => {
-    return visibleStudents.filter((s) => !submittedUids.has(s.uid));
+    return visibleStudents
+      .filter((s) => !submittedUids.has(s.uid))
+      .sort(byName);
   }, [visibleStudents, submittedUids]);
 
   const visibleLogs = useMemo(() => {
-    return logs.filter((log) =>
-      visibleStudents.some((s) => s.uid === log.uid)
-    );
-  }, [logs, visibleStudents]);
+    const visibleUids = new Set(visibleStudents.map((s) => s.uid));
+
+    return logs
+      .filter((log) => visibleUids.has(log.uid))
+      .sort((a, b) =>
+        (studentMap[a.uid] ?? "").localeCompare(studentMap[b.uid] ?? "", "ja")
+      );
+  }, [logs, visibleStudents, studentMap]);
 
   return {
     loading,
+    initialLoading,
+    error,
     studentMap,
     missingStudents,
     visibleLogs,
+    totalCount: visibleStudents.length,
     refresh: fetchData,
   };
 }

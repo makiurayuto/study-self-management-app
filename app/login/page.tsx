@@ -1,17 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/firebase";
-import Button from "@/components/shared/Button";
+import { FirebaseError } from "firebase/app";
 import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
+import { auth } from "@/firebase";
+import { useAuth } from "@/lib/auth/AuthContext";
+import AuthCard from "@/components/shared/AuthCard";
+import Button from "@/components/shared/Button";
+import { colors } from "@/components/shared/styles";
 
+// ユーザーが自分で閉じた場合などはエラー表示しない
+const CANCEL_CODES = ["auth/popup-closed-by-user", "auth/cancelled-popup-request"];
 
 export default function LoginPage() {
 
   const router = useRouter();
+  const { user, authLoading } = useAuth();
+
+  const [signingIn, setSigningIn] = useState(false);
+  const [error, setError] = useState("");
+
+  // ログイン済みなら振り分けへ
+  useEffect(() => {
+    if (!authLoading && user) router.replace("/");
+  }, [user, authLoading, router]);
 
 
   const login = async () => {
@@ -22,6 +38,8 @@ export default function LoginPage() {
       prompt: "select_account",
     });
 
+    setSigningIn(true);
+    setError("");
 
     try {
 
@@ -32,38 +50,51 @@ export default function LoginPage() {
 
       router.replace("/");
 
-
     } catch (e) {
 
-      console.error(e);
-      alert("ログインに失敗しました");
+      if (e instanceof FirebaseError && CANCEL_CODES.includes(e.code)) return;
 
+      console.error(e);
+      setError(
+        e instanceof FirebaseError && e.code === "auth/popup-blocked"
+          ? "ポップアップがブロックされました。ブラウザの設定を確認してください"
+          : "ログインに失敗しました。もう一度お試しください"
+      );
+
+    } finally {
+      setSigningIn(false);
     }
 
   };
 
 
   return (
-    <div style={{ padding:20 }}>
-
-      <h2
-        style={{
-          marginBottom:12,
-          marginLeft:12,
-        }}
-      >
-        ログインしてください
-      </h2>
-
+    <AuthCard>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 40 }}>📚</div>
+        <h1 style={{ margin: "8px 0 4px", fontSize: 22, fontWeight: "bold" }}>
+          勉強時間自己管理アプリ
+        </h1>
+        <p style={{ margin: 0, fontSize: 14, opacity: 0.6 }}>
+          毎日の勉強・スマホ・睡眠を記録しよう
+        </p>
+      </div>
 
       <Button
         variant="primary"
-        size="md"
+        size="lg"
+        fullWidth
         onClick={login}
+        disabled={signingIn}
       >
-        Googleでログイン
+        {signingIn ? "ログイン中…" : "Googleでログイン"}
       </Button>
 
-    </div>
+      {error && (
+        <div role="alert" style={{ color: colors.danger, fontSize: 14, textAlign: "center" }}>
+          {error}
+        </div>
+      )}
+    </AuthCard>
   );
 }

@@ -1,32 +1,20 @@
 import { useState } from "react";
+import { addDays, getToday } from "@/lib/date";
 
+// 表示する日付（"YYYY-MM-DD"）。初期値は昨日
 export function useTeacherDashboard() {
-  const [currentDate, setCurrentDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d;
-  });
+  const today = getToday();
+  const yesterday = addDays(today, -1);
 
-  const changeDay = (diff: number) => {
-    const d = new Date(currentDate);
-    d.setDate(d.getDate() + diff);
-    setCurrentDate(d);
-  };
-
-  const onPrevDay = () => changeDay(-1);
-  const onNextDay = () => changeDay(1);
-
-  const onYesterday = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    setCurrentDate(d);
-  };
+  const [date, setDate] = useState(yesterday);
 
   return {
-    currentDate,
-    setCurrentDate,
-    onPrevDay,
-    onNextDay,
-    onYesterday,
+    date,
+    isToday: date === today,
+    isYesterday: date === yesterday,
+    onPrevDay: () => setDate((d) => addDays(d, -1)),
+    onNextDay: () => setDate((d) => (d < today ? addDays(d, 1) : d)),
+    onYesterday: () => setDate(yesterday),
+    onToday: () => setDate(today),
   };
 }

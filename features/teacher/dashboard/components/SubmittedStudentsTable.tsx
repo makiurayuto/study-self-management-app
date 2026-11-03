@@ -1,25 +1,18 @@
 "use client";
+import { formatHours } from "@/lib/time";
 import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {
   visibleLogs: StudentDailyLog[];
   studentMap: Record<string, string>;
-  loading: boolean;
 };
 
 export default function SubmittedStudentsTable({
   visibleLogs,
   studentMap,
-  loading,
 }: Props) {
   return (
-    <div
-      style={{
-        opacity: loading ? 0.4 : 1,
-        pointerEvents: loading ? "none" : "auto",
-        transition: "0.2s",
-      }}
-    >
+    <div style={{ overflowX: "auto" }}>
       <table
         style={{
           width: "100%",
@@ -39,29 +32,13 @@ export default function SubmittedStudentsTable({
         <tbody>
           {visibleLogs.map((log) => (
             <tr key={log.uid + log.date}>
-              <td style={tdStyle}>
+              <td style={{ ...tdStyle, fontWeight: 600 }}>
                 {studentMap[log.uid] || "不明"}
               </td>
-
-              <td style={tdStyle}>
-                {log.studyTime
-                  ? `${(log.studyTime / 60).toFixed(1)}h`
-                  : ""}
-              </td>
-
-              <td style={tdStyle}>
-                {log.phoneTime
-                  ? `${(log.phoneTime / 60).toFixed(1)}h`
-                  : ""}
-              </td>
-
-              <td style={tdStyle}>
-                {log.sleepTime || ""}
-              </td>
-
-              <td style={tdStyle}>
-                {log.satisfaction || ""}
-              </td>
+              <td style={tdStyle}>{formatHours(log.studyTime)}</td>
+              <td style={tdStyle}>{formatHours(log.phoneTime)}</td>
+              <td style={tdStyle}>{log.sleepTime}</td>
+              <td style={{ ...tdStyle, fontSize: 18 }}>{log.satisfaction}</td>
             </tr>
           ))}
         </tbody>
@@ -70,14 +47,15 @@ export default function SubmittedStudentsTable({
   );
 }
 
-const thStyle = {
-  border: "1px solid #ccc",
-  padding: 12,
-  background: "#f3f4f6",
-  textAlign: "left" as const,
+const thStyle: React.CSSProperties = {
+  borderBottom: "2px solid var(--border)",
+  padding: "10px 12px",
+  textAlign: "left",
+  fontSize: 13,
+  opacity: 0.7,
 };
 
-const tdStyle = {
-  border: "1px solid #ccc",
-  padding: 12,
+const tdStyle: React.CSSProperties = {
+  borderBottom: "1px solid var(--border)",
+  padding: "12px",
 };

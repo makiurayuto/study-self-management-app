@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import WeekHeader from "./WeekHeader";
 import LogTable from "./LogTable";
+import CsvExportModal from "./CsvExportModal";
 import Button from "@/components/shared/Button";
-import { useState } from "react";
+import { colors } from "@/components/shared/styles";
 import { useStudentCsv } from "../hooks/useStudentCsv";
+import type { WeekDate } from "@/lib/date";
 import type { StudentDailyLog } from "@/types/student-log";
 
 type Props = {
@@ -12,9 +15,10 @@ type Props = {
   studentMap: Record<string, string>;
   weekOffset: number;
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
-  week: { date: string }[];
+  week: WeekDate[];
   filteredLogs: StudentDailyLog[];
   logs: StudentDailyLog[];
+  onBack?: () => void;
 };
 
 export default function StudentDetail({
@@ -25,25 +29,9 @@ export default function StudentDetail({
   week,
   filteredLogs,
   logs,
+  onBack,
 }: Props) {
-
   const [showCsvModal, setShowCsvModal] = useState(false);
-
-  const getThisWeekStart = () => {
-    const now = new Date();
-    const day = now.getDay(); // 0=日
-
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-
-    return monday.toISOString().split("T")[0];
-  };
-  const [fromDate, setFromDate] = useState(getThisWeekStart());
-  
-  const getToday = () => {
-    return new Date().toISOString().split("T")[0];
-  };
-  const [toDate, setToDate] = useState(getToday());
 
   const { exportCsv } = useStudentCsv({
     logs,
@@ -52,22 +40,47 @@ export default function StudentDetail({
   });
 
   if (!selectedUid) {
-    return <p style={{ marginTop: 45 }}>👈 生徒を選択してください</p>;
+    return (
+      <div style={{ padding: "60px 0", textAlign: "center", color: colors.muted }}>
+        👈 左の一覧から生徒を選択してください
+      </div>
+    );
   }
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: 20 }}>
-          📊{" "}
-          <span style={{ color: "#2563eb", fontWeight: 700 }}>
+      {onBack && (
+        <Button variant="secondary" colorVariant="gray" size="sm" onClick={onBack}>
+          ← 一覧に戻る
+        </Button>
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+          margin: "12px 0 16px",
+        }}
+      >
+        <h2 style={{ fontSize: 20, margin: 0 }}>
+          <span style={{ color: colors.primary, fontWeight: 700 }}>
             {studentMap[selectedUid] ?? "不明な生徒"}
           </span>
-          <span style={{ color: "#666" }}> の学習ログ</span>
+          <span style={{ opacity: 0.6, fontWeight: 400 }}> の学習ログ</span>
         </h2>
-      </div>
 
-      <hr style={{ margin: "12px 0", borderColor: "#e5e7eb" }} />
+        <Button
+          variant="secondary"
+          colorVariant="success"
+          size="sm"
+          onClick={() => setShowCsvModal(true)}
+        >
+          ⬇ CSV出力
+        </Button>
+      </div>
 
       <WeekHeader
         weekOffset={weekOffset}
@@ -75,87 +88,13 @@ export default function StudentDetail({
         week={week}
       />
 
-      <LogTable
-        filteredLogs={filteredLogs}
+      <LogTable week={week} filteredLogs={filteredLogs} />
+
+      <CsvExportModal
+        open={showCsvModal}
+        onClose={() => setShowCsvModal(false)}
+        onExport={exportCsv}
       />
-
-      <div style={{ height: 24 }} />
-        <Button
-          variant="secondary"
-          colorVariant="success"
-          onClick={() => setShowCsvModal(true)}
-        >
-          CSV出力
-        </Button>
-
-      {showCsvModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: 24,
-              borderRadius: 8,
-              minWidth: 320,
-            }}
-          >
-            <h3>期間を入力してください</h3>
-
-            <div style={{ marginTop: 16 }}>
-              <label>開始日</label>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
-            </div>
-
-            <div style={{ marginTop: 16 }}>
-              <label>終了日</label>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-              />
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 8,
-                marginTop: 24,
-              }}
-            >
-              <Button
-                variant="secondary"
-                colorVariant="success"
-                onClick={() => setShowCsvModal(false)}
-              >
-                キャンセル
-              </Button>
-
-              <Button
-                colorVariant="success"
-                onClick={() => {
-                  exportCsv(fromDate, toDate);
-                  setShowCsvModal(false);
-                }}
-              >
-                出力
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

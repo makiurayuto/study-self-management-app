@@ -5,54 +5,94 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { useTeacherStudents } from "@/features/teacher/students/hooks/useTeacherStudents";
 import { useStudentActions } from "@/features/teacher/management/hooks/useStudentActions";
 import Button from "@/components/shared/Button";
-
+import ConfirmDialog, { type ConfirmOptions } from "@/components/shared/ConfirmDialog";
+import NameEditModal from "@/components/shared/NameEditModal";
+import Skeleton from "@/components/shared/Skeleton";
+import Tabs from "@/components/shared/Tabs";
+import Toast, { useToast } from "@/components/shared/Toast";
+import { colors, textInputStyle } from "@/components/shared/styles";
+import PageTitle from "@/features/teacher/components/PageTitle";
 import StudentMenu from "@/features/teacher/management/components/StudentMenu";
-
-import { useRouter } from "next/navigation"
 import { deleteStudent, bulkDeleteStudents } from "@/lib/studentService";
+import type { Student, StudentStatus } from "@/types/student";
 
-type Tab = "active" | "hidden" | "graduated";
+type Tab = StudentStatus;
+
+const STATUS_LABELS: Record<StudentStatus, string> = {
+  active: "在籍",
+  hidden: "非表示",
+  graduated: "退塾",
+};
+
+const GRADUATE_NOTE = (
+  <>
+    退塾した生徒は「退塾」タブへ移動します。
+    <br />
+    完全に削除したい場合は、退塾タブから削除できます。
+  </>
+);
 
 export default function ManagementPage() {
-  const router = useRouter();
   const { user, authLoading } = useAuth();
 
   const {
     students,
     hiddenStudents,
     graduatedStudents,
+    loading,
+    error,
     fetchData,
   } = useTeacherStudents(user, authLoading);
 
-  const { updateName, changeStatus } = useStudentActions(fetchData);
+  const { updateName, changeStatus, bulkChange } = useStudentActions(fetchData);
+  const { toast, showToast } = useToast();
 
   const [tab, setTab] = useState<Tab>("active");
+  const [query, setQuery] = useState("");
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [openedMenuId, setOpenedMenuId] = useState<string | null>(null);
-  const [renameTarget, setRenameTarget] = useState<string | null>(null);
-  const [newName, setNewName] = useState("");
-  const [graduateTarget, setGraduateTarget] = useState<string | null>(null);
-  const [showBulkGraduateModal, setShowBulkGraduateModal] =
-    useState(false);
-  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<Student | null>(null);
+  const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
 
-  
   // =========================
   // 現在表示データ
   // =========================
+  const studentsByTab: Record<Tab, Student[]> = {
+    active: students,
+    hidden: hiddenStudents,
+    graduated: graduatedStudents,
+  };
+
   const currentStudents = useMemo(() => {
-    switch (tab) {
-      case "active":
-        return students;
-      case "hidden":
-        return hiddenStudents;
-      case "graduated":
-        return graduatedStudents;
-      default:
-        return [];
+    const list = { active: students, hidden: hiddenStudents, graduated: graduatedStudents }[tab];
+    const q = query.trim();
+
+    const filtered = q ? list.filter((s) => s.name.includes(q)) : list;
+
+    // 退塾は退塾日の新しい順、それ以外は名前順
+    return tab === "graduated"
+      ? filtered
+      : [...filtered].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+  }, [tab, query, students, hiddenStudents, graduatedStudents]);
+
+  // =========================
+  // 操作の共通処理
+  // =========================
+  const run = async (action: () => Promise<void>, successText: string) => {
+    try {
+      await action();
+      showToast({ type: "success", text: successText });
+    } catch (e) {
+      console.error(e);
+      showToast({ type: "error", text: "操作に失敗しました。もう一度お試しください" });
     }
-  }, [tab, students, hiddenStudents, graduatedStudents]);
+  };
+
+  const changeTab = (next: Tab) => {
+    setTab(next);
+    cancelBulkMode();
+  };
 
   // =========================
   // bulk操作系
@@ -65,238 +105,126 @@ export default function ManagementPage() {
     );
   };
 
-  const selectAll = () => {
-    setSelectedIds(currentStudents.map((s) => s.uid));
+  const allSelected =
+    currentStudents.length > 0 &&
+    currentStudents.every((s) => selectedIds.includes(s.uid));
+
+  const toggleSelectAll = () => {
+    setSelectedIds(allSelected ? [] : currentStudents.map((s) => s.uid));
   };
 
-  const clearSelection = () => {
-    setSelectedIds([]);
-  }
   const cancelBulkMode = () => {
     setBulkMode(false);
     setSelectedIds([]);
   };
 
-    const handleBulkHide = async () => {
-    await Promise.all(
-        selectedIds.map((uid) => changeStatus(uid, "hidden"))
-    );
-
+  const finishBulk = () => {
     setBulkMode(false);
     setSelectedIds([]);
-    };
+  };
 
-    const handleBulkGraduate = async () => {
-        await Promise.all(
-            selectedIds.map((uid) => changeStatus(uid, "graduated"))
-        );
+  const bulkStatus = (status: StudentStatus) =>
+    run(async () => {
+      await bulkChange(selectedIds, status);
+      finishBulk();
+    }, `${selectedIds.length}人を「${STATUS_LABELS[status]}」にしました`);
 
-        setBulkMode(false);
-        setSelectedIds([]);
-    };
+  const confirmBulkGraduate = () =>
+    setConfirm({
+      title: "退塾確認",
+      message: `選択した ${selectedIds.length} 人を退塾にしますか？`,
+      note: GRADUATE_NOTE,
+      confirmLabel: "退塾する",
+      danger: true,
+      onConfirm: () => bulkStatus("graduated"),
+    });
 
-    const handleBulkRestore = async () => {
-        await Promise.all(
-            selectedIds.map((uid) => changeStatus(uid, "active"))
-        );
+  const confirmBulkDelete = () =>
+    setConfirm({
+      title: "完全削除",
+      message: `選択した ${selectedIds.length} 人を完全に削除しますか？`,
+      note: "学習ログもすべて削除されます。この操作は元に戻せません。",
+      confirmLabel: "削除する",
+      danger: true,
+      onConfirm: () =>
+        run(async () => {
+          await bulkDeleteStudents(selectedIds);
+          finishBulk();
+          await fetchData();
+        }, `${selectedIds.length}人を削除しました`),
+    });
 
-        setBulkMode(false);
-        setSelectedIds([]);
-    };
+  // =========================
+  // 個別操作
+  // =========================
+  const confirmGraduate = (student: Student) =>
+    setConfirm({
+      title: "退塾確認",
+      message: `${student.name} さんを退塾にしますか？`,
+      note: GRADUATE_NOTE,
+      confirmLabel: "退塾する",
+      danger: true,
+      onConfirm: () =>
+        run(() => changeStatus(student.uid, "graduated"), `${student.name} さんを退塾にしました`),
+    });
 
-    const handleRename = async () => {
-        if (!renameTarget) return;
+  const confirmDelete = (student: Student) =>
+    setConfirm({
+      title: "完全削除",
+      message: `${student.name} さんを完全に削除しますか？`,
+      note: "学習ログもすべて削除されます。この操作は元に戻せません。",
+      confirmLabel: "削除する",
+      danger: true,
+      onConfirm: () =>
+        run(async () => {
+          await deleteStudent(student.uid);
+          await fetchData();
+        }, `${student.name} さんを削除しました`),
+    });
 
-        await updateName(renameTarget, newName);
-
-        setRenameTarget(null);
-        setNewName("");
-
-        await fetchData();
-    };
-
-    const enableBulkMode = () => {
-        setBulkMode(true);
-        setOpenedMenuId(null);
-        setSelectedIds([]);
-    };
-
-    const handleDeleteStudent = async (uid: string) => {
-        const ok = window.confirm(
-            "本当に削除しますか？\n学習ログも全て削除されます。"
-        );
-
-        if (!ok) return;
-
-        await deleteStudent(uid);
-
-        await fetchData();
-    };
-
-    const handleBulkDelete = async () => {
-        const ok = window.confirm(
-            `本当に${selectedIds.length}人を完全削除しますか？\nこの操作は戻せません。`
-        );
-
-        if (!ok) return;
-
-        await bulkDeleteStudents(
-            selectedIds
-        );
-        setSelectedIds([]);
-        setBulkMode(false);
-        setShowBulkDeleteModal(false);
-
-        await fetchData();
-    };
+  const tabs = (Object.keys(STATUS_LABELS) as Tab[]).map((value) => ({
+    value,
+    label: `${STATUS_LABELS[value]} (${studentsByTab[value].length})`,
+  }));
 
   return (
-    <div
-        style={{
-            width: "100%",
-            maxWidth: 1400,
-            margin: "0 auto",
-            padding: "20px 24px",
-        }}
-    >
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: 16,
-            fontSize: "28px", 
-            fontWeight: "bold",
-          }}
-        >
-            生徒管理画面
-        </h1>
+    <>
+      <PageTitle title="生徒管理" description="名前変更・非表示・退塾・削除ができます" />
 
-        <div
-            style={{
-                display: "flex",
-                gap: 30,
-                justifyContent: "center",
-                marginBottom: 16,
-            }}
-        >
-            <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => router.push("/teacher")}
-            >
-                ダッシュボード
-            </Button>
-
-            <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => router.push("/teacher/students")}
-            >
-                生徒詳細一覧
-            </Button>
-        </div>
+      <Tabs tabs={tabs} value={tab} onChange={changeTab} />
 
       {/* ===================== */}
-      {/* タブ */}
+      {/* ツールバー */}
       {/* ===================== */}
-      <div
-        style={{
-            display: "flex",
-            gap: 10,
-            marginBottom: 20,
-            padding: 6,
-            background: "#f3f4f6",
-            borderRadius: 12,
-        }}
-        >
-        <button
-            onClick={() => {
-                setTab("active");
-                cancelBulkMode();
-            }}
-            style={{
-            flex: 1,
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "none",
-            fontSize: 14,
-            fontWeight: tab === "active" ? 600 : 500,
-            background: tab === "active" ? "#ffffff" : "transparent",
-            color: tab === "active" ? "#111827" : "#6b7280",
-            boxShadow:
-                tab === "active"
-                ? "0 2px 10px rgba(0,0,0,0.08)"
-                : "none",
-            cursor: "pointer",
-            transition: "all 0.15s ease",
-            }}
-        >
-            生徒 ({students.length})
-        </button>
+      <div style={{ display: "flex", gap: 8, margin: "16px 0 12px", alignItems: "center" }}>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="名前で検索"
+          aria-label="名前で検索"
+          style={{ ...textInputStyle, padding: 10, fontSize: 14, flex: 1, maxWidth: 320 }}
+        />
 
-        <button
-            onClick={() => {
-                setTab("hidden");
-                cancelBulkMode();
-            }}
-            style={{
-            flex: 1,
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "none",
-            fontSize: 14,
-            fontWeight: tab === "hidden" ? 600 : 500,
-            background: tab === "hidden" ? "#ffffff" : "transparent",
-            color: tab === "hidden" ? "#111827" : "#6b7280",
-            boxShadow:
-                tab === "hidden"
-                ? "0 2px 10px rgba(0,0,0,0.08)"
-                : "none",
-            cursor: "pointer",
-            transition: "all 0.15s ease",
-            }}
-        >
-            非表示 ({hiddenStudents.length})
-        </button>
-
-        <button
-            onClick={() => {
-                setTab("graduated");
-                cancelBulkMode();
-            }}
-            style={{
-            flex: 1,
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "none",
-            fontSize: 14,
-            fontWeight: tab === "graduated" ? 600 : 500,
-            background: tab === "graduated" ? "#ffffff" : "transparent",
-            color: tab === "graduated" ? "#111827" : "#6b7280",
-            boxShadow:
-                tab === "graduated"
-                ? "0 2px 10px rgba(0,0,0,0.08)"
-                : "none",
-            cursor: "pointer",
-            transition: "all 0.15s ease",
-            }}
-        >
-            退塾生徒 ({graduatedStudents.length})
-        </button>
-      </div>
-
-      <div style={{ marginLeft: "auto", marginBottom: 12 }}>
+        <div style={{ marginLeft: "auto" }}>
           {!bulkMode ? (
-            <Button variant="secondary" onClick={enableBulkMode}>
-              一括操作
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={currentStudents.length === 0}
+              onClick={() => {
+                setBulkMode(true);
+                setOpenedMenuId(null);
+              }}
+            >
+              ☑ 一括操作
             </Button>
           ) : (
-            <Button
-                variant="secondary"
-                colorVariant="gray"
-                onClick={cancelBulkMode}>
-              キャンセル
+            <Button variant="secondary" colorVariant="gray" size="sm" onClick={cancelBulkMode}>
+              一括操作をやめる
             </Button>
           )}
+        </div>
       </div>
 
       {/* ===================== */}
@@ -305,467 +233,184 @@ export default function ManagementPage() {
       {bulkMode && (
         <div
           style={{
-            border: "1px solid #ddd",
-            borderRadius: 8,
+            position: "sticky",
+            top: 8,
+            zIndex: 5,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 8,
             padding: 12,
-            marginBottom: 16,
+            marginBottom: 12,
+            borderRadius: 12,
+            border: `1px solid ${colors.primary}`,
+            background: "var(--card)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
           }}
         >
-          <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-            <Button variant="secondary" onClick={selectAll}>全選択</Button>
-            <Button variant="secondary" onClick={clearSelection}>リセット</Button>
-          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 14 }}>
+            <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+            すべて選択
+          </label>
 
-          <div style={{ marginBottom: 12, fontWeight: "bold" }}>
-            {selectedIds.length}件選択中
-          </div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>{selectedIds.length}人選択中</div>
 
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
             {tab === "active" && (
-                <>
-                <Button
-                    variant="secondary" 
-                    onClick={handleBulkHide}
-                >
-                    非表示
-                </Button>
-
-                <Button
-                    variant="secondary" 
-                    colorVariant="danger"
-                    onClick={() => {
-                        setShowBulkGraduateModal(true);
-                    }}
-                >
-                    退塾
-                </Button>
-                </>
+              <Button variant="secondary" size="sm" disabled={!selectedIds.length} onClick={() => bulkStatus("hidden")}>
+                非表示
+              </Button>
             )}
 
-            {tab === "hidden" && (
-                <>
-                <Button
-                    variant="secondary" 
-                    onClick={handleBulkRestore}
-                >
-                    復帰
-                </Button>
+            {tab !== "active" && (
+              <Button variant="secondary" size="sm" disabled={!selectedIds.length} onClick={() => bulkStatus("active")}>
+                復帰
+              </Button>
+            )}
 
-                <Button
-                    variant="secondary" 
-                    colorVariant="danger"
-                    onClick={() => {
-                        setShowBulkGraduateModal(true);
-                    }}
-                >
-                    退塾
-                </Button>
-                </>
+            {tab !== "graduated" && (
+              <Button
+                variant="secondary"
+                colorVariant="danger"
+                size="sm"
+                disabled={!selectedIds.length}
+                onClick={confirmBulkGraduate}
+              >
+                退塾
+              </Button>
             )}
 
             {tab === "graduated" && (
-                <>
-                <Button
-                variant="secondary" 
-                onClick={handleBulkRestore}
-                >
-                復帰
-                </Button>
-
-                <Button
-                    variant="secondary"
-                    colorVariant="danger"
-                    onClick={handleBulkDelete}
-                >
-                    完全削除
-                </Button>
-                </>   
+              <Button
+                variant="primary"
+                colorVariant="danger"
+                size="sm"
+                disabled={!selectedIds.length}
+                onClick={confirmBulkDelete}
+              >
+                完全削除
+              </Button>
             )}
-            </div>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          style={{
+            padding: "10px 12px",
+            marginBottom: 12,
+            borderRadius: 10,
+            background: `${colors.danger}15`,
+            color: colors.danger,
+            fontSize: 14,
+          }}
+        >
+          生徒データの読み込みに失敗しました。ページを再読み込みしてください。
         </div>
       )}
 
       {/* ===================== */}
       {/* 一覧 */}
       {/* ===================== */}
-        <div style={{ border: "1px solid #ddd", borderRadius: 8 }}>
-        {currentStudents.length === 0 ? (
-            <div style={{ padding: 16 }}>生徒がいません</div>
+      <div
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+        }}
+      >
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16 }}>
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} height={24} width={`${60 - i * 8}%`} />
+            ))}
+          </div>
+        ) : currentStudents.length === 0 ? (
+          <div style={{ padding: 24, textAlign: "center", color: colors.muted }}>
+            {query ? "該当する生徒がいません" : `${STATUS_LABELS[tab]}の生徒はいません`}
+          </div>
         ) : (
-            currentStudents.map((student) => (
-            <div
-                key={student.uid}
-                style={{
-                padding: 16,
-                borderBottom: "1px solid #eee",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                backgroundColor:
-                    openedMenuId === student.uid ||
-                    selectedIds.includes(student.uid)
-                        ? "#f0f9ff"
-                        : "transparent",
+          currentStudents.map((student) => {
+            const selected = selectedIds.includes(student.uid);
+            const highlighted = selected || openedMenuId === student.uid;
 
-                boxShadow:
-                    openedMenuId === student.uid ||
-                    selectedIds.includes(student.uid)
-                        ? "inset 4px 0 0 #3b82f6"
-                        : "none",
-                cursor: bulkMode ? "pointer" : "default",
-                transition: "all 0.15s ease",
-                }}
+            return (
+              <div
+                key={student.uid}
                 onClick={() => bulkMode && toggleSelect(student.uid)}
-            >
-                {/* 左：チェック＋名前 */}
-                <div
                 style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
+                  padding: "14px 16px",
+                  borderBottom: "1px solid var(--border)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  background: highlighted ? colors.primarySoft : "transparent",
+                  boxShadow: highlighted ? `inset 4px 0 0 ${colors.primary}` : "none",
+                  cursor: bulkMode ? "pointer" : "default",
+                  userSelect: bulkMode ? "none" : "auto",
                 }}
-                >
+              >
                 {bulkMode && (
-                    <input
+                  <input
                     type="checkbox"
-                    checked={selectedIds.includes(student.uid)}
+                    checked={selected}
+                    aria-label={`${student.name}を選択`}
                     onChange={() => toggleSelect(student.uid)}
                     onClick={(e) => e.stopPropagation()}
-                    />
+                  />
                 )}
 
-                <span
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (bulkMode) toggleSelect(student.uid);
-                    }}
-                    style={{
-                        userSelect: "none",
-                        cursor: bulkMode ? "pointer" : "default",
-                    }}
-                >
-                    <div>
-                        <div>{student.name}</div>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{student.name}</div>
 
-                        {student.status === "graduated" &&
-                            student.graduatedAt && (
-                            <div
-                                style={{
-                                fontSize: 12,
-                                color: "#6b7280",
-                                marginTop: 4,
-                                }}
-                            >
-                                退塾日：
-                                {student.graduatedAt.toDate().toLocaleDateString("ja-JP")}
-                            </div>
-                        )}
+                  {student.status === "graduated" && student.graduatedAt && (
+                    <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>
+                      退塾日：{student.graduatedAt.toDate().toLocaleDateString("ja-JP")}
                     </div>
-                </span>
+                  )}
                 </div>
 
-                {/* 右：3点メニュー（ここだけ変更） */}
-                <div style={{ marginLeft: "auto" }}>
+                {!bulkMode && (
+                  <div style={{ marginLeft: "auto" }}>
                     <StudentMenu
-                        uid={student.uid}
-                        status={student.status}
-                        openedMenuId={openedMenuId}
-                        onOpenChange={(id) => {
-                            setOpenedMenuId(id);
-                            setBulkMode(false); 
-                            setSelectedIds([]);
-                        }}
-                        onDetail={(uid) =>
-                            router.push(`/teacher/students/${uid}`)
-                        }
-                        onRename={(uid) => {
-                            const target = [...students, ...hiddenStudents, ...graduatedStudents]
-                            .find((s) => s.uid === uid);
-
-                            setOpenedMenuId(null);
-
-                            setTimeout(() => {
-                            setRenameTarget(uid);
-                            setNewName(target?.name ?? "");
-                            }, 0);
-                        }}
-                        onHide={async (uid) => {
-                            await changeStatus(uid, "hidden");
-                            setOpenedMenuId(null);
-                        }}
-
-                        onGraduate={(uid) => {
-                            setGraduateTarget(uid);
-                            setOpenedMenuId(null);
-                        }}
-
-                        onRestore={async (uid) => {
-                            await changeStatus(uid, "active");
-                            setOpenedMenuId(null);
-                        }}
-
-                        onDelete={async (uid) => {
-                            await handleDeleteStudent(uid);
-                            setOpenedMenuId(null);
-                        }}
+                      uid={student.uid}
+                      status={student.status}
+                      openedMenuId={openedMenuId}
+                      onOpenChange={setOpenedMenuId}
+                      onRename={() => setRenameTarget(student)}
+                      onHide={() =>
+                        run(() => changeStatus(student.uid, "hidden"), `${student.name} さんを非表示にしました`)
+                      }
+                      onGraduate={() => confirmGraduate(student)}
+                      onRestore={() =>
+                        run(() => changeStatus(student.uid, "active"), `${student.name} さんを復帰しました`)
+                      }
+                      onDelete={() => confirmDelete(student)}
                     />
-                </div>
-            </div>
-            ))
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
-        </div>
-        {renameTarget && (
-            <div
-                style={{
-                position: "fixed",
-                inset: 0,
-                background: "rgba(0,0,0,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                }}
-            >
-                <div
-                    style={{
-                        background: "white",
-                        padding: 20,
-                        borderRadius: 12,
-                        width: 320,
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                    >
-                    <h2 style={{ margin: 0, fontWeight: 700}}>名前変更</h2>
+      </div>
 
-                    <button
-                        onClick={() => setRenameTarget(null)}
-                        style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        fontSize: 20,
-                        lineHeight: 1,
-                        }}
-                    >
-                        ✕
-                    </button>
-                </div>
+      <NameEditModal
+        open={renameTarget !== null}
+        currentName={renameTarget?.name ?? ""}
+        onClose={() => setRenameTarget(null)}
+        onSave={async (name) => {
+          if (!renameTarget) return;
+          await updateName(renameTarget.uid, name);
+          showToast({ type: "success", text: `名前を「${name}」に変更しました` });
+        }}
+      />
 
-                <input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    style={{
-                        width: "100%",
-                        padding: 10,
-                        marginTop: 10,
+      <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
 
-                        border: "1px solid #d1d5",
-                        borderRadius: 8,
-                        outline: "none",
-                    }}
-                    onFocus={(e) => {
-                        e.currentTarget.style.border = "1px solid #111827";
-                    }}
-                    onBlur={(e) => {
-                        e.currentTarget.style.border = "1px solid #d1d5";
-                    }}
-                />
-
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 15 }}>
-
-                    <Button variant="secondary" onClick={() => setRenameTarget(null)}>
-                        キャンセル
-                    </Button>
-
-                    <Button variant="secondary" onClick={handleRename}>
-                        保存
-                    </Button>
-
-                </div>
-                </div>
-            </div>
-        )}
-
-        {showBulkGraduateModal && (
-            <div
-                style={{
-                position: "fixed",
-                inset: 0,
-                background: "rgba(0,0,0,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 1000,
-                }}
-            >
-                <div
-                style={{
-                    background: "#fff",
-                    padding: 24,
-                    borderRadius: 12,
-                    width: 360,
-                }}
-                >
-                <h2 style={{ marginTop: 0, marginBottom: 12 , fontWeight: 700}}>
-                    退塾確認
-                </h2>
-
-                <p style={{ marginBottom: 12 }}>
-                    選択した {selectedIds.length} 名を退塾にしますか？
-                </p>
-
-                <p
-                    style={{
-                    fontSize: 13,
-                    color: "#6b7280",
-                    }}
-                >
-                    退塾した生徒は退塾タブへ移動します。<br />
-                    完全に削除したい場合は、退塾タブから削除できます。
-                </p>
-
-                <div
-                    style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: 10,
-                    marginTop: 20,
-                    }}
-                >
-                    <Button
-                        variant="secondary"
-                        colorVariant="gray"
-                        onClick={() =>
-                            setShowBulkGraduateModal(false)
-                        }
-                    >
-                    キャンセル
-                    </Button>
-
-                    <Button
-                    variant="secondary" 
-                    colorVariant="danger"
-                    onClick={async () => {
-                        await handleBulkGraduate();
-                        setShowBulkGraduateModal(false);
-                    }}
-                    >
-                    退塾する
-                    </Button>
-                </div>
-                </div>
-            </div>
-        )}
-
-        {graduateTarget && (
-        <div
-            style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            }}
-        >
-            <div
-            style={{
-                background: "#fff",
-                padding: 24,
-                borderRadius: 12,
-                width: 360,
-            }}
-            >
-            <h2 style={{ marginTop: 0, marginBottom: 12 , fontWeight: 700 }}>
-                退塾確認
-            </h2>
-
-            <p style={{ marginBottom: 12 }}>
-                この生徒を退塾にしますか？
-            </p>
-
-            <p
-                style={{
-                fontSize: 13,
-                color: "#6b7280",
-                }}
-            >
-                退塾した生徒は退塾タブへ移動します。<br />
-                完全に削除したい場合は、退塾タブから削除できます。
-            </p>
-
-            <div
-                style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 10,
-                marginTop: 20,
-                }}
-            >
-                <Button
-                    variant="secondary"
-                    colorVariant="gray"
-                    onClick={() => setGraduateTarget(null)}
-                >
-                キャンセル
-                </Button>
-
-                <Button
-                    variant="secondary" 
-                    colorVariant="danger"
-                    onClick={async () => {
-                        await changeStatus(
-                        graduateTarget,
-                        "graduated"
-                        );
-
-                        setGraduateTarget(null);
-                    }}
-                >
-                退塾する
-                </Button>
-            </div>
-            </div>
-        </div>
-        )}
-
-        {showBulkDeleteModal && (
-            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)" }}>
-                <div style={{ background: "#fff", padding: 24, width: 360, margin: "auto", marginTop: 100 }}>
-                
-                <h2>完全削除</h2>
-
-                <p>
-                    {selectedIds.length}人を完全削除しますか？
-                </p>
-
-                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                    <Button
-                    variant="secondary"
-                    onClick={() => setShowBulkDeleteModal(false)}
-                    >
-                    キャンセル
-                    </Button>
-
-                    <Button
-                    variant="secondary"
-                    colorVariant="danger"
-                    onClick={handleBulkDelete}
-                    >
-                    削除する
-                    </Button>
-                </div>
-                </div>
-            </div>
-        )}
-    </div>
-    
+      <Toast toast={toast} />
+    </>
   );
 }

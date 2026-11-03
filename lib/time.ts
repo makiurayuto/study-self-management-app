@@ -14,16 +14,18 @@ export const minutesToTime = (min: number) => {
   return `${h}:${m}`;
 };
 
-export const addMinutes = (time: string, diff: number) => {
-  if (!time) time = "00:00";
+// 150 → "2時間30分"
+export const formatDuration = (min: number) => {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
 
-  const [h, m] = time.split(":").map(Number);
+  if (h === 0) return `${m}分`;
+  if (m === 0) return `${h}時間`;
+  return `${h}時間${m}分`;
+};
 
-  let total = h * 60 + m + diff;
-  total = ((total % 1440) + 1440) % 1440;
-
-  const hh = Math.floor(total / 60);
-  const mm = total % 60;
-
-  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+// 150 → "2.5h"
+export const formatHours = (min: number | null) => {
+  if (min == null) return "";
+  return `${(min / 60).toFixed(1)}h`;
 };

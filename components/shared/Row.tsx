@@ -15,7 +15,7 @@ export default function Row({
         fontSize: 14,
       }}
     >
-      <span style={{ color: "#666" }}>
+      <span style={{ opacity: 0.6 }}>
         {label}
       </span>
 

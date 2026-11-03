@@ -1,23 +1,21 @@
 import { db } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, writeBatch } from "firebase/firestore";
 
-
+// users（ログイン情報）と students（生徒情報）を同時に作成する。
+// 片方だけ作成された中途半端な状態にならないよう batch でまとめて書き込む
 export async function createStudentProfile(
   uid: string,
   name: string
 ) {
-  console.log("create users start", uid);
+  const batch = writeBatch(db);
 
-  await setDoc(doc(db, "users", uid), {
+  batch.set(doc(db, "users", uid), {
     name,
     role: "student",
     schoolId: null,
   });
 
-  console.log("create users done");
-  console.log("create students start", uid);
-
-  await setDoc(doc(db, "students", uid), {
+  batch.set(doc(db, "students", uid), {
     name,
     status: "active",
     schoolId: null,
@@ -25,5 +23,5 @@ export async function createStudentProfile(
     graduatedAt: null,
   });
 
-  console.log("create students done");
+  await batch.commit();
 }

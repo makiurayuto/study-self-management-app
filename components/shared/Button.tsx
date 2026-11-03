@@ -29,6 +29,8 @@ type Props = {
   disabled?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg";
+  fullWidth?: boolean;
+  ariaLabel?: string;
 };
 
 export default function Button({
@@ -39,6 +41,8 @@ export default function Button({
   disabled = false,
   size = "md",
   className,
+  fullWidth = false,
+  ariaLabel,
 }: Props) {
 
   const base: CSSProperties = {
@@ -106,13 +110,16 @@ export default function Button({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={ariaLabel}
       className={["btn", className].filter(Boolean).join(" ")}
       style={{
         ...base,
         ...sizeStyle,
         ...getStyle(),
+        ...(fullWidth ? { width: "100%" } : {}),
       }}
     >
       {children}

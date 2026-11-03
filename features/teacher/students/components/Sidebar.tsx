@@ -1,36 +1,62 @@
 "use client";
 
+import { useState } from "react";
 import StudentList from "./StudentList";
+import { textInputStyle } from "@/components/shared/styles";
 import type { Student } from "@/types/student";
 
 type Props = {
   students: Student[];
   selectedUid: string | null;
-  setSelectedUid: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedUid: (uid: string) => void;
+  weekCounts: Record<string, number>;
 };
 
 export default function Sidebar({
   students,
   selectedUid,
   setSelectedUid,
+  weekCounts,
 }: Props) {
+  const [query, setQuery] = useState("");
+
+  const filtered = students
+    .filter((s) => s.name.includes(query.trim()))
+    .sort((a, b) => a.name.localeCompare(b.name, "ja"));
+
   return (
     <div
       style={{
-        width: "30%",
-        borderRight: "1px solid #ddd",
-        overflowY: "auto",
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        borderRadius: 12,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <h2 style={{ textAlign: "center", padding: 16, fontWeight: 700, }}>👤 生徒一覧</h2>
+      <div style={{ padding: 12, borderBottom: "1px solid var(--border)" }}>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>
+          👤 生徒一覧（{students.length}人）
+        </div>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="名前で検索"
+          aria-label="名前で検索"
+          style={{ ...textInputStyle, padding: 10, fontSize: 14 }}
+        />
+      </div>
 
-      <hr style={{ border: "none", borderTop: "1px solid #e5e7eb" }} />
-
-      <StudentList
-        students={students}
-        selectedUid={selectedUid}
-        setSelectedUid={setSelectedUid}
-      />
+      <div style={{ overflowY: "auto", maxHeight: "70vh" }}>
+        <StudentList
+          students={filtered}
+          selectedUid={selectedUid}
+          setSelectedUid={setSelectedUid}
+          weekCounts={weekCounts}
+        />
+      </div>
     </div>
   );
 }

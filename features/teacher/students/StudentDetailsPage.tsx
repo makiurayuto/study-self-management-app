@@ -1,16 +1,17 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getWeekDates } from "@/lib/date";
+import Skeleton from "@/components/shared/Skeleton";
+import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
+import PageTitle from "@/features/teacher/components/PageTitle";
 import Sidebar from "@/features/teacher/students/components/Sidebar";
 import StudentDetail from "@/features/teacher/students/components/StudentDetail";
-import { useTeacherGuard } from "@/features/teacher/students/hooks/useTeacherGuard";
 import { useTeacherData } from "@/features/teacher/students/hooks/useTeacherData";
-import Button from "@/components/shared/Button";
 
 export default function StudentDetailsPage() {
   const { user, authLoading } = useAuth();
-  const router = useRouter();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -29,88 +30,85 @@ export default function StudentDetailsPage() {
     weekOffset,
   });
 
-  useTeacherGuard({
-    user,
-    authLoading,
-  });
+  // 今週の記録日数（一覧のバッジ用）
+  const weekCounts = useMemo(() => {
+    const thisWeek = new Set(getWeekDates(0).map((d) => d.date));
+    const counts: Record<string, number> = {};
 
-  if (authLoading) {
-    return <div>認証確認中...</div>;
-  }
+    for (const log of logs) {
+      if (thisWeek.has(log.date)) {
+        counts[log.uid] = (counts[log.uid] ?? 0) + 1;
+      }
+    }
 
-  if (!user || user.role !== "teacher") {
-    return null;
-  }
+    return counts;
+  }, [logs]);
+
+  const title = (
+    <PageTitle title="生徒詳細" description="生徒ごとの1週間の記録とCSV出力" />
+  );
 
   if (loading) {
-    return <div>データ読み込み中...</div>;
+    return (
+      <>
+        {title}
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "280px 1fr", gap: 16 }}>
+          <Skeleton height={400} radius={12} />
+          {!isMobile && <Skeleton height={400} radius={12} />}
+        </div>
+      </>
+    );
   }
 
-  // =========================
-  // UI
-  // =========================
+  const sidebar = (
+    <Sidebar
+      students={students}
+      selectedUid={selectedUid}
+      setSelectedUid={setSelectedUid}
+      weekCounts={weekCounts}
+    />
+  );
+
+  const detail = (
+    <StudentDetail
+      selectedUid={selectedUid}
+      studentMap={studentMap}
+      weekOffset={weekOffset}
+      setWeekOffset={setWeekOffset}
+      week={week}
+      filteredLogs={filteredLogs}
+      logs={logs}
+      onBack={isMobile ? () => setSelectedUid(null) : undefined}
+    />
+  );
+
+  // スマホ：一覧 → 詳細 の画面切替
+  if (isMobile) {
+    return (
+      <>
+        {title}
+        {selectedUid ? <div>{detail}</div> : sidebar}
+      </>
+    );
+  }
+
   return (
-    <div style={{ marginBottom: 16, padding: "20px 24px",}}>
-      {/* 👇ここにタイトル */}
-      <h1
+    <>
+      {title}
+      <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 20, alignItems: "start" }}>
+        {sidebar}
+        <div
           style={{
-            textAlign: "center",
-            marginBottom: 16,
-            fontSize: "28px",
-            fontWeight: "bold",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 20,
+            minWidth: 0,
           }}
         >
-        生徒詳細一覧
-      </h1>
-
-      <div
-          style={{
-              display: "flex",
-              gap: 30,
-              justifyContent: "center",
-              marginBottom: 16,
-          }}
-      >
-          <Button
-              variant="secondary"
-              size="lg"
-              onClick={() => router.push("/teacher")}
-          >
-              ダッシュボード
-          </Button>
-
-          <Button
-              variant="secondary"
-              size="lg"
-              onClick={() => router.push("/teacher/management")}
-          >
-              生徒管理画面
-          </Button>
-      </div>
-      <hr style={{ marginTop: 20, border: "none", borderTop: "1px solid #e5e7eb" }} />
-
-      <div style={{ display: "flex", height: "100vh" }}>
-        <Sidebar
-          students={students}
-          selectedUid={selectedUid}
-          setSelectedUid={setSelectedUid}
-        />
-
-        {/* ================= 右：詳細 ================= */}
-        <div style={{ width: "70%", padding: 20 }}>
-
-        <StudentDetail
-            selectedUid={selectedUid}
-            studentMap={studentMap}
-            weekOffset={weekOffset}
-            setWeekOffset={setWeekOffset}
-            week={week}
-            filteredLogs={filteredLogs}
-            logs={logs}
-          />
-
+          {detail}
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -7,45 +7,40 @@ type Params = {
   studentMap: Record<string, string>;
 };
 
+// "YYYY-MM-DD" → "MM/DD"
+const formatMD = (date: string) => {
+  const [, mm, dd] = date.split("T")[0].split("-");
+  return `${mm}/${dd}`;
+};
+
+// カンマ・改行・ダブルクォートを含む値をエスケープ
+const escapeCell = (value: string) =>
+  /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+
 export function useStudentCsv({
   logs,
   selectedUid,
   studentMap,
 }: Params) {
+  // 出力できなかった場合はエラーメッセージを返す
   const exportCsv = useCallback(
-    (fromDate: string, toDate: string) => {
-      if (!selectedUid) {
-        alert("生徒が選択されていません");
-        return;
-      }
-
-      if (!fromDate || !toDate) {
-        alert("期間を選択してください");
-        return;
-      }
-
-      if (new Date(fromDate) > new Date(toDate)) {
-        alert("開始日は終了日より前にしてください");
-        return;
-      }
+    (fromDate: string, toDate: string): string | null => {
+      if (!selectedUid) return "生徒が選択されていません";
+      if (!fromDate || !toDate) return "期間を選択してください";
+      if (fromDate > toDate) return "開始日は終了日より前にしてください";
 
       const studentName = studentMap[selectedUid];
 
-      const csvLogs = logs.filter((log) => {
-        const logDate = new Date(log.date);
+      const csvLogs = logs
+        .filter(
+          (log) =>
+            log.uid === selectedUid &&
+            log.date >= fromDate &&
+            log.date <= toDate
+        )
+        .sort((a, b) => a.date.localeCompare(b.date));
 
-        return (
-          log.uid === selectedUid &&
-          logDate >= new Date(fromDate) &&
-          logDate <= new Date(toDate)
-        );
-      });
-
-      const formatMD = (date: string) => {
-        const d = date.includes("T") ? date.split("T")[0] : date;
-        const [, mm, dd] = d.split("-");
-        return `${mm}/${dd}`;
-      };
+      if (csvLogs.length === 0) return "この期間の記録はありません";
 
       // =====================
       // CSV本体
@@ -54,7 +49,7 @@ export function useStudentCsv({
         [`生徒名: ${studentName}`],
         [`期間: ${formatMD(fromDate)} 〜 ${formatMD(toDate)}`],
         [],
-        ["日付", "勉強時間", "スマホ", "睡眠", "満足度"],
+        ["日付", "勉強時間(分)", "スマホ時間(分)", "就寝時間", "満足度"],
         ...csvLogs.map((log) => [
           formatMD(log.date),
           String(log.studyTime ?? ""),
@@ -64,29 +59,23 @@ export function useStudentCsv({
         ]),
       ];
 
-      const csv = rows.map((r) => r.join(",")).join("\n");
+      const csv = rows.map((r) => r.map(escapeCell).join(",")).join("\n");
 
-      // =====================
       // Excel対応（BOM付き）
-      // =====================
-      const bom = "\uFEFF";
+      const bom = "﻿";
       const blob = new Blob([bom + csv], {
         type: "text/csv;charset=utf-8;",
       });
 
       const url = URL.createObjectURL(blob);
 
-      // =====================
-      // ファイル名（期間付き）
-      // =====================
-      const fileName = `${studentName}_study_logs_${fromDate}_to_${toDate}.csv`;
-
       const a = document.createElement("a");
       a.href = url;
-      a.download = fileName;
+      a.download = `${studentName}_study_logs_${fromDate}_to_${toDate}.csv`;
       a.click();
 
       URL.revokeObjectURL(url);
+      return null;
     },
     [logs, selectedUid, studentMap]
   );

@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { colors } from "@/components/shared/styles";
+
 type Props = {
   uid: string;
   status: string;
@@ -8,13 +11,12 @@ type Props = {
 
   onOpenChange: (uid: string | null) => void;
 
-  onDetail: (uid: string) => void;
-  onRename: (uid: string) => void;
-  onHide: (uid: string) => void;
-  onGraduate: (uid: string) => void;
-  onRestore: (uid: string) => void;
+  onRename: () => void;
+  onHide: () => void;
+  onGraduate: () => void;
+  onRestore: () => void;
 
-  onDelete: (uid: string) => void;
+  onDelete: () => void;
 };
 
 export default function StudentMenu({
@@ -22,7 +24,6 @@ export default function StudentMenu({
   status,
   openedMenuId,
   onOpenChange,
-  onDetail,
   onRename,
   onHide,
   onGraduate,
@@ -32,12 +33,42 @@ export default function StudentMenu({
 }: Props) {
 
   const isOpen = openedMenuId === uid;
+  const ref = useRef<HTMLDivElement>(null);
+
+  // メニュー外クリック / Esc で閉じる
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) onOpenChange(null);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(null);
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, onOpenChange]);
+
+  // 項目を選んだらメニューを閉じてから実行
+  const select = (action: () => void) => () => {
+    onOpenChange(null);
+    action();
+  };
 
   return (
-    <div style={{ position: "relative" }}>
-      
+    <div ref={ref} style={{ position: "relative" }}>
+
       {/* 3点ボタン */}
       <button
+        type="button"
+        aria-label="操作メニュー"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
         onClick={(e) => {
           e.stopPropagation();
           onOpenChange(isOpen ? null : uid);
@@ -45,9 +76,11 @@ export default function StudentMenu({
         style={{
           background: "transparent",
           border: "none",
+          color: "var(--text)",
           cursor: "pointer",
-          fontSize: 18,
-          padding: 4,
+          fontSize: 20,
+          padding: "4px 10px",
+          borderRadius: 8,
         }}
       >
         ⋯
@@ -56,59 +89,55 @@ export default function StudentMenu({
       {/* メニュー */}
       {isOpen && (
         <div
+          role="menu"
           style={{
             position: "absolute",
             right: 0,
-            top: 30,
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            borderRadius: 8,
+            top: 36,
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
             boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
-            width: 140,
+            width: 150,
             zIndex: 10,
+            overflow: "hidden",
+            animation: "fade-in 0.1s ease",
           }}
         >
-          {/*
-          生徒詳細画面(url)に飛ぶ機能
-          <MenuItem onClick={() => onDetail(uid)}>
-            詳細
-          </MenuItem>
-          */}
-
-          <MenuItem onClick={() => onRename(uid)}>
-            名前変更
+          <MenuItem onClick={select(onRename)}>
+            ✏️ 名前変更
           </MenuItem>
 
           {status === "active" && (
             <>
-              <MenuItem onClick={() => onHide(uid)}>
-                非表示
+              <MenuItem onClick={select(onHide)}>
+                🙈 非表示
               </MenuItem>
-              <MenuItem onClick={() => onGraduate(uid)}>
-                退塾
+              <MenuItem onClick={select(onGraduate)} danger>
+                🎓 退塾
               </MenuItem>
             </>
           )}
 
           {status === "hidden" && (
             <>
-              <MenuItem onClick={() => onRestore(uid)}>
-                復帰
+              <MenuItem onClick={select(onRestore)}>
+                ↩️ 復帰
               </MenuItem>
-              <MenuItem onClick={() => onGraduate(uid)}>
-                退塾
+              <MenuItem onClick={select(onGraduate)} danger>
+                🎓 退塾
               </MenuItem>
             </>
           )}
 
           {status === "graduated" && (
             <>
-              <MenuItem onClick={() => onRestore(uid)}>
-                復帰
+              <MenuItem onClick={select(onRestore)}>
+                ↩️ 復帰
               </MenuItem>
 
-              <MenuItem onClick={() => onDelete(uid)}>
-                完全削除
+              <MenuItem onClick={select(onDelete)} danger>
+                🗑 完全削除
               </MenuItem>
             </>
           )}
@@ -121,20 +150,33 @@ export default function StudentMenu({
 function MenuItem({
   children,
   onClick,
+  danger = false,
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  danger?: boolean;
 }) {
   return (
-    <div
+    <button
+      type="button"
+      role="menuitem"
       onClick={onClick}
+      className="menu-item"
       style={{
-        padding: "10px 12px",
+        display: "block",
+        width: "100%",
+        padding: "10px 14px",
+        border: "none",
+        borderRadius: 0,
+        background: "transparent",
+        color: danger ? colors.danger : "var(--text)",
         cursor: "pointer",
-        fontSize: 13,
+        fontSize: 14,
+        fontWeight: 500,
+        textAlign: "left",
       }}
     >
       {children}
-    </div>
+    </button>
   );
 }

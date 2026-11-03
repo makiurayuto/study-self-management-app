@@ -44,6 +44,7 @@ export function useTeacherStudents(user: AppUser | null, authLoading: boolean) {
   const [graduatedStudents, setGraduatedStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<StudentDailyLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const applyData = useCallback((data: TeacherStudentsData) => {
     setStudents(data.students);
@@ -51,17 +52,31 @@ export function useTeacherStudents(user: AppUser | null, authLoading: boolean) {
     setGraduatedStudents(data.graduatedStudents);
     setLogs(data.logs);
 
+    setError(false);
+    setLoading(false);
+  }, []);
+
+  const handleError = useCallback((e: unknown) => {
+    console.error("生徒データ読込失敗", e);
+    setError(true);
     setLoading(false);
   }, []);
 
   const fetchData = useCallback(async () => {
-    applyData(await loadTeacherStudents());
-  }, [applyData]);
+    try {
+      applyData(await loadTeacherStudents());
+    } catch (e) {
+      handleError(e);
+    }
+  }, [applyData, handleError]);
+
+  // 名前変更などで user が更新されても再取得しないよう uid に依存
+  const uid = user?.uid;
 
   useEffect(() => {
-    if (!user || authLoading) return;
-    loadTeacherStudents().then(applyData);
-  }, [user, authLoading, applyData]);
+    if (!uid || authLoading) return;
+    loadTeacherStudents().then(applyData).catch(handleError);
+  }, [uid, authLoading, applyData, handleError]);
 
   return {
     students,
@@ -69,6 +84,7 @@ export function useTeacherStudents(user: AppUser | null, authLoading: boolean) {
     graduatedStudents,
     logs,
     loading,
+    error,
     fetchData,
   };
 }

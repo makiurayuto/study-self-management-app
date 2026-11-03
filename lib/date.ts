@@ -53,3 +53,40 @@ export function getWeekDates(offset = 0): WeekDate[] {
 
   return week;
 }
+
+// 今日の "YYYY-MM-DD"（ローカル時刻）
+export const getToday = () => formatDateForQuery(new Date());
+
+// "YYYY-MM-DD" → ローカル時刻の Date
+export const parseDate = (date: string) => {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+
+export const addDays = (date: string, diff: number) => {
+  const d = parseDate(date);
+  d.setDate(d.getDate() + diff);
+  return formatDateForQuery(d);
+};
+
+const getMonday = (date: Date) => {
+  const monday = new Date(date);
+  const day = monday.getDay();
+  monday.setDate(monday.getDate() - (day === 0 ? 6 : day - 1));
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+};
+
+// 今週を 0 としたときの、date を含む週の offset
+export const getWeekOffset = (date: string) => {
+  const diff =
+    getMonday(parseDate(date)).getTime() - getMonday(new Date()).getTime();
+
+  return Math.round(diff / (7 * 24 * 60 * 60 * 1000));
+};
+
+// "11/3(月)"
+export const formatDateWithDay = (date: string) => {
+  const d = parseDate(date);
+  return `${d.getMonth() + 1}/${d.getDate()}(${DAY_NAMES[d.getDay()]})`;
+};
