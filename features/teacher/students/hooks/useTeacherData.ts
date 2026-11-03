@@ -1,17 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getWeekDates } from "@/lib/date";
+import { useMemo } from "react";
+import type { AppUser } from "@/lib/auth/AuthContext";
 import { useTeacherStudents } from "./useTeacherStudents";
 import { useTeacherWeekLogs } from "./useTeacherWeekLogs";
-import { useTeacherActions } from "./useTeacherActions";
-
-type User = {
-  role?: string;
-} | null;
 
 type Props = {
-  user: User;
+  user: AppUser | null;
   authLoading: boolean;
   selectedUid: string | null;
   weekOffset: number;
@@ -35,12 +30,6 @@ export function useTeacherData({
   } = useTeacherStudents(user, authLoading);
 
   // ========================
-  // actions
-  // ========================
-  const { hideStudent, unhideStudent } =
-    useTeacherActions(fetchData);
-
-  // ========================
   // week logs
   // ========================
   const { week, filteredLogs } =
@@ -62,15 +51,9 @@ export function useTeacherData({
     );
   }, [students, hiddenStudents]);
 
-  // ========================
-  // loading合成
-  // ========================
-  const isLoading = loading || authLoading;
-
   return {
     // data
     students,
-    hiddenStudents,
     logs,
 
     // ui
@@ -79,11 +62,9 @@ export function useTeacherData({
     filteredLogs,
 
     // state
-    loading: isLoading,
+    loading: loading || authLoading,
 
     // actions
     fetchData,
-    hideStudent,
-    unhideStudent,
   };
 }

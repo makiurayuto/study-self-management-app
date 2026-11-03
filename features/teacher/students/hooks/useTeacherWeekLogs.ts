@@ -1,11 +1,12 @@
 import { getWeekDates } from "@/lib/date";
+import type { StudentDailyLog } from "@/types/student-log";
 
 export function useTeacherWeekLogs({
   logs,
   selectedUid,
   weekOffset,
 }: {
-  logs: any[];
+  logs: StudentDailyLog[];
   selectedUid: string | null;
   weekOffset: number;
 }) {

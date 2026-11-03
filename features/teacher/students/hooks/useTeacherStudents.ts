@@ -1,96 +1,67 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { db } from "@/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { useCallback, useEffect, useState } from "react";
 import type { Student } from "@/types/student";
-import { toStudentDailyLog } from "@/lib/mappers/studentLogMapper";
 import type { StudentDailyLog } from "@/types/student-log";
+import type { AppUser } from "@/lib/auth/AuthContext";
+import { fetchStudents } from "@/lib/studentService";
+import { fetchLogsForStudents } from "@/lib/logService";
 
-export function useTeacherStudents(user: any, authLoading: boolean) {
+type TeacherStudentsData = {
+  students: Student[];
+  hiddenStudents: Student[];
+  graduatedStudents: Student[];
+  logs: StudentDailyLog[];
+};
+
+// 生徒を status ごとに分け、在籍生徒のログを取得
+const loadTeacherStudents = async (): Promise<TeacherStudentsData> => {
+  const allStudents = await fetchStudents();
+
+  const students = allStudents.filter((s) => s.status === "active");
+  const hiddenStudents = allStudents.filter((s) => s.status === "hidden");
+  const graduatedStudents = allStudents.filter((s) => s.status === "graduated");
+
+  const logs = await fetchLogsForStudents(
+    students.map((s) => s.uid)
+  );
+
+  logs.sort((a, b) => b.date.localeCompare(a.date));
+
+  graduatedStudents.sort((a, b) => {
+    const aTime = a.graduatedAt?.toMillis() ?? 0;
+    const bTime = b.graduatedAt?.toMillis() ?? 0;
+
+    return bTime - aTime;
+  });
+
+  return { students, hiddenStudents, graduatedStudents, logs };
+};
+
+export function useTeacherStudents(user: AppUser | null, authLoading: boolean) {
   const [students, setStudents] = useState<Student[]>([]);
   const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
   const [graduatedStudents, setGraduatedStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<StudentDailyLog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    setLoading(true);
-
-    const studentSnap = await getDocs(collection(db, "students"));
-
-    const studentList: Student[] = [];
-    const hiddenList: Student[] = [];
-    const graduatedList: Student[] = [];
-
-    studentSnap.forEach((d) => {
-      const data = d.data();
-
-      const student: Student = {
-        uid: d.id,
-        name: data.name || "名前なし",
-
-        status: data.status ?? "active",
-        schoolId: data.schoolId ?? null,
-
-        hiddenAt: data.hiddenAt ?? null,
-        graduatedAt: data.graduatedAt ?? null,
-      };
-
-      const status = data.status ?? "active";
-
-      if (status === "active") {
-        studentList.push(student);
-      } else if (status === "hidden") {
-        hiddenList.push(student);
-      } else if (status === "graduated") {
-        graduatedList.push(student);
-      }
-    });
-
-    const logList: StudentDailyLog[] = [];
-
-    for (const student of studentList) {
-
-      const logSnap = await getDocs(
-        collection(
-          db,
-          "weeklyLogs",
-          student.uid,
-          "logs"
-        )
-      );
-
-      logSnap.forEach((d) => {
-        const data = d.data();
-
-        logList.push(
-          toStudentDailyLog(data)
-        );
-      });
-    }
-
-    logList.sort((a, b) => b.date.localeCompare(a.date));
-    
-    graduatedList.sort((a, b) => {
-      const aTime = a.graduatedAt?.toMillis() ?? 0;
-      const bTime = b.graduatedAt?.toMillis() ?? 0;
-
-      return bTime - aTime;
-    });
-
-    setStudents(studentList);
-    setHiddenStudents(hiddenList);
-    setGraduatedStudents(graduatedList);
-    setLogs(logList);
+  const applyData = useCallback((data: TeacherStudentsData) => {
+    setStudents(data.students);
+    setHiddenStudents(data.hiddenStudents);
+    setGraduatedStudents(data.graduatedStudents);
+    setLogs(data.logs);
 
     setLoading(false);
-  };
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    applyData(await loadTeacherStudents());
+  }, [applyData]);
 
   useEffect(() => {
     if (!user || authLoading) return;
-    fetchData();
-  }, [user, authLoading]);
+    loadTeacherStudents().then(applyData);
+  }, [user, authLoading, applyData]);
 
   return {
     students,

@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { useTeacherStudents } from "../../../features/teacher/students/hooks/useTeacherStudents";
+import { useTeacherStudents } from "@/features/teacher/students/hooks/useTeacherStudents";
 import { useStudentActions } from "@/features/teacher/management/hooks/useStudentActions";
 import Button from "@/components/shared/Button";
 
 import StudentMenu from "@/features/teacher/management/components/StudentMenu";
 
 import { useRouter } from "next/navigation"
-import { studentService } from "./services/studentService";
+import { deleteStudent, bulkDeleteStudents } from "@/lib/studentService";
 
 type Tab = "active" | "hidden" | "graduated";
 
@@ -21,17 +21,15 @@ export default function ManagementPage() {
     students,
     hiddenStudents,
     graduatedStudents,
-    loading: studentsLoading,
     fetchData,
   } = useTeacherStudents(user, authLoading);
 
-  const { updateName, changeStatus, bulkChange } = useStudentActions(fetchData);
+  const { updateName, changeStatus } = useStudentActions(fetchData);
 
   const [tab, setTab] = useState<Tab>("active");
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [openedMenuId, setOpenedMenuId] = useState<string | null>(null);
-  console.log("openedMenuId =", openedMenuId);
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [graduateTarget, setGraduateTarget] = useState<string | null>(null);
@@ -130,20 +128,19 @@ export default function ManagementPage() {
 
         if (!ok) return;
 
-        await studentService.deleteStudent(uid);
+        await deleteStudent(uid);
 
         await fetchData();
     };
 
     const handleBulkDelete = async () => {
-         console.log("bulk delete start");
         const ok = window.confirm(
             `本当に${selectedIds.length}人を完全削除しますか？\nこの操作は戻せません。`
         );
 
         if (!ok) return;
 
-        await studentService.bulkDeleteStudents(
+        await bulkDeleteStudents(
             selectedIds
         );
         setSelectedIds([]);
@@ -337,7 +334,6 @@ export default function ManagementPage() {
                     variant="secondary" 
                     colorVariant="danger"
                     onClick={() => {
-                        console.log("bulk graduate click");
                         setShowBulkGraduateModal(true);
                     }}
                 >
@@ -359,7 +355,6 @@ export default function ManagementPage() {
                     variant="secondary" 
                     colorVariant="danger"
                     onClick={() => {
-                        console.log("bulk graduate click");
                         setShowBulkGraduateModal(true);
                     }}
                 >

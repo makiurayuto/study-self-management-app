@@ -127,10 +127,7 @@ function MenuItem({
 }) {
   return (
     <div
-      onClick={() => {
-        console.log("Menu clicked");
-        onClick();
-      }}
+      onClick={onClick}
       style={{
         padding: "10px 12px",
         cursor: "pointer",

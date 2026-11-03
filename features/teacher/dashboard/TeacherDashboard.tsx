@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Button from "@/components/shared/Button";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useRouter } from "next/navigation";
@@ -10,8 +9,7 @@ from "@/features/teacher/dashboard/hooks/useTeacherData";
 import DashboardContent from
 "@/features/teacher/dashboard/components/DashboardContent";
 
-import { formatDateForDisplay } from "@/lib/date";
-import { formatDateForQuery } from "@/lib/date";
+import { formatDateForDisplay, formatDateForQuery } from "@/lib/date";
 
 import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
 
@@ -26,21 +24,20 @@ export default function TeacherDashboard() {
 
   const {
     currentDate,
-    setCurrentDate,
     onPrevDay,
     onNextDay,
     onYesterday,
   } = useTeacherDashboard();
 
   const router = useRouter();
-  const { user, authLoading, logout } = useAuth();
+  const { logout } = useAuth();
 
   const {
-    logs,
     loading,
     studentMap,
     missingStudents,
     visibleLogs,
+    refresh,
   } = useTeacherData(formatDateForQuery(currentDate));
 
   const currentDateLabel = formatDateForDisplay(currentDate);
@@ -64,7 +61,7 @@ export default function TeacherDashboard() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => setCurrentDate(new Date(currentDate))}
+            onClick={refresh}
           >
             更新
           </Button>

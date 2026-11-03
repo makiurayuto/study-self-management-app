@@ -13,9 +13,8 @@ type Props = {
   weekOffset: number;
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
   week: { date: string }[];
-  filteredLogs: any[];
-  logs: any[];
-  setHidden: (uid: string) => Promise<void>;
+  filteredLogs: StudentDailyLog[];
+  logs: StudentDailyLog[];
 };
 
 export default function StudentDetail({
@@ -26,7 +25,6 @@ export default function StudentDetail({
   week,
   filteredLogs,
   logs,
-  setHidden,
 }: Props) {
 
   const [showCsvModal, setShowCsvModal] = useState(false);
@@ -52,9 +50,6 @@ export default function StudentDetail({
     selectedUid,
     studentMap,
   });
-
-  const isInvalidRange =
-  fromDate && toDate && new Date(fromDate) > new Date(toDate);
 
   if (!selectedUid) {
     return <p style={{ marginTop: 45 }}>👈 生徒を選択してください</p>;

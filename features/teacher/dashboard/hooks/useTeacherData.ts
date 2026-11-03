@@ -1,101 +1,62 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { db } from "@/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { Timestamp } from "firebase/firestore";
 import type { Student } from "@/types/student";
 import type { StudentDailyLog } from "@/types/student-log";
-import { toStudentDailyLog } from "@/lib/mappers/studentLogMapper";
+import { fetchStudents } from "@/lib/studentService";
+import { fetchLogsForStudents } from "@/lib/logService";
+
+// 非表示以外の生徒と、targetDate のログを取得
+const loadDashboardData = async (targetDate: string) => {
+  const allStudents = await fetchStudents();
+  const students = allStudents.filter((s) => s.status !== "hidden");
+
+  const allLogs = await fetchLogsForStudents(
+    students.map((s) => s.uid)
+  );
+
+  return {
+    students,
+    logs: allLogs.filter((log) => log.date === targetDate),
+  };
+};
 
 export function useTeacherData(targetDate: string) {
   const [students, setStudents] = useState<Student[]>([]);
-  const [hiddenStudents, setHiddenStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<StudentDailyLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 最後に読み込みが完了した日付（targetDate と異なる間は読み込み中）
+  const [loadedDate, setLoadedDate] = useState<string | null>(null);
+
+  const loading = loadedDate !== targetDate;
+
+  const applyData = useCallback(
+    (data: { students: Student[]; logs: StudentDailyLog[] }) => {
+      setStudents(data.students);
+      setLogs(data.logs);
+      setLoadedDate(targetDate);
+    },
+    [targetDate]
+  );
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      const studentSnap = await getDocs(
-        collection(db, "students")
-      );
-
-      const studentList: Student[] = [];
-      const hiddenList: Student[] = [];
-
-      studentSnap.forEach((d) => {
-        const data = d.data();
-
-        const student: Student = {
-          uid: d.id,
-          name: data.name || "名前なし",
-
-          status: data.status ?? "active",
-          schoolId: data.schoolId ?? null,
-        };
-
-        if (student.status === "hidden") hiddenList.push(student);
-        else studentList.push(student);
-      });
-
-      setStudents(studentList);
-      setHiddenStudents(hiddenList);
-
-      const logList: StudentDailyLog[] = [];
-
-      for (const student of studentList) {
-
-        const logSnap = await getDocs(
-          collection(
-            db,
-            "weeklyLogs",
-            student.uid,
-            "logs"
-          )
-        );
-
-        logSnap.forEach((d) => {
-
-          const data = d.data();
-
-
-          if (data.date === targetDate) {
-
-            logList.push(
-              toStudentDailyLog(data)
-            );
-          }
-        });
-      }
-
-      setLogs(logList);
-    } finally {
-      setLoading(false);
-    }
-  }, [targetDate]);
+    applyData(await loadDashboardData(targetDate));
+  }, [targetDate, applyData]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    loadDashboardData(targetDate).then(applyData);
+  }, [targetDate, applyData]);
 
   // =========================
-  // 派生データ（ここが重要）
+  // 派生データ
   // =========================
 
   const visibleStudents = useMemo(() => {
     return students.filter((s) => s.status === "active");
   }, [students]);
 
-  const allStudents = useMemo(
-    () => [...students, ...hiddenStudents],
-    [students, hiddenStudents]
-  );
-
   const studentMap = useMemo(() => {
     return Object.fromEntries(
-        students.map((s) => [s.uid, s.name]) 
+      students.map((s) => [s.uid, s.name])
     );
   }, [students]);
 
@@ -104,9 +65,7 @@ export function useTeacherData(targetDate: string) {
   }, [logs]);
 
   const missingStudents = useMemo(() => {
-    return visibleStudents
-      .filter((s) => s.status === "active")
-      .filter((s) => !submittedUids.has(s.uid));
+    return visibleStudents.filter((s) => !submittedUids.has(s.uid));
   }, [visibleStudents, submittedUids]);
 
   const visibleLogs = useMemo(() => {
@@ -116,10 +75,10 @@ export function useTeacherData(targetDate: string) {
   }, [logs, visibleStudents]);
 
   return {
-    logs,
     loading,
     studentMap,
     missingStudents,
     visibleLogs,
+    refresh: fetchData,
   };
 }

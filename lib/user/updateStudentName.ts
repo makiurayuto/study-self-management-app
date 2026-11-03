@@ -5,6 +5,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
+// students と users の name を同期して更新
 export const updateStudentName = async (
   uid: string,
   name: string
@@ -17,7 +18,7 @@ export const updateStudentName = async (
   });
 
   const userSnap = await getDoc(userRef);
-console.log("exists", userSnap.exists());
+
   if (userSnap.exists()) {
     await updateDoc(userRef, {
       name,

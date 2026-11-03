@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import Sidebar from "@/features/teacher/students/components/Sidebar";
@@ -8,26 +8,20 @@ import { useTeacherGuard } from "@/features/teacher/students/hooks/useTeacherGua
 import { useTeacherData } from "@/features/teacher/students/hooks/useTeacherData";
 import Button from "@/components/shared/Button";
 
-export default function TeacherPage() {
+export default function StudentDetailsPage() {
   const { user, authLoading } = useAuth();
   const router = useRouter();
 
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
-  const [viewMode, setViewMode] =
-    useState<"students" | "hidden">("students");
-
   const [weekOffset, setWeekOffset] = useState(0);
 
   const {
     students,
-    hiddenStudents,
     studentMap,
     week,
     filteredLogs,
     logs,
     loading,
-    fetchData,
-    hideStudent,
   } = useTeacherData({
     user,
     authLoading,
@@ -38,20 +32,7 @@ export default function TeacherPage() {
   useTeacherGuard({
     user,
     authLoading,
-    fetchData,
   });
-
-  const getWeekLabel = (offset: number) => {
-    if (offset === 0) return "今週";
-    if (offset === -1) return "先週";
-    if (offset === 1) return "来週";
-    return `${offset > 0 ? "+" : ""}${offset}週`;
-  };
-
-  useEffect(() => {
-    console.log(selectedUid);
-    console.log(studentMap);
-  }, [selectedUid, studentMap]);
 
   if (authLoading) {
     return <div>認証確認中...</div>;
@@ -111,12 +92,8 @@ export default function TeacherPage() {
       <div style={{ display: "flex", height: "100vh" }}>
         <Sidebar
           students={students}
-          hiddenStudents={hiddenStudents}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
           selectedUid={selectedUid}
           setSelectedUid={setSelectedUid}
-          fetchData={fetchData}
         />
 
         {/* ================= 右：詳細 ================= */}
@@ -130,7 +107,6 @@ export default function TeacherPage() {
             week={week}
             filteredLogs={filteredLogs}
             logs={logs}
-            setHidden={hideStudent}
           />
 
         </div>
@@ -138,19 +114,3 @@ export default function TeacherPage() {
     </div>
   );
 }
-
-// =========================
-// styles
-// =========================
-
-const thStyle = {
-  border: "1px solid #ccc",
-  padding: 10,
-  background: "#f3f4f6",
-  textAlign: "left" as const,
-};
-
-const tdStyle = {
-  border: "1px solid #ccc",
-  padding: 10,
-};

@@ -2,23 +2,23 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { db } from "@/firebase";
 import Button from "@/components/shared/Button";
-import { doc, setDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import TimeControl from "@/features/time/components/TimeControl";
 import SleepTimePicker from "@/features/sleep/components/SleepTimePicker";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { updateStudentName } from "@/lib/user/updateStudentName";
-import { auth } from "@/firebase";
 import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-} from "firebase/auth";
+  fetchStudentLog,
+  fetchStudentLogs,
+  saveStudentLog,
+} from "@/lib/logService";
+import { getWeekDates } from "@/lib/date";
+import { minutesToTime, timeToMinutes } from "@/lib/time";
+import type { StudentDailyLog } from "@/types/student-log";
 
 export default function StudentPage() {
 
-  const { user, authLoading } = useAuth();
+  const { user, logout: signOut } = useAuth();
 
   const router = useRouter();
 
@@ -32,53 +32,41 @@ export default function StudentPage() {
   const [showNameEdit, setShowNameEdit] = useState(false);
   const [newName, setNewName] = useState("");
 
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<StudentDailyLog[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
-  const [touchStartX, setTouchStartX] = useState(0);
   const [openSleepPicker, setOpenSleepPicker] = useState(false);
-  const [dialog, setDialog] = useState<{
-    open: boolean;
-    message: string;
-    type: "success" | "error";
-  }>({
-    open: false,
-    message: "",
-    type: "success",
-  });
-
-  const cardStyle: React.CSSProperties = {
-    background: "var(--card)",
-    border: "1px solid var(--border)",
-    borderRadius: 16,
-    padding: 16,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-    boxSizing: "border-box",
-  }; 
-
-    const login = async () => {
-    const provider = new GoogleAuthProvider();
-
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
-
-    await signInWithPopup(auth, provider);
-  };
-
-  const logout = async () => {
-    await signOut(auth);
-    router.replace("/");
-  };
 
   const [date, setDate] = useState(
     new Date().toLocaleDateString("sv-SE")
   );
 
+  const logout = async () => {
+    await signOut();
+    router.replace("/");
+  };
 
   // =====================
-  // 保存（修正済み）
+  // フォームへ反映
+  // =====================
+  const applyLogToForm = (log: StudentDailyLog | null) => {
+    setStudyTime(log?.studyTime != null ? minutesToTime(log.studyTime) : "");
+    setPhoneTime(log?.phoneTime != null ? minutesToTime(log.phoneTime) : "");
+    setSleepTime(log?.sleepTime ?? "");
+    setSatisfaction(log?.satisfaction ?? "");
+  };
+
+  // 1日読み込み
+  const loadData = async (uid: string, d: string) => {
+    applyLogToForm(await fetchStudentLog(uid, d));
+  };
+
+  // logs取得
+  const fetchLogs = async (uid: string) => {
+    setLogs(await fetchStudentLogs(uid));
+  };
+
+  // =====================
+  // 保存
   // =====================
   const saveData = async () => {
     if (
@@ -95,17 +83,14 @@ export default function StudentPage() {
     if (!user) return alert("ログインしてください");
 
     try {
-      await setDoc(
-        doc(db, "weeklyLogs", user.uid, "logs", date),
-        {
-          uid: user.uid,
-          date,
-          studyTime: studyTime === "" ? null : timeToMinutes(studyTime),
-          phoneTime: phoneTime === "" ? null : timeToMinutes(phoneTime),
-          sleepTime,
-          satisfaction,
-        }
-      );
+      await saveStudentLog({
+        uid: user.uid,
+        date,
+        studyTime: timeToMinutes(studyTime),
+        phoneTime: timeToMinutes(phoneTime),
+        sleepTime,
+        satisfaction,
+      });
 
       setMessage("✅ 保存しました！");
       setMessageColor("#22c55e");
@@ -114,200 +99,30 @@ export default function StudentPage() {
         setMessage("");
       }, 2000);
 
-      setStudyTime("");
-      setPhoneTime("");
-      setSleepTime("");
-      setSatisfaction("");
+      applyLogToForm(null);
 
-      await fetchLogs(user.uid); // ←1回だけ更新
+      await fetchLogs(user.uid);
     } catch (e) {
       console.error(e);
     }
   };
 
   // =====================
-  // logs取得
-  // =====================
-  const fetchLogs = async (uid: string) => {
-    const snapshot = await getDocs(
-  collection(
-      db,
-      "weeklyLogs",
-      uid,
-      "logs"
-    )
-  );
-    const data = snapshot.docs.map((d) => ({
-      date: d.id,
-      ...d.data(),
-    }));
-
-    setLogs(data);
-  };
-
-  // =====================
-  // 日付変更関数
+  // 日付変更
   // =====================
   const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
-
-    console.log("変更日:", newDate);
 
     setDate(newDate);
 
     if (!user?.uid) return;
 
-    const ref = doc(
-      db,
-      "weeklyLogs",
-      user.uid,
-      "logs",
-      newDate
-    );
-
-    const snap = await getDoc(ref);
-
-    console.log("データあり:", snap.exists());
-
-    if (snap.exists()) {
-      const data = snap.data();
-
-      console.log("取得データ:", data);
-
-      setStudyTime(
-        data.studyTime != null
-          ? minutesToTime(data.studyTime)
-          : ""
-      );
-      setPhoneTime(
-        data.phoneTime != null
-          ? minutesToTime(data.phoneTime)
-          : ""
-      );
-      setSleepTime(data.sleepTime ?? "");
-      setSatisfaction(data.satisfaction ?? "");
-    } else {
-      console.log("データなし → 初期化");
-
-      setStudyTime("");
-      setPhoneTime("");
-      setSleepTime("");
-      setSatisfaction("");
-    }
+    await loadData(user.uid, newDate);
   };
-
-  // =====================
-  // 1日読み込み（そのまま維持）
-  // =====================
-  const loadData = async (uid: string, d: string) => {
-    const ref = doc(
-      db,
-      "weeklyLogs",
-      uid,
-      "logs",
-      d
-    );
-    const snap = await getDoc(ref);
-
-    if (snap.exists()) {
-      const data = snap.data();
-      setStudyTime(
-        data.studyTime != null
-          ? minutesToTime(data.studyTime)
-          : ""
-      );
-      setPhoneTime(
-        data.phoneTime != null
-          ? minutesToTime(data.phoneTime)
-          : ""
-      );
-      setSleepTime(data.sleepTime ?? "");
-      setSatisfaction(data.satisfaction ?? "");
-    } else {
-      setStudyTime("");
-      setPhoneTime("");
-      setSleepTime("");
-      setSatisfaction("");
-    }
-  };
-
-  // =====================
-  // 週生成（そのまま）
-  // =====================
-
-  const getWeekDates = (offset = 0) => {
-    const today = new Date();
-    const day = today.getDay();
-
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-
-    monday.setDate(monday.getDate() + offset * 7);
-
-    const week = [];
-
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-
-      const formatted = `${yyyy}-${mm}-${dd}`;
-      week.push({
-        date: formatted,
-        dayName: ["日", "月", "火", "水", "木", "金", "土"][d.getDay()],
-        displayDate: d.getDate() + "日",
-      });
-    }
-
-    return week;
-  };
-
-  // "02:30" → 2.5
-  const timeToDecimal = (time: string) => {
-    if (!time) return 0;
-    const [h, m] = time.split(":").map(Number);
-    return h + m / 60;
-  };
-
-  // "02:30" → 150（分）
-  const timeToMinutes = (time: string) => {
-    if (!time) return 0;
-    const [h, m] = time.split(":").map(Number);
-    return h * 60 + m;
-  };
-
-  // 150（分） → "02:30"
-  const minutesToTime = (min: number) => {
-    const h = String(Math.floor(min / 60)).padStart(2, "0");
-    const m = String(min % 60).padStart(2, "0");
-    return `${h}:${m}`;
-  };
-
-  const startHour = 20;
-
-  const timeToSleepClock = (time: string) => {
-    if (!time) return "";
-
-    const [h, m] = time.split(":").map(Number);
-
-    const totalMinutes = h * 60 + m;
-
-    const startMinutes = startHour * 60;
-
-    const result = startMinutes + totalMinutes;
-
-    const hh = Math.floor(result / 60) % 24;
-    const mm = result % 60;
-
-    return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-  };
-
 
   const weekDates = getWeekDates(weekOffset);
 
+  // 週の中で最も多い月を表示
   const weekMonth = (() => {
     const months = weekDates.map(
       (d) => new Date(d.date).getMonth() + 1
@@ -327,9 +142,8 @@ export default function StudentPage() {
   })();
 
   // =====================
-  // 名前変更関数
+  // 名前変更
   // =====================
-
   const handleUpdateName = async () => {
     if (!user) return;
 
@@ -342,17 +156,19 @@ export default function StudentPage() {
   };
 
   useEffect(() => {
-    if (user?.name) {
-      fetchLogs(user.uid);
-    }
-  }, [user]);
-  
-  //ログイン時に登録内容ロード
+    if (!user?.name) return;
+
+    fetchStudentLogs(user.uid).then(setLogs);
+  }, [user?.uid, user?.name]);
+
+  // ログイン時に選択日の登録内容をロード
   useEffect(() => {
-    if (user?.uid) {
-      loadData(user.uid, date);
-    }
-  }, [user]);
+    if (!user?.uid) return;
+
+    fetchStudentLog(user.uid, date).then(applyLogToForm);
+    // 日付変更時は handleDateChange で読み込むため uid のみに依存
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
 
 return (
     <div
@@ -362,60 +178,6 @@ return (
         padding: "0 16px",
       }}
     >
-      {dialog.open && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-          onClick={() => setDialog({ ...dialog, open: false })}
-        >
-          <div
-            style={{
-              background: "var(--card)",
-              padding: 20,
-              borderRadius: 16,
-              width: 280,
-              textAlign: "center",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-              transform: "scale(1)",
-              animation: "pop 0.15s ease",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p
-              style={{
-                color: dialog.type === "success" ? "#22c55e" : "#ef4444",
-                fontWeight: "bold",
-                fontSize: 16,
-              }}
-            >
-              {dialog.message}
-            </p>
-
-            <button
-              onClick={() => setDialog({ ...dialog, open: false })}
-              style={{
-                marginTop: 16,
-                padding: "10px 14px",
-                borderRadius: 10,
-                background: "#4f46e5",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
       <div style={{ marginTop: 24, marginBottom: 24 }}>
         <h1
           style={{
@@ -800,25 +562,6 @@ return (
   );
 }
 
-const inputStyle = {
-  padding: 12,
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--card)",
-  color: "var(--text)",
-  outline: "none",
-  fontSize: 14,
-};
-const buttonStyle: React.CSSProperties = {
-  padding: "14px 16px",
-  borderRadius: 12,
-  border: "none",
-  background: "#4f46e5",
-  color: "white",
-  fontWeight: 600,
-  transition: "0.2s",
-};
-
 const thStyle = {
   border: "1px solid var(--border)",
   padding: "8px 10px",
@@ -835,27 +578,6 @@ const tdStyle = {
   color: "var(--text)",
   textAlign: "center" as const,
   fontSize: 16,
-};
-
-const modalOverlay = {
-  position: "fixed" as const,
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  background: "rgba(0,0,0,0.4)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 1000,
-};
-
-const modalBox = {
-  background: "var(--card)",
-  padding: 20,
-  borderRadius: 16,
-  width: "90%",
-  maxWidth: 320,
 };
 
 const overlayStyle: React.CSSProperties = {
@@ -876,4 +598,14 @@ const modalStyle: React.CSSProperties = {
   borderTopRightRadius: 20,
   padding: 20,
   maxHeight: "60vh",
+};
+const cardStyle: React.CSSProperties = {
+  background: "var(--card)",
+  border: "1px solid var(--border)",
+  borderRadius: 16,
+  padding: 16,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+  boxSizing: "border-box",
 };

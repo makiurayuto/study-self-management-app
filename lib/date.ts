@@ -1,5 +1,4 @@
-// app/lib/date.ts
-
+// "YYYY-MM-DD"
 export const formatDateForQuery = (date: Date) => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -8,6 +7,7 @@ export const formatDateForQuery = (date: Date) => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+// "MM/DD"
 export const formatDateForDisplay = (date: Date | string) => {
   const d = typeof date === "string" ? new Date(date) : date;
 
@@ -17,22 +17,18 @@ export const formatDateForDisplay = (date: Date | string) => {
   return `${mm}/${dd}`;
 };
 
-export const getWeekRange = (weekOffset: number) => {
-  const now = new Date();
+const DAY_NAMES = ["日", "月", "火", "水", "木", "金", "土"];
 
-  const start = new Date(now);
-  start.setDate(start.getDate() - start.getDay() + 1 + weekOffset * 7);
-
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-
-  return { start, end };
+export type WeekDate = {
+  date: string; // YYYY-MM-DD
+  dayName: string; // 曜日
+  displayDate: string; // "3日"
 };
 
-  // =====================
-  // 週生成
-  // =====================
-export function getWeekDates(offset = 0) {
+// =====================
+// 週生成（月曜始まり）
+// =====================
+export function getWeekDates(offset = 0): WeekDate[] {
   const today = new Date();
 
   const day = today.getDay();
@@ -42,18 +38,16 @@ export function getWeekDates(offset = 0) {
   monday.setDate(diff + offset * 7);
   monday.setHours(0, 0, 0, 0);
 
-  const week = [];
+  const week: WeekDate[] = [];
 
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
 
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-
     week.push({
-      date: `${yyyy}-${mm}-${dd}`,
+      date: formatDateForQuery(d),
+      dayName: DAY_NAMES[d.getDay()],
+      displayDate: d.getDate() + "日",
     });
   }
 
